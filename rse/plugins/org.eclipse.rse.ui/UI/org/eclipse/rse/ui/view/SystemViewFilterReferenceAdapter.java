@@ -21,7 +21,6 @@ import java.util.Vector;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -378,7 +377,7 @@ public class SystemViewFilterReferenceAdapter
 					    
 						if (monitor == null)
 						{
-						    allChildren = ss.resolveFilterStrings(new NullProgressMonitor(), filterStrings);
+						    allChildren = ss.resolveFilterStrings(filterStrings);
 						}
 						else
 						{
