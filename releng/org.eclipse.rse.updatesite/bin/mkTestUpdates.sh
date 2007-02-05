@@ -12,7 +12,7 @@
 # Convert normal "site.xml" to "testUpdates"
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.2 installed in $HOME/ws/eclipse
 # - Java5 in the PATH or in /shared/common/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -40,10 +40,10 @@ fi
 # get newest plugins and features: to be done manually on real update site
 if [ `basename $SITE` = testUpdates ]; then
     echo "Working on test update site"
-    REL=`ls $HOME/ws2/working/package | sort | tail -1`
+    REL=`ls $HOME/ws/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
-      DIR="$HOME/ws2/working/package/$REL/updates"
+      DIR="$HOME/ws/working/package/$REL/updates"
       if [ -d "$DIR/features" ]; then
         echo "Copying new plugins and features from $DIR"
         rm -rf features
@@ -67,12 +67,12 @@ if [ `basename $SITE` = testUpdates ]; then
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #    -jar $HOME/ws2/eclipse/startup.jar \
+    #    -jar $HOME/ws/eclipse/startup.jar \
     #    -application org.eclipse.update.core.siteOptimizer \
     #    -jarProcessor -outputDir $SITE \
     #    -processAll -repack $SITE
     java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    	$HOME/ws2/jarprocessor/jarprocessor.jar \
+    	$HOME/ws/jarprocessor/jarprocessor.jar \
 		-outputDir $SITE -processAll -repack $SITE
 elif [ `basename $SITE` = signedUpdates ]; then
     echo "Working on signed update site"
@@ -202,6 +202,26 @@ being contributed to the Europa coordinated release train (Eclipse 3.3).' \
     sed -e 's,Project Update,Project Milestone Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
+elif [ `basename $SITE` = interim ]; then
+    echo "Working on interim update site"
+    echo "Expect that you copied your features and plugins yourself"
+    stamp=`date +'%Y%m%d-%H%M'`
+    rm index.html site.xml web/site.xsl
+    cvs -q update -dPR
+    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/interim,g' \
+    	-e 's,Project Update,Project Interim Update,g' \
+    	-e '\,</h1>,a\
+This site contains Target Management Interim Maintenance builds (M-builds) in order \
+to test them before going live.' \
+    	index.html > index.html.new
+    mv -f index.html.new index.html
+    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/interim,g' \
+        -e 's,Project Update,Project Interim Update,g' \
+        site.xml > site.xml.new
+    mv -f site.xml.new site.xml
+    sed -e 's,Project Update,Project Interim Update,g' \
+    	web/site.xsl > web/site.xsl.new
+    mv -f web/site.xsl.new web/site.xsl
 else
     echo "Working on official update site"
     echo "Expect that you copied your features and plugins yourself"
@@ -219,6 +239,11 @@ for feature in $FEATURES ; do
     mv -f site.xml.new site.xml
   fi
 done
+#Create Europa version of site.xml
+if [ -f site-europa.xml ]; then
+  rm -rf site-europa.xml
+fi
+sed -e '/!EUROPA_ONLY!/d' site.xml > site-europa.xml
 
 # optimize the site
 # see http://wiki.eclipse.org/index.php/Platform-releng-faq
@@ -227,17 +252,17 @@ done
 # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
 echo "Packing the site... $SITE"
 #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-#    -jar $HOME/ws2/eclipse/startup.jar \
+#    -jar $HOME/ws/eclipse/startup.jar \
 #    -application org.eclipse.update.core.siteOptimizer \
 #    -jarProcessor -outputDir $SITE \
 #    -processAll -pack $SITE
 java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    $HOME/ws2/jarprocessor/jarprocessor.jar \
+    $HOME/ws/jarprocessor/jarprocessor.jar \
     -outputDir $SITE -processAll -pack $SITE
 
 #Create the digest
 echo "Creating digest..."
-java -jar $HOME/ws2/eclipse/startup.jar \
+java -jar $HOME/ws/eclipse/startup.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \
     -siteXML=$SITE/site.xml
