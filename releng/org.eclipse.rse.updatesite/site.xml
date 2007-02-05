@@ -18,6 +18,11 @@
    <feature url="features/org.eclipse.rse.local_1.0.2.qualifier.jar" id="org.eclipse.rse.local" version="1.0.2.qualifier">
       <category name="RSE Runtime only"/>
    </feature>
+   <!-- !EUROPA_ONLY! Combined Runtime
+   <feature url="features/org.eclipse.rse_1.0.2.qualifier.jar" id="org.eclipse.rse" version="1.0.2.qualifier">
+      <category name="RSE Runtime only"/>
+   </feature>
+   !EUROPA_ONLY! -->
    <feature url="features/org.eclipse.rse.sdk_1.0.2.qualifier.jar" id="org.eclipse.rse.sdk" version="1.0.2.qualifier">
       <category name="Remote System Explorer (RSE) SDK"/>
    </feature>
