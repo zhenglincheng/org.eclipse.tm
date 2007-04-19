@@ -17,6 +17,7 @@
  * David Dykstal (IBM) - 168977: refactoring IConnectorService and ServerLauncher hierarchies
  * Martin Oberhuber (Wind River) - [175262] IHost.getSystemType() should return IRSESystemType 
  * David Dykstal (IBM) - 142806: refactoring persistence framework
+ * Tobias Schwarz (Wind River) - [183134] getLocalHost() does not return Local
  ********************************************************************************/
 
 package org.eclipse.rse.model;
@@ -35,7 +36,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.rse.core.IRSESystemType;
 import org.eclipse.rse.core.IRSEUserIdConstants;
-import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.SystemAdapterHelpers;
 import org.eclipse.rse.core.SystemBasePlugin;
 import org.eclipse.rse.core.filters.ISystemFilter;
@@ -1794,7 +1794,7 @@ public class SystemRegistry implements ISystemRegistryUI, ISystemModelChangeEven
 		Vector v = new Vector();
 		for (int idx = 0; idx < connections.length; idx++)
 		{
-			if (connections[idx].getSystemType().equals(systemType))
+			if (systemType.equals(connections[idx].getSystemType().getName()))
 				v.addElement(connections[idx]);
 		}
 		IHost[] conns = new IHost[v.size()];
