@@ -151,7 +151,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -dPR
+  cvs -q update -dPR -r R2_0_patches
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -160,7 +160,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -R -r R2_0_patches -d org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -197,7 +197,7 @@ if [ ! -h doit_nightly.sh ]; then
 fi
 if [ ! -h setup.sh ]; then
   if [ -f setup.sh ]; then rm -f setup.sh; fi
-  ln -s org.eclipse.rse.build/bin/setup.sh .
+  ln -s org.eclipse.rse.build/setup.sh .
 fi
 chmod a+x doit_irsbuild.sh doit_nightly.sh
 cd org.eclipse.rse.build
