@@ -143,9 +143,17 @@
 	</target>
 
 	<target name="assemble.org.eclipse.rse.core.patch">
+		<property name="archiveName" value="tmp-patch-core.zip"/>
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
+		<antcall target="unpackUpdateJarsForPackaging" />
+		<delete file="${buildDirectory}/${buildLabel}/tmp-patch-core.zip"/>
 	</target>
 
 	<target name="assemble.org.eclipse.rse.ftp.patch">
+		<property name="archiveName" value="tmp-patch-ftp.zip"/>
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
+		<antcall target="unpackUpdateJarsForPackaging" />
+		<delete file="${buildDirectory}/${buildLabel}/tmp-patch-ftp.zip"/>
 	</target>
 
 	<target name="unpackUpdateJarsForPackaging" depends="myInit">
