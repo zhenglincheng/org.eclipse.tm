@@ -28,11 +28,11 @@
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF, and the RemoteCDT integration needs CDT.</li>
 <li>TM @buildId@ is the same as TM 2.0 except for two critical bug fixes:
-<ul><li><b><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=192741">bug 192741</a> - Moving a folder from an archive doesn't work sometimes</b>:
-        This bug is relevant when using the RSE Archive handlers in order to manipulate tar or zip
+<ul><li><b><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=192741">bug 192741</a> - Move a folder from within a ZIP Archive doesn't work if &gt; 1 level deep</b>:
+        This bug is relevant when using the RSE Archive handlers in order to manipulate ZIP
         archives on the Local or DStore hosts.
         The bug could lead to loss of data because moving files out of an archive would delete the
-        files in the archive although they were not written properly before.
+        files in the archive although they were not extracted properly before.
         This bug has been fixed.</li>
     <li><b><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=194204">bug 194204</a> - RSE FTP: Renaming Files/Folders moves them sometimes</b>:
         This bug is relevant when using RSE FTP in order to rename files on a remote FTP host.
