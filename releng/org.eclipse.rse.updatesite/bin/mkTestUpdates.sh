@@ -40,7 +40,7 @@ fi
 
 # get newest plugins and features: to be done manually on real update site
 if [ `basename $SITE` = testPatchUpdates ]; then
-    echo "Working on test update site"
+    echo "Working on test patch update site"
     REL=`ls $HOME/ws2_0_patches/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
@@ -79,7 +79,7 @@ if [ `basename $SITE` = testPatchUpdates ]; then
     #	$HOME/ws2_0_patches/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ `basename $SITE` = signedPatchUpdates ]; then
-    echo "Working on signed update site"
+    echo "Working on signed patch update site"
     echo "Signing jars from test update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
