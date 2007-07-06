@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId]
@@ -117,19 +117,19 @@ if [ -f package.count -a "$FILES" != "" ]; then
     cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
     chgrp dsdp-tmadmin ../N.latest/*.zip
     chmod g+w ../N.latest/*.zip
+   fi
 
-    if [ ${buildType} != N ]; then
-      #Update the testUpdates site
-      echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
-      cvs update
-      ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
-      cvs update
-      ./mkTestUpdates.sh
-    fi
+  if [ ${buildType} != N ]; then
+    #Update the testPatchUpdates site
+    echo "Refreshing update site"
+    cd $HOME/downloads-tm/testPatchUpdates/bin
+    cvs update
+    ./mkTestUpdates.sh
+    #Update the signedPatchUpdates site
+    echo "Refreshing signedPatchUpdates site"
+    cd $HOME/downloads-tm/signedPatchUpdates/bin
+    cvs update
+    ./mkTestUpdates.sh
   fi
   
   cd "$curdir"
