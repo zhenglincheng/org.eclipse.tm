@@ -32,15 +32,15 @@ echo ${mydir}
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
-export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+export PATH=${HOME}/ws2_0_patches/IBMJava2-ppc-142/bin:$PATH
 
 #Get parameters
 mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
-  xM) mapTag=R1_0_maintenance ; ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xM|xR) mapTag=R2_0_patches ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ $ok != 1 ]; then
@@ -51,7 +51,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws2_0_patches
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -64,7 +64,7 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws2_0_patches/log-${buildType}$stamp.txt
 touch $log
 cvs -q update -RPd >> $log 2>&1
 daystamp=`date +'%Y%m%d*%H'`
@@ -89,7 +89,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws2_0_patches/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -108,7 +108,7 @@ if [ -f package.count -a "$FILES" != "" ]; then
     ${mydir}/batch_sign.sh `pwd`
   fi
 
-  if [ ${buildType} != M -a -d ../N.latest ]; then
+  if [ ${buildType} != M -a ${buildType} != R -a -d ../N.latest ]; then
     #update the doc server
     rm -f ../N.latest/RSE-*.zip
     rm -f ../N.latest/TM-*.zip
