@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006 Wind River Systems, Inc.
+# Copyright (c) 2006, 2007 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -9,10 +9,10 @@
 # Contributors: 
 # Martin Oberhuber - initial API and implementation 
 #*******************************************************************************
-# Convert normal "site.xml" to "testUpdates"
+# Convert normal "site.xml" to "testPatchUpdates"
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws2_0_patches/eclipse
 # - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -23,7 +23,7 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/ws2_0_patches/org.eclipse.releng.basebuilder
 
 # patch site.xml
 cd ..
@@ -39,12 +39,12 @@ if [ -f web/site.xsl.new ]; then
 fi
 
 # get newest plugins and features: to be done manually on real update site
-if [ `basename $SITE` = testUpdates ]; then
+if [ `basename $SITE` = testPatchUpdates ]; then
     echo "Working on test update site"
-    REL=`ls $HOME/ws2/working/package | sort | tail -1`
+    REL=`ls $HOME/ws2_0_patches/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
-      DIR="$HOME/ws2/working/package/$REL/updates"
+      DIR="$HOME/ws2_0_patches/working/package/$REL/updates"
       if [ -d "$DIR/features" ]; then
         echo "Copying new plugins and features from $DIR"
         rm -rf features
@@ -55,38 +55,39 @@ if [ `basename $SITE` = testUpdates ]; then
     fi
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/testUpdates,g' \
-    	-e 's,Project Update,Project Test Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testPatchUpdates,g' \
+    	-e 's,Project 2.0 Update,Project Test Patch Update,g' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/testUpdates,g' \
-        -e 's,Project Update,Project Test Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testPatchUpdates,g' \
+        -e 's,Project 2.0 Update,Project Test Patch Update,g' \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_patches -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project Update,Project Test Update,g' \
+    sed -e 's,Project 2.0 Update,Project Test Patch Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #java -jar $HOME/ws2/eclipse/startup.jar \
+    #java -jar $HOME/ws2_0_patches/eclipse/startup.jar \
     java \
         -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
         -application org.eclipse.update.core.siteOptimizer \
         -jarProcessor -outputDir $SITE \
         -processAll -repack $SITE
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #	$HOME/ws2/jarprocessor/jarprocessor.jar \
+    #	$HOME/ws2_0_patches/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
-elif [ `basename $SITE` = signedUpdates ]; then
+elif [ `basename $SITE` = signedPatchUpdates ]; then
     echo "Working on signed update site"
     echo "Signing jars from test update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
-    if [ -d ${STAGING} -a -d ${SITE}/../testUpdates ]; then
-      #get jars from testUpdates, sign them and put them here
+    if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
+      #get jars from testPatchUpdates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
-      cp -R ${SITE}/../testUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
+      cp -R ${SITE}/../testPatchUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
         echo "signing feature: ${x}"
@@ -121,7 +122,7 @@ elif [ `basename $SITE` = signedUpdates ]; then
         rmdir ${STAGING}/updates.${stamp}/features
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
-        cp ${SITE}/../testUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
+        cp ${SITE}/../testPatchUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
           echo "signing plugin: ${x}"
@@ -168,21 +169,22 @@ elif [ `basename $SITE` = signedUpdates ]; then
         exit 1
       fi
     else
-      echo "staging or testUpdates not found:"
+      echo "staging or testPatchUpdates not found:"
       echo "please fix your pathes"
       exit 1
     fi
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/signedUpdates,g' \
-    	-e 's,Project Update,Project Signed Test Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedPatchUpdates,g' \
+    	-e 's,Project 2.0 Update,Project Signed Patch Update,g' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/signedUpdates,g' \
-        -e 's,Project Update,Project Signed Test Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedPatchUpdates,g' \
+        -e 's,Project 2.0 Update,Project Signed Patch Update,g' \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_patches -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project Update,Project Signed Test Update,g' \
+    sed -e 's,Project 2.0 Update,Project Signed Test Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = milestones ]; then
@@ -191,18 +193,19 @@ elif [ `basename $SITE` = milestones ]; then
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/milestones,g' \
-    	-e 's,Project Update,Project Milestone Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
+    	-e 's,Project 2.0 Update,Project Milestone Update,g' \
     	-e '\,</h1>,a\
 This site contains Target Management Milestones (I-, S- and M- builds) which are \
 being contributed to the Europa coordinated release train (Eclipse 3.3).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/milestones,g' \
-        -e 's,Project Update,Project Milestone Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
+        -e 's,Project 2.0 Update,Project Milestone Update,g' \
+    	-e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project Update,Project Milestone Update,g' \
+    sed -e 's,Project 2.0 Update,Project Milestone Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = interim ]; then
@@ -211,18 +214,19 @@ elif [ `basename $SITE` = interim ]; then
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/interim,g' \
-    	-e 's,Project Update,Project Interim Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
+    	-e 's,Project 2.0 Update,Project Interim Update,g' \
     	-e '\,</h1>,a\
 This site contains Target Management Interim Maintenance builds (M-builds) in order \
 to test them before going live.' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates,/dsdp/tm/updates/interim,g' \
-        -e 's,Project Update,Project Interim Update,g' \
+    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
+        -e 's,Project 2.0 Update,Project Interim Update,g' \
+    	-e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project Update,Project Interim Update,g' \
+    sed -e 's,Project 2.0 Update,Project Interim Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 else
@@ -231,6 +235,9 @@ else
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
+    sed -e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
+        site.xml > site.xml.new
+    mv -f site.xml.new site.xml
 fi
 FEATURES=`grep 'features/[^ ]*\.qualifier\.jar' site.xml | sed -e 's,^[^"]*"features/\([^0-9]*[0-9][0-9.]*\).*$,\1,g'`
 for feature in $FEATURES ; do
@@ -263,18 +270,18 @@ mv -f site.xml.tmp site.xml
 # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
 echo "Packing the site... $SITE"
 #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws2_0_patches/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -jarProcessor -outputDir $SITE \
     -processAll -pack $SITE
 #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-#    $HOME/ws2/jarprocessor/jarprocessor.jar \
+#    $HOME/ws2_0_patches/jarprocessor/jarprocessor.jar \
 #    -outputDir $SITE -processAll -pack $SITE
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws2_0_patches/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \
