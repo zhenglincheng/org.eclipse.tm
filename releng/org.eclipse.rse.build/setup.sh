@@ -59,7 +59,8 @@ if [ ! -f eclipse/plugins/org.eclipse.swt_3.3.0.v3346.jar ]; then
   # Eclipse SDK 3.3: Need the SDK so we can link into docs
   echo "Getting Eclipse SDK..."
   wget "http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/eclipse-SDK-3.3-${ep_arch}.tar.gz"
-  tar xfvz eclipse-SDK-3.3-${ep_arch}.tar.gz
+  echo "Extracting eclipse-SDK..."
+  tar xfz eclipse-SDK-3.3-${ep_arch}.tar.gz
   rm eclipse-SDK-3.3-${ep_arch}.tar.gz
   cd "${curdir2}"
   if [ ! -d eclipse -o -h eclipse ]; then
@@ -87,35 +88,62 @@ fi
 if [ ! -f eclipse/plugins/org.eclipse.cdt.core_4.0.0.200706261300.jar ]; then
   # CDT 4.0.0 Runtime
   echo "Getting CDT Runtime..."
+  CDT_OK=0
   wget "http://download.eclipse.org/tools/cdt/releases/europa/dist/cdt-master-4.0.0.zip"
   #java \
   #  -classpath eclipse/plugins/org.eclipse.help.base_3.3.0.v20070606.jar \
   CDTTMP=`pwd`/tmp.$$
   mkdir ${CDTTMP}
   cd ${CDTTMP}
-  unzip ../cdt-master-4.0.0.zip
+  echo "Extracting CDT-master..."
+  unzip -q ../cdt-master-4.0.0.zip
   cd ..
-  java -jar eclipse/plugins/org.eclipse.equinox.launcher_1.0.0.v20070606.jar \
-    -application org.eclipse.update.core.standaloneUpdate \
-    -command install \ 
-    -from file://${CDTTMP} \
-    -featureId org.eclipse.cdt \
-    -version 4.0.0.200706261300
-  rm -rf ${CDTTMP}
-  rm cdt-master-4.0.0.zip
+  CMD="java -jar eclipse/plugins/org.eclipse.equinox.launcher_1.0.0.v20070606.jar"
+  CMD="${CMD} -application org.eclipse.update.core.standaloneUpdate"
+  LCMD="${CMD} -command search -from file://${CDTTMP}"
+  echo ""
+  echo ${LCMD}
+  result=`${LCMD} | grep 'org.eclipse.cdt 4'`
+  rc=$?
+  echo "rc=${rc}"
+  echo $result
+  if [ "${rc}" = "0" ]; then
+    VERSION=`echo ${result} | sed -e 's,".*org\.eclipse\.cdt ,,'`
+    echo "VERSION=${VERSION}"
+    UCMD="${CMD} -command install"
+    UCMD="${UCMD} -featureId org.eclipse.cdt"
+    UCMD="${UCMD} -version 4.0.0.200706261300"
+    UCMD="${UCMD} -from file://${CDTTMP}"
+    echo ""
+    echo ${UCMD}
+    ${UCMD}
+    rc=$?
+    echo "rc=${rc}"
+    if [ "${rc}" = "0" ]; then
+      rm -rf ${CDTTMP}
+      rm cdt-master-4.0.0.zip
+      CDT_OK=1
+    fi
+  fi
+  if [ ${CDT_OK} != 1 ]; then
+    echo "CDT Install failed!"
+    exit 1
+  fi
 fi
 if [ ! -f eclipse/plugins/org.eclipse.emf.doc_2.3.0.v200706262000/doc.zip ]; then
   # Need EMF 2.3.0 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
   wget "http://download.eclipse.org/modeling/emf/emf/downloads/drops/2.3.0/R200706262000/emf-sdo-xsd-SDK-2.3.0.zip"
-  unzip -o emf-sdo-xsd-SDK-2.3.0.zip
+  echo "Extracting EMF..."
+  unzip -q -o emf-sdo-xsd-SDK-2.3.0.zip
   rm emf-sdo-xsd-SDK-2.3.0.zip 
 fi
 if [ ! -f eclipse/plugins/org.junit_3.8.2.v200706111738/junit.jar ]; then
   # Eclipse Test Framework
   echo "Getting Eclipse Test Framework..."
   wget "http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/eclipse-test-framework-3.3.zip"
-  unzip -o eclipse-test-framework-3.3.zip
+  echo "Extracting eclipse-test-framework..."
+  unzip -q -o eclipse-test-framework-3.3.zip
   rm eclipse-test-framework-3.3.zip
 fi
 
