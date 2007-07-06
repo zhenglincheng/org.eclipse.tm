@@ -142,6 +142,12 @@
 		<antcall target="unpackUpdateJarsForPackaging" />
 	</target>
 
+	<target name="assemble.org.eclipse.rse.core.patch">
+	</target>
+
+	<target name="assemble.org.eclipse.rse.ftp.patch">
+	</target>
+
 	<target name="unpackUpdateJarsForPackaging" depends="myInit">
 		<property name="tmpsite" value="${buildDirectory}/tmpsite" />
 		<mkdir dir="${tmpsite}/new/eclipse/features" />
