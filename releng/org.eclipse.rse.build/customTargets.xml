@@ -53,6 +53,14 @@
 			<property name="type" value="feature" />
 			<property name="id" value="org.eclipse.tm.terminal.sdk" />
 		</ant>
+		<ant antfile="${genericTargets}" target="${target}">
+			<property name="type" value="feature" />
+			<property name="id" value="org.eclipse.rse.core.patch" />
+		</ant>
+		<ant antfile="${genericTargets}" target="${target}">
+			<property name="type" value="feature" />
+			<property name="id" value="org.eclipse.rse.ftp.patch" />
+		</ant>
 	</target>
 
 	<!-- ===================================================================== -->
@@ -132,6 +140,20 @@
 		<property name="archiveName" value="TM-terminal-${buildId}.zip"/>
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
 		<antcall target="unpackUpdateJarsForPackaging" />
+	</target>
+
+	<target name="assemble.org.eclipse.rse.core.patch">
+		<property name="archiveName" value="tmp-patch-core.zip"/>
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
+		<antcall target="unpackUpdateJarsForPackaging" />
+		<delete file="${buildDirectory}/${buildLabel}/tmp-patch-core.zip"/>
+	</target>
+
+	<target name="assemble.org.eclipse.rse.ftp.patch">
+		<property name="archiveName" value="tmp-patch-ftp.zip"/>
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
+		<antcall target="unpackUpdateJarsForPackaging" />
+		<delete file="${buildDirectory}/${buildLabel}/tmp-patch-ftp.zip"/>
 	</target>
 
 	<target name="unpackUpdateJarsForPackaging" depends="myInit">
