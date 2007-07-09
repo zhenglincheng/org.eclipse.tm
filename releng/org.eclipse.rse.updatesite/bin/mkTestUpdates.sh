@@ -41,6 +41,7 @@ fi
 # get newest plugins and features: to be done manually on real update site
 if [ `basename $SITE` = testPatchUpdates ]; then
     echo "Working on test patch update site"
+    TYPE=test
     REL=`ls $HOME/ws2_0_patches/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
@@ -80,7 +81,8 @@ if [ `basename $SITE` = testPatchUpdates ]; then
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ `basename $SITE` = signedPatchUpdates ]; then
     echo "Working on signed patch update site"
-    echo "Signing jars from test update site (expecting conditioned jars)..."
+    TYPE=testSigned
+    echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
     if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
@@ -189,6 +191,7 @@ elif [ `basename $SITE` = signedPatchUpdates ]; then
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = milestones ]; then
     echo "Working on milestone update site"
+    TYPE=milestone
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -202,7 +205,7 @@ being contributed to the Europa coordinated release train (Eclipse 3.3).' \
     mv -f index.html.new index.html
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
         -e 's,Project 2.0 Update,Project Milestone Update,g' \
-    	-e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
+    	-e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e 's,Project 2.0 Update,Project Milestone Update,g' \
@@ -210,6 +213,7 @@ being contributed to the Europa coordinated release train (Eclipse 3.3).' \
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = interim ]; then
     echo "Working on interim update site"
+    TYPE=interim
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -223,7 +227,7 @@ to test them before going live.' \
     mv -f index.html.new index.html
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
         -e 's,Project 2.0 Update,Project Interim Update,g' \
-    	-e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
+    	-e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e 's,Project 2.0 Update,Project Interim Update,g' \
@@ -231,11 +235,12 @@ to test them before going live.' \
     mv -f web/site.xsl.new web/site.xsl
 else
     echo "Working on official update site"
+    TYPE=official
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e '<!-- BEGIN_2_0_1 -->,/<!-- END_2_0_1 -->/d' \
+    sed -e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
 fi
@@ -265,19 +270,21 @@ mv -f site.xml.tmp site.xml
 
 # optimize the site
 # see http://wiki.eclipse.org/index.php/Platform-releng-faq
-#Pack the site
-# Workaround for downgrading effort of pack200 to avoid VM bug
-# See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
-echo "Packing the site... $SITE"
-#java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-#java -jar $HOME/ws2_0_patches/eclipse/startup.jar \
-java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
+case ${TYPE} in test*)
+  echo "Packing the site... $SITE"
+  # Workaround for downgrading effort of pack200 to avoid VM bug
+  # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
+  #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
+  #java -jar $HOME/ws2_0_patches/eclipse/startup.jar \
+  java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -jarProcessor -outputDir $SITE \
     -processAll -pack $SITE
-#java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-#    $HOME/ws2_0_patches/jarprocessor/jarprocessor.jar \
-#    -outputDir $SITE -processAll -pack $SITE
+  #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
+  #    $HOME/ws2_0_patches/jarprocessor/jarprocessor.jar \
+  #    -outputDir $SITE -processAll -pack $SITE
+  ;;
+esac
 
 #Create the digest
 echo "Creating digest..."
