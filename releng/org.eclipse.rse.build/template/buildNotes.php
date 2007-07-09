@@ -28,7 +28,7 @@
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF, and the RemoteCDT integration needs CDT.</li>
 <li>TM @buildId@ is the same as TM 2.0 except for two critical bug fixes:
-<ul><li><b><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=192741">bug 192741</a> - Move a folder from within a ZIP Archive doesn't work if &gt; 1 level deep</b>:
+<ul><li><b><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=192741">bug 192741</a> - Moving a folder from within a ZIP Archive doesn't work if &gt; 1 level deep</b>:
         This bug is relevant when using the RSE Archive handlers in order to manipulate ZIP
         archives on the Local or DStore hosts.
         The bug could lead to loss of data because moving files out of an archive would delete the
