@@ -36,8 +36,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		ITerminalTextData term=new TerminalTextData();
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		N=0;
-		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotNeedUpdateListener(){
-			public void changed() {
+		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotOutOfDateListener(){
+			public void snapshotOutOfDate(ITerminalTextDataSnapshot snapshot) {
 				N++;
 			}});
 		method0(term,"0b");
@@ -77,8 +77,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		ITerminalTextData term=new TerminalTextData();
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		N=0;
-		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotNeedUpdateListener(){
-			public void changed() {
+		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotOutOfDateListener(){
+			public void snapshotOutOfDate(ITerminalTextDataSnapshot snapshot) {
 				N++;
 			}});
 		method1(term, "1b");
@@ -164,8 +164,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		TerminalTextData term=new TerminalTextData();
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		N=0;
-		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotNeedUpdateListener(){
-			public void changed() {
+		snapshot.addListener(new ITerminalTextDataSnapshot.SnapshotOutOfDateListener(){
+			public void snapshotOutOfDate(ITerminalTextDataSnapshot snapshot) {
 				N++;
 			}});
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);

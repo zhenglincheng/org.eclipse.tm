@@ -93,23 +93,23 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * 3 cccc
 	 * 4 eeee
 	 * </pre>
-	 * @param y the start row of the shift
-	 * @param n the number of lines to shift
+	 * @param startRow the start row of the shift
+	 * @param size the number of lines to shift
 	 * @param shift how much scrolling is done. New scrolled area is filled with <code>'\000</code>'.
 	 * Negative number means scroll down, positive scroll up (see example above).
 	 */
-	void scroll(int y, int n, int shift);
+	void scroll(int startRow, int size, int shift);
 
 	/**
 	 * Similar to {@link #scroll(int, int, int)} but for negative <code>shift</code>, the 
 	 * lines that disappear are saved in <code>history</code>.
 	 * <p><b>Note:</b> This could potentially deadlock, if <code>history</code> is not carefully implemented!
 	 * Make sure the implementation of ITerminalTextHistory does not hold external locks!
-	 * @param y the start row of the shift
-	 * @param n the number of lines to shift
+	 * @param startRow the start row of the shift
+	 * @param size the number of lines to shift
 	 * @param shift how much scrolling is done. New scrolled area is filled with '\000'.
 	 * @param history store the shifted lines into the history. <b>Note:</b> It only saves to <code>history</code> if <code>shift</code> is negative!
 	 */
-	void scroll(int y, int n, int shift, ITerminalTextHistory history);
+	void scroll(int startRow, int size, int shift, ITerminalTextHistory history);
 
 }

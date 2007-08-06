@@ -187,33 +187,33 @@ public class TerminalTextData implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#scroll(int, int, int)
 	 */
-	synchronized public void scroll(int y, int n, int shift) {
+	synchronized public void scroll(int startRow, int size, int shift) {
 		if(shift<0) {
 			// move the region up
 			// shift is negative!!
-			for (int i = y; i < y+n+shift; i++) {
+			for (int i = startRow; i < startRow+size+shift; i++) {
 				fChars[i]=fChars[i-shift];
 				fStyle[i]=fStyle[i-shift];
 			}
 			// then clean the opened lines
-			cleanLines(Math.max(0, y+n+shift),Math.min(-shift, getHeight()-y));
+			cleanLines(Math.max(0, startRow+size+shift),Math.min(-shift, getHeight()-startRow));
 		} else {
-			for (int i = y+n-1; i >=y && i-shift>=0; i--) {
+			for (int i = startRow+size-1; i >=startRow && i-shift>=0; i--) {
 				fChars[i]=fChars[i-shift];
 				fStyle[i]=fStyle[i-shift];
 			}
-			cleanLines(y, Math.min(shift, getHeight()-y));
+			cleanLines(startRow, Math.min(shift, getHeight()-startRow));
 		}
-		sendScrolledToSnapshots(y, n, shift);
+		sendScrolledToSnapshots(startRow, size, shift);
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#scroll(int, int, int, org.eclipse.tm.test.terminal.text.ITerminalTextHistory)
 	 */
-	synchronized public void scroll(int y, int n, int shift, ITerminalTextHistory history) {
+	synchronized public void scroll(int startRow, int size, int shift, ITerminalTextHistory history) {
 		if(shift<0) {
-			saveLines(y, -shift, history);
+			saveLines(startRow, -shift, history);
 		}
-		scroll(y,n,shift);
+		scroll(startRow,size,shift);
 	}
 	/**
 	 * Save lines in the history
@@ -298,13 +298,13 @@ public class TerminalTextData implements ITerminalTextData {
 	
 	/**
 	 * Notify snapshot that a region was scrolled
-	 * @param y
-	 * @param n
+	 * @param startRow
+	 * @param size
 	 * @param shift
 	 */
-	protected void sendScrolledToSnapshots(int y,int n, int shift) {
+	protected void sendScrolledToSnapshots(int startRow,int size, int shift) {
 		for (int i = 0; i < fSnapshots.length; i++) {
-			fSnapshots[i].scroll(y, n, shift);
+			fSnapshots[i].scroll(startRow, size, shift);
 		}
 	}
 	/**

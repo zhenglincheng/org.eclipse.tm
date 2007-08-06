@@ -74,21 +74,26 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	/**
 	 * This listener gets called when the current snapshot
 	 * is out of date. Calling {@link ITerminalTextDataSnapshot#updateSnapshot(boolean)}
-	 * will have an effect. Once the {@link #changed()} method is called,
+	 * will have an effect. Once the {@link #snapshotOutOfDate(ITerminalTextDataSnapshot)} method is called,
 	 * it will not be called until {@link ITerminalTextDataSnapshot#updateSnapshot(boolean)}
 	 * is called and a new snapshot needs to be updated again.
 	 * <p>
 	 * A typical terminal view would not update the snapshot immediately
-	 * after the {@link #changed()} has been called. It would introduce a 
+	 * after the {@link #snapshotOutOfDate(ITerminalTextDataSnapshot)} has been called. It would introduce a 
 	 * delay to update the UI (and the snapshot} 10 or 20 times per second.
 	 * 
 	 * <p>Make sure you don't spend too much time in this method.
 	 */
-	interface SnapshotNeedUpdateListener {
-		void changed();
+	interface SnapshotOutOfDateListener {
+		/**
+		 * Gets called when the snapshot is out of date. To get the snapshot up to date,
+		 * call {@link ITerminalTextDataSnapshot#updateSnapshot(boolean)}.
+		 * @param snapshot The snapshot that is out of date
+		 */
+		void snapshotOutOfDate(ITerminalTextDataSnapshot snapshot);
 	}
-	void addListener(SnapshotNeedUpdateListener listener);
-	void removeListener(SnapshotNeedUpdateListener listener);
+	void addListener(SnapshotOutOfDateListener listener);
+	void removeListener(SnapshotOutOfDateListener listener);
 	
 	/**
 	 * Ends the listening to the {@link ITerminalTextData}. After this
@@ -110,7 +115,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * @param detectScrolling if <code>true</code> the snapshot tries to identify scroll
 	 * changes since the last snapshot. In this case the information about scrolling
 	 * can be retrieved using the following methods:
-	 * {@link #getScrollChangeY()}, {@link #getScrollChangeN()} and {@link #getScrollChangeShift()}
+	 * {@link #getScrollWindowStartRow()}, {@link #getScrollWindowSize()} and {@link #getScrollWindowShift()}
 	 * <br><b>Note:</b> The method {@link #hasLineChanged(int)} returns changes <b>after</b> the
 	 * scrolling has been applied.
 	 */
@@ -157,21 +162,28 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	boolean hasLineChanged(int y);
 	
 	/**
+	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method
+	 * returns the top of the scroll region.
 	 * @return The first line scrolled in this snapshot compared
-	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}
+	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}.
 	 */
-	int getScrollChangeY();
+	int getScrollWindowStartRow();
 
 	/**
+	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method
+	 * returns the size of the scroll region.
 	 * @return The number of lines scrolled  in this snapshot compared
 	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}
+	 * If nothing has changed, 0 is returned.
 	 */
-	int getScrollChangeN();
+	int getScrollWindowSize();
 
 	/**
+	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method
+	 * returns number of lines moved by the scroll region.
 	 * @return The the scroll shift of this snapshot compared
 	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}
 	 */
-	int getScrollChangeShift();
+	int getScrollWindowShift();
 
 }
