@@ -136,7 +136,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 					if(fScrollY==y && fScrollN==n) {
 						// we are scrolling the same region again?
 						fScrollShift+=shift;
-						scrollChangesLines(y,n,shift);
+						scrollChangesLinesWithNegativeShift(y,n,shift);
 					} else {
 						// mark all lines in the old scroll region as changed
 						doNotTrackScrollingAnymore();
@@ -148,7 +148,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 					fScrollY=y;
 					fScrollN=n;
 					fScrollShift=shift;
-					scrollChangesLines(y,n,shift);
+					scrollChangesLinesWithNegativeShift(y,n,shift);
 				}
 			}
 		}
@@ -169,14 +169,18 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		}
 		/**
 		 * Scrolls the changed lines data
+		 *
 		 * @param y
 		 * @param n
-		 * @param shift
+		 * @param shift must be negative!
 		 */
-		private void scrollChangesLines(int y, int n, int shift) {
+		private void scrollChangesLinesWithNegativeShift(int y, int n, int shift) {
 			// assert shift <0;
 			// scroll the region
-			for (int i = y; i < y+n+shift; i++) {
+			
+			// don't run out of bounds!
+			int m=Math.min(y+n+shift, fChangedLines.length+shift);
+			for (int i = y; i < m; i++) {
 				fChangedLines[i]=fChangedLines[i-shift];
 				// move the first changed line up.
 				// We don't have to move the maximum down,

@@ -428,7 +428,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 	 * @param expected a string of 0 and 1 (1 means changed)
 	 */
 	void assertChangedLines(ITerminalTextDataSnapshot snapshot, String expected) {
-		assertEquals(snapshot.getHeight(), expected.length());
+		assertEquals(expected.length(),snapshot.getHeight());
 		StringBuffer buffer=new StringBuffer();
 		for (int y = 0; y < expected.length(); y++) {
 			if(snapshot.hasLineChanged(y))
@@ -790,41 +790,28 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getScrollChangeN());
 		assertEquals(0, snapshot.getScrollChangeShift());
 	}
-	public void testScrollNoop() {
-		scrollTest(0,0,0, "012345","012345");
-		scrollTest(0,1,0, "012345","012345");
-		scrollTest(0,6,0, "012345","012345");
-	}
-	public void testScrollNegative() {
-		scrollTest(0,2,-1,"012345","1 2345");
-		scrollTest(0,1,-1,"012345"," 12345");
-		scrollTest(0,6,-1,"012345","12345 ");
-		scrollTest(0,6,-1,"012345","12345 ");
-		scrollTest(0,6,-6,"012345","      ");
-		scrollTest(0,6,-7,"012345","      ");
-		scrollTest(0,6,-8,"012345","      ");
-		scrollTest(0,6,-2,"012345","2345  ");
-		scrollTest(1,1,-1,"012345","0 2345");
-		scrollTest(1,2,-1,"012345","02 345");
-		scrollTest(5,1,-1,"012345","01234 ");
-		scrollTest(5,1,-1,"012345","01234 ");
-	}
-	public void testScrollPositive() {
-		scrollTest(0,2,1, "012345",     " 02345");
-		scrollTest(0,2,2, "012345",     "  2345");
-		scrollTest(2,4,2, "012345",     "01  23");
-		scrollTest(2,4,2, "0123456",    "01  236");
-		scrollTest(0,7,6, "0123456",    "      0");
-		scrollTest(0,7,8, "0123456",    "       ");
-		scrollTest(0,7,9, "0123456",    "       ");
-		scrollTest(2,4,2, "0123456",    "01  236");
-		scrollTest(2,5,3, "0123456789", "01   23789");
-		scrollTest(2,7,3, "0123456789", "01   23459");
-		scrollTest(2,8,3, "0123456789", "01   23456");
-		scrollTest(2,8,5, "0123456789", "01     234");
-		scrollTest(2,8,9, "0123456789", "01        ");
-		scrollTest(0,10,9,"0123456789", "         0");
-		scrollTest(0,6,6, "012345",     "      ");
+	public void testScrollAfterResize() {
+		TerminalTextData term=new TerminalTextData();
+		String s="000000\n" +
+				"111111\n" +
+				"222222\n" +
+				"333333\n" +
+				"444444\n" +
+				"555555\n" +
+				"666666\n" +
+				"777777\n" +
+				"888888\n" +
+				"999999";
+		TerminalTextDataSnapshot snapshot;
+		
+		snapshot=snapshot(s,term);
+		term.setDimensions(6, 14);
+		term.scroll(0,14,-1);
+		snapshot.updateSnapshot(true);
+		assertChangedLines(snapshot, "11111111111111");
+		assertEquals(0, snapshot.getScrollChangeY());
+		assertEquals(0, snapshot.getScrollChangeN());
+		assertEquals(0, snapshot.getScrollChangeShift());
 	}
 	/**
 	 * Makes a simple shift test
