@@ -49,6 +49,9 @@ public class Style {
 		}
 		return cached;
 	}
+	public static Style getStyle(StyleColor forground, StyleColor background) {
+		return getStyle(forground, background,false,false,false,false);
+	}
 	public Style setForground(StyleColor forground) {
 		return getStyle(forground,fBackground,fBold,fBlink,fUnderline,fReverse);
 	}
