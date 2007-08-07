@@ -399,6 +399,55 @@ public class TerminalTextDataTest extends TestCase {
 		assertEquals(4, term.getWidth());
 		assertEquals(2, term.getHeight());
 	}
+	public void testSetCopyIntoWithOffset() {
+		TerminalTextData term=new TerminalTextData();
+		String s=
+			"000\n" +
+			"111\n" +
+			"222\n" +
+			"333\n" +
+			"444\n" +
+			"555\n" +
+			"666\n" +
+			"777\n" +
+			"888";
+		TerminalTextTestHelper.fill(term,s);
+		TerminalTextData termCopy=new TerminalTextData();
+		term.copyInto(termCopy,2,3);
+		assertEquals("222\n" +
+				"333\n" +
+				"444", termCopy.textToString());
+		assertEquals(s, term.textToString());
+		
+		term.copyInto(termCopy,0,4);
+		assertEquals("000\n" +
+				"111\n" +
+				"222\n" +
+				"333", termCopy.textToString());
+		assertEquals(s, term.textToString());
+		// does copy adjust dimensions
+		termCopy.setDimensions(1, 1);
+		term.copyInto(termCopy,2,3);
+		assertEquals("222\n" +
+				"333\n" +
+				"444", termCopy.textToString());
+		
+		// does copy adjust dimensions
+		termCopy.setDimensions(100, 100);
+		term.copyInto(termCopy,2,3);
+		assertEquals("222\n" +
+				"333\n" +
+				"444", termCopy.textToString());
+
+		// does copy adjust dimensions
+		termCopy.setDimensions(100, 100);
+		term.copyInto(termCopy,0,9);
+		assertEquals(s, termCopy.textToString());
+
+		// is copy independent
+		term.setChar(1, 1, 'X', null);
+		assertEquals(s, termCopy.textToString());
+	}
 	public void testSetCopyIntoSelective() {
 		TerminalTextData term=new TerminalTextData();
 		String s=
@@ -432,6 +481,52 @@ public class TerminalTextDataTest extends TestCase {
 	
 		TerminalTextTestHelper.fill(termCopy, sCopy);
 		term.copyInto(termCopy,new boolean []{false,false,false,false,false});
+		assertEquals(s, term.textToString());
+		assertEquals(sCopy, termCopy.textToString());
+	}
+	public void testSetCopyIntoSelectiveWithOffset() {
+		TerminalTextData term=new TerminalTextData();
+		String s=
+			"111\n" +
+			"222\n" +
+			"333\n" +
+			"444\n" +
+			"555";
+		TerminalTextTestHelper.fill(term, s);
+		TerminalTextData termCopy=new TerminalTextData();
+		String sCopy=
+			"aaa\n" +
+			"bbb\n" +
+			"ccc\n" +
+			"ddd\n" +
+			"eee";
+		TerminalTextTestHelper.fill(termCopy, sCopy);
+		term.copyInto(termCopy,1,new boolean []{true,false,false,true});
+		assertEquals(s, term.textToString());
+		assertEquals(			
+				"222\n" +
+				"bbb\n" +
+				"ccc\n" +
+				"555\n" +
+				"eee", termCopy.textToString());
+
+		TerminalTextTestHelper.fill(termCopy, sCopy);
+		term.copyInto(termCopy,2,new boolean []{true,true});
+		assertEquals(s, term.textToString());
+		assertEquals(			
+				"333\n" +
+				"444\n" +
+				"ccc\n" +
+				"ddd\n" +
+				"eee", termCopy.textToString());
+
+		TerminalTextTestHelper.fill(termCopy, sCopy);
+		term.copyInto(termCopy,0,new boolean []{true,true,true,true,true});
+		assertEquals(s, term.textToString());
+		assertEquals(s, termCopy.textToString());
+	
+		TerminalTextTestHelper.fill(termCopy, sCopy);
+		term.copyInto(termCopy,0,new boolean []{false,false,false,false,false});
 		assertEquals(s, term.textToString());
 		assertEquals(sCopy, termCopy.textToString());
 	}

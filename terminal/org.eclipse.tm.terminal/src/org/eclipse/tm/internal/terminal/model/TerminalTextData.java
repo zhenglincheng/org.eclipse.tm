@@ -263,6 +263,22 @@ public class TerminalTextData implements ITerminalTextData {
 		copy.sendLinesChangedToSnapshot(0,getHeight());
 	}
 	/**
+	 * Makes a copy of the content of <code>this</code> into <code>copy</code>.
+	 * @param copy will have the same content and dimensions as <code>this</code> 
+	 */
+	synchronized void copyInto(TerminalTextData copy, int offset, int len) {
+		if(copy.fChars.length!=len) {
+			copy.fChars=new char[len][];
+			copy.fStyle=new Style[len][];
+		}
+		copy.fWidth=fWidth;
+		for (int i = offset; i < offset+len; i++) {
+			copy.fChars[i-offset]=(char[]) fChars[i].clone();
+			copy.fStyle[i-offset]=(Style[]) fStyle[i].clone();
+		}
+		copy.sendLinesChangedToSnapshot(0,len);
+	}
+	/**
 	 * Makes a copy of the content of <code>this</code> into <code>copy</code> filtered
 	 * by <code>linesToCopy</code>.
 	 * @param copy <code>this</code> and <code>copy</code> must have the same dimensions
@@ -273,6 +289,22 @@ public class TerminalTextData implements ITerminalTextData {
 			if(linesToCopy[i]) {
 				copy.fChars[i]=(char[]) fChars[i].clone();
 				copy.fStyle[i]=(Style[]) fStyle[i].clone();
+				copy.sendLineChangedToSnapshots(i);
+			}
+		}
+	}
+	/**
+	 * Makes a copy of the content of <code>this</code> into <code>copy</code> filtered
+	 * by <code>linesToCopy</code>.
+	 * @param copy <code>this</code> and <code>copy</code> must have the same dimensions
+	 * @param offset row in <code>this</code> object to start the copy
+	 * @param linesToCopy <code>offset+linesToCopy.length</code> must be bigger than {@link #getHeight()}
+	 */
+	synchronized void copyInto(TerminalTextData copy,int offset, boolean [] linesToCopy) {
+		for (int i = offset; i < offset+linesToCopy.length; i++) {
+			if(linesToCopy[i-offset]) {
+				copy.fChars[i-offset]=(char[]) fChars[i].clone();
+				copy.fStyle[i-offset]=(Style[]) fStyle[i].clone();
 				copy.sendLineChangedToSnapshots(i);
 			}
 		}
