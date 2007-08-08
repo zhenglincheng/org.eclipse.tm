@@ -78,7 +78,9 @@ public class TerminalTextData implements ITerminalTextData {
 			if (matrix[i] == null) {
 				matrix[i] = Array.newInstance(elementType, width);
 			} else {
-				matrix[i] = resizeArray(matrix[i], width);
+				// only resize if we expand the width!
+				if(width>fWidth)
+					matrix[i] = resizeArray(matrix[i], width);
 			}
 		}
 		// new array is [height][width]

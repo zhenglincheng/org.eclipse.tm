@@ -69,19 +69,24 @@ public class TerminalTextDataTest extends TestCase {
 				 "1234\n" +
 				 "abcd\n" +
 				 "ABCD", term.textToString());
-		
+		// the columns should be restored
 		term.setDimensions(5, 3);
 		assertEquals(
-				 "1234\000\n" +
-				 "abcd\000\n" +
-				 "ABCD\000", term.textToString());
-		term.setChar(4, 0, 'x', null);
-		term.setChar(4, 1, 'y', null);
-		term.setChar(4, 2, 'z', null);
+				 "12345\n" +
+				 "abcde\n" +
+				 "ABCDE", term.textToString());
+		term.setDimensions(6, 3);
 		assertEquals(
-				 "1234x\n" +
-				 "abcdy\n" +
-				 "ABCDz", term.textToString());
+				 "12345\000\n" +
+				 "abcde\000\n" +
+				 "ABCDE\000", term.textToString());
+		term.setChar(5, 0, 'x', null);
+		term.setChar(5, 1, 'y', null);
+		term.setChar(5, 2, 'z', null);
+		assertEquals(
+				 "12345x\n" +
+				 "abcdey\n" +
+				 "ABCDEz", term.textToString());
 		term.setDimensions(4, 2);
 		assertEquals(
 				 "1234\n" +
@@ -540,7 +545,8 @@ public class TerminalTextDataTest extends TestCase {
 
 		TerminalTextData fData=new TerminalTextData();
 		public void addToHistory(char[] chars, Style[] styles) {
-			fData.setDimensions(chars.length, fData.getHeight()+1);
+			int width=Math.max(chars.length,fData.getWidth());
+			fData.setDimensions(width, fData.getHeight()+1);
 			for (int i = 0; i < chars.length; i++) {
 				fData.setChar(i, fData.getHeight()-1, chars[i], styles[i]);
 				// make sure that changing the passed in
@@ -587,6 +593,45 @@ public class TerminalTextDataTest extends TestCase {
 				"666\n" +
 				"777\n" +
 				"888", 
+				term.textToString());
+		
+	}
+	public void testScrollWithHistoryAndResize() {
+		String s=
+			"000\n" +
+			"111\n" +
+			"222\n" +
+			"333\n" +
+			"444\n" +
+			"555\n" +
+			"666\n" +
+			"777\n" +
+			"888";
+		TerminalTextData term=new TerminalTextData();
+		
+		TerminalTextTestHelper.fill(term, s);
+		TestHistory history= new TestHistory();
+		history.getData().setDimensions(0, 0);
+		term.scroll(0, 3, -1, history);
+		// shrink by one column!
+		term.setDimensions(term.getWidth()-1, term.getHeight());
+
+		term.scroll(0, 3, -1, history);
+		assertEquals(
+				"000\n" +
+				"111", 
+				history.getData().textToString());
+		
+		assertEquals(
+				"22\n" +
+				"\0\0\n" +
+				"\0\0\n" +
+				"33\n" +
+				"44\n" +
+				"55\n" +
+				"66\n" +
+				"77\n" +
+				"88", 
 				term.textToString());
 		
 	}
