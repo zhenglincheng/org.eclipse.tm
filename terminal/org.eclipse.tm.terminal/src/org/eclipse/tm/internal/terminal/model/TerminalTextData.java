@@ -80,20 +80,12 @@ public class TerminalTextData implements ITerminalTextData {
 		fData.setChars(x, y, chars, start, len, style);
 		sendLineChangedToSnapshots(y);
 	}
-	/**
-	 * @return a text representation of the object.
-	 * Rows are separated by '\n'. No style information is returned.
-	 */
-	synchronized public String textToString() {
-		return fData.toString();
-	}
-
 	synchronized public void scroll(int startRow, int size, int shift) {
 		fData.scroll(startRow, size, shift);
 		sendScrolledToSnapshots(startRow, size, shift);
 	}
 	synchronized public String toString() {
-		return textToString();
+		return fData.toString();
 	}
 	/**
 	 * @param y notifies snapshots that line y has changed

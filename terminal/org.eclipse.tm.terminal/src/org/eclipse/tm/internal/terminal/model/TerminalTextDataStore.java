@@ -186,22 +186,6 @@ public class TerminalTextDataStore implements ITerminalTextData {
 			fStyle[y][x+i]=style;		
 		}
 	}
-	/**
-	 * @return a text representation of the object.
-	 * Rows are separated by '\n'. No style information is returned.
-	 */
-	public String textToString() {
-		StringBuffer buff=new StringBuffer();
-		for (int y = 0; y < getHeight(); y++) {
-			if(y>0)
-				buff.append("\n"); //$NON-NLS-1$
-			for (int x = 0; x < fWidth; x++) {
-				buff.append(getChar(x, y));
-			}
-		}
-		return buff.toString();
-	}
-
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#scroll(int, int, int)
 	 */
@@ -235,12 +219,22 @@ public class TerminalTextDataStore implements ITerminalTextData {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#toString()
+	/*
+	 * @return a text representation of the object.
+	 * Rows are separated by '\n'. No style information is returned.
 	 */
 	public String toString() {
-		return textToString();
+		StringBuffer buff=new StringBuffer();
+		for (int y = 0; y < getHeight(); y++) {
+			if(y>0)
+				buff.append("\n"); //$NON-NLS-1$
+			for (int x = 0; x < fWidth; x++) {
+				buff.append(getChar(x, y));
+			}
+		}
+		return buff.toString();
 	}
+
 
 	public ITerminalTextDataSnapshot makeSnapshot() {
 		throw new UnsupportedOperationException();

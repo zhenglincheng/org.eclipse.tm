@@ -226,7 +226,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 * A snapshot copy of of fTerminal
 	 */
 	// snapshot does not need internal synchronisation
-	final TerminalTextDataStore fSnapshot;
+	final ITerminalTextData fSnapshot;
 	// this variable is synchronized on fTerminal!
 	private SnapshotOutOfDateListener[] fListener=new SnapshotOutOfDateListener[0];
 	// this variable is synchronized on fTerminal!
@@ -402,12 +402,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		list.remove(listener);
 		fListener=(SnapshotOutOfDateListener[]) list.toArray(new SnapshotOutOfDateListener[list.size()]);
 	}
-	public String textToString() {
-		return fSnapshot.textToString();
-	}
-
 	public String toString() {
-		return fSnapshot.textToString();
+		return fSnapshot.toString();
 	}
 
 
