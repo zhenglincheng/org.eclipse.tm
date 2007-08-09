@@ -59,13 +59,50 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"444\n" +
 			"555";
 		ITerminalTextData term=makeITerminalTextData();
+		term.setMaxHeight(8);
 		TerminalTextTestHelper.fill(term, s);
+		assertEquals(5, term.getHeight());
+		assertEquals(8, term.getMaxHeight());
 		term.addLine();
+		assertEquals(6, term.getHeight());
+		assertEquals(
+				"111\n" +
+				"222\n" +
+				"333\n" +
+				"444\n" +
+				"555\n" +
+				"\000\000\000", term.toString());
+		term.addLine();
+		assertEquals(7, term.getHeight());
+		assertEquals(
+				"111\n" +
+				"222\n" +
+				"333\n" +
+				"444\n" +
+				"555\n" +
+				"\000\000\000\n" +
+				"\000\000\000", term.toString());
+		term.addLine();
+		assertEquals(8, term.getHeight());
+		assertEquals(
+				"111\n" +
+				"222\n" +
+				"333\n" +
+				"444\n" +
+				"555\n" +
+				"\000\000\000\n" +
+				"\000\000\000\n" +
+				"\000\000\000", term.toString());
+		term.addLine();
+		assertEquals(8, term.getHeight());
 		assertEquals(
 				"222\n" +
 				"333\n" +
 				"444\n" +
 				"555\n" +
+				"\000\000\000\n" +
+				"\000\000\000\n" +
+				"\000\000\000\n" +
 				"\000\000\000", term.toString());
 	}
 	

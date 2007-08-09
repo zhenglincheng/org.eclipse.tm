@@ -248,7 +248,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 
 	public void addLine() {
 		if(fMaxHeight>0 && getHeight()<fMaxHeight) {
-			setDimensions(getWidth(), getHeight());
+			setDimensions(getWidth(), getHeight()+1);
 		} else {
 			scroll(0,getHeight(),-1);
 		}
