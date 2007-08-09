@@ -12,9 +12,9 @@ package org.eclipse.tm.internal.terminal.model;
 
 import org.eclipse.tm.terminal.model.ITerminalTextData;
 
-public class TerminalTextDataTest extends AbstractITerminalTextDataTest {
+public class TerminalTextDataStoreTest extends AbstractITerminalTextDataTest {
 	protected ITerminalTextData makeITerminalTextData() {
-		return new TerminalTextData();
+		return new TerminalTextDataStore();
 	}
 
 }

@@ -10,13 +10,27 @@
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.model;
 
+import org.eclipse.tm.terminal.model.ITerminalTextData;
+import org.eclipse.tm.terminal.model.ITerminalTextDataReadOnly;
 import org.eclipse.tm.terminal.model.Style;
 import org.eclipse.tm.terminal.model.StyleColor;
 
 public class TerminalTextTestHelper {
-	static public String toSimple(TerminalTextData term) {
-		return term.textToString().replaceAll("\000", " ").replaceAll("\n", "");
+	static public String toSimple(ITerminalTextDataReadOnly term) {
+		return term.toString().replaceAll("\000", " ").replaceAll("\n", "");
 		
+	}
+	static public String toMultiLineText(ITerminalTextDataReadOnly term) {
+		StringBuffer buff=new StringBuffer();
+		int width=term.getWidth();
+		for (int y = 0; y < term.getHeight(); y++) {
+			if(y>0)
+				buff.append("\n"); //$NON-NLS-1$
+			for (int x = 0; x < width; x++) {
+				buff.append(term.getChar(x, y));
+			}
+		}
+		return buff.toString();
 	}
 	static public String toSimple(String str) {
 		return str.replaceAll("\000", " ").replaceAll("\n", "");
@@ -26,7 +40,7 @@ public class TerminalTextTestHelper {
 	 * @param term
 	 * @param s each character is one line
 	 */
-	static public void fillSimple(TerminalTextData term, String s) {
+	static public void fillSimple(ITerminalTextData term, String s) {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		term.setDimensions(1, s.length());
 		for (int i = 0; i < s.length(); i++) {
@@ -39,7 +53,7 @@ public class TerminalTextTestHelper {
 	 * @param s lines separated by \n. The terminal will automatically
 	 * resized to fit the text.
 	 */
-	static public void fill(TerminalTextData term, String s) {
+	static public void fill(ITerminalTextData term, String s) {
 		int width=0;
 		int len=0;
 		int height=0;
@@ -58,7 +72,7 @@ public class TerminalTextTestHelper {
 		fill(term,0,0,s);
 	}
 	
-	static public void fill(TerminalTextData term, int x, int y, String s) {
+	static public void fill(ITerminalTextData term, int x, int y, String s) {
 		int xx=x;
 		int yy=y;
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
