@@ -31,6 +31,9 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 */
 	void setDimensions(int width, int height);
 
+	void setMaxHeight(int height);
+	int getMaxHeight();
+
 	/**
 	 * Set a single character and the associated {@link Style}.
 	 * 
@@ -62,7 +65,23 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * @param style the style or null
 	 */
 	void setChars(int x, int y, char[] chars, int start, int len, Style style);
+	
 
+//	/**
+//	 * @param line
+//	 * @return true if this line belongs to the previous line but is simply
+//	 * wrapped. 
+//	 */
+//	boolean isWrappedLine(int line);
+//	
+//	/**
+//	 * Makes this line an extension to the previous line. Wrapped lines get folded back
+//	 * when the width of the terminal changes
+//	 * @param line
+//	 * @param extendsPreviousLine
+//	 */
+//	void setWrappedLine(int line, boolean extendsPreviousLine);
+	
 	/**
 	 * Shifts some lines up or down. The "empty" space is filled with <code>'\000'</code> chars 
 	 * and <code>null</code> {@link Style}
@@ -99,17 +118,8 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * Negative number means scroll down, positive scroll up (see example above).
 	 */
 	void scroll(int startRow, int size, int shift);
-
-	/**
-	 * Similar to {@link #scroll(int, int, int)} but for negative <code>shift</code>, the 
-	 * lines that disappear are saved in <code>history</code>.
-	 * <p><b>Note:</b> This could potentially deadlock, if <code>history</code> is not carefully implemented!
-	 * Make sure the implementation of ITerminalTextHistory does not hold external locks!
-	 * @param startRow the start row of the shift
-	 * @param size the number of lines to shift
-	 * @param shift how much scrolling is done. New scrolled area is filled with '\000'.
-	 * @param history store the shifted lines into the history. <b>Note:</b> It only saves to <code>history</code> if <code>shift</code> is negative!
-	 */
-	void scroll(int startRow, int size, int shift, ITerminalTextHistory history);
-
+	
+	void addLine();
+	void copy(ITerminalTextData source);
+	void copyLines(ITerminalTextData source,int sourceStart, int destStart, boolean[] linesToCopy);
 }

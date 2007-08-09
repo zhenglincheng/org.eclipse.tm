@@ -110,7 +110,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		initPerformance(term);
 		TerminalTextData copy=new TerminalTextData();
-		term.copyInto(copy);
+		copy.copy(term);
 		
 		String s="This is a test string";
 		long n=0;
@@ -122,7 +122,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			}
 			for (int y = 0; y < term.getHeight(); y++) {
 				term.setChars(0, y, chars, 0,1,style);
-				term.copyInto(copy);
+				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
 					System.out.println((n*1000)/(System.currentTimeMillis()-t0)+" copy()/sec");
@@ -137,7 +137,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		initPerformance(term);
 		TerminalTextData copy=new TerminalTextData();
-		term.copyInto(copy);
+		copy.copy(term);
 		
 		String s="This is a test string";
 		long n=0;
@@ -149,7 +149,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			}
 			for (int y = 0; y < term.getHeight(); y++) {
 				term.setChars(0, y, chars, 0,1,style);
-				term.copyInto(copy);
+				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
 					System.out.println((n*1000)/(System.currentTimeMillis()-t0)+" copy()/sec");
@@ -171,7 +171,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		initPerformance(term);
 		TerminalTextData copy=new TerminalTextData();
-		term.copyInto(copy);
+		copy.copy(term);
 		
 		String s="This is a test string";
 		long n=0;
@@ -183,7 +183,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			}
 			for (int y = 0; y < term.getHeight(); y++) {
 				term.setChars(0, y, chars, 0,1,style);
-				term.copyInto(copy);
+				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
 					System.out.println((n*1000)/(System.currentTimeMillis()-t0)+" copy()/sec "+n);
@@ -198,7 +198,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		initPerformance(term);
 		TerminalTextData copy=new TerminalTextData();
-		term.copyInto(copy);
+		copy.copy(term);
 		String s="This is a test string";
 		long n=0;
 		long t0=System.currentTimeMillis();
@@ -211,7 +211,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int y = 0; y < term.getHeight(); y++) {
 				term.setChars(0, y, chars, 0,1,style);
 				linesToCopy[y]=true;
-				term.copyInto(copy, linesToCopy);
+				copy.copyLines(term,0,0, linesToCopy);
 				linesToCopy[y]=false;
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {

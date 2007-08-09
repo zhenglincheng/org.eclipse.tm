@@ -226,14 +226,16 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 * A snapshot copy of of fTerminal
 	 */
 	// snapshot does not need internal synchronisation
-	final TerminalTextData fSnapshot;
+	final TerminalTextDataStore fSnapshot;
 	// this variable is synchronized on fTerminal!
 	private SnapshotOutOfDateListener[] fListener=new SnapshotOutOfDateListener[0];
 	// this variable is synchronized on fTerminal!
 	private boolean fListenersNeedNotify;
+	private int fInterestWindowSize;
+	private int fInterestWindowStartRow;
 
 	TerminalTextDataSnapshot(TerminalTextData terminal) {
-		fSnapshot = new TerminalTextData();
+		fSnapshot = new TerminalTextDataStore();
 		fTerminal = terminal;
 		fCurrentChanges = new Change(fTerminal.getHeight());
 		fFutureChanges = new Change(fTerminal.getHeight());
@@ -265,14 +267,14 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 			// and update the snapshot
 			if(fSnapshot.getHeight()!=fTerminal.getHeight()||fSnapshot.getWidth()!=fTerminal.getWidth()) {
 				// if the dimensions have changed, we need a full copy
-				fTerminal.copyInto(fSnapshot);
+				fSnapshot.copy(fTerminal);
 				// and we mark all lines as changed
 				fCurrentChanges.setAllChanged(fTerminal.getHeight());
 			} else {
 				// first we do the scroll on the copy
 				fSnapshot.scroll(fCurrentChanges.fScrollWindowStartRow, fCurrentChanges.fScrollWindowSize, fCurrentChanges.fScrollWindowShift);
 				// and then create the snapshot of the changed lines
-				fTerminal.copyInto(fSnapshot,fCurrentChanges.fChangedLines);
+				fSnapshot.copyLines(fTerminal,0,0,fCurrentChanges.fChangedLines);
 			}
 			fListenersNeedNotify=true;
 		}
@@ -406,6 +408,32 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 
 	public String toString() {
 		return fSnapshot.textToString();
+	}
+
+
+	public int getInterestWindowSize() {
+		return fInterestWindowSize;
+	}
+
+
+	public int getInterestWindowStartRow() {
+		return fInterestWindowStartRow;
+	}
+
+
+	public void setInterestWindow(int startRow, int size) {
+		fInterestWindowStartRow=startRow;
+		fInterestWindowSize=size;
+	}
+
+
+	public char[] getChars(int line) {
+		return fSnapshot.getChars(line);
+	}
+
+
+	public Style[] getStyles(int line) {
+		return fSnapshot.getStyles(line);
 	}
 }
 

@@ -106,6 +106,14 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	boolean hasChanged();
 
 	/**
+	 * @param startRow -1 means follow the end of the data
+	 * @param size number of lines to follow
+	 */
+	void setInterestWindow(int startRow, int size);
+	int getInterestWindowStartRow();
+	int getInterestWindowSize();
+	
+	/**
 	 * Create a new snapshot of the {@link ITerminalTextData}. It will efficiently
 	 * copy the data of the {@link ITerminalTextData} into aninternal representation.
 	 * The snapshot also keeps track of the changes since the previous snapshot. 

@@ -23,18 +23,24 @@ public interface ITerminalTextDataReadOnly {
 	 */
 	int getHeight();
 
-	LineSegment[] getLineSegments(int x, int y, int len);
+	/**
+	 * @param startCol must be >=0 and < width
+	 * @param line be >=0 and < height
+	 * @param numberOfCols must be > 0
+	 * @return a the line segments of the specified range
+	 */
+	LineSegment[] getLineSegments(int startCol, int line, int numberOfCols);
 
 	/**
-	 * @param x x must be >=0 and < width
-	 * @param y y must be >=0 and < height
+	 * @param x must be >=0 and < width
+	 * @param y must be >=0 and < height
 	 * @return the character at x,y
 	 */
 	char getChar(int x, int y);
 
 	/**
-	 * @param x x must be >=0 and < width
-	 * @param y y must be >=0 and < height
+	 * @param x must be >=0 and < width
+	 * @param y must be >=0 and < height
 	 * @return style at x,y or null
 	 */
 	Style getStyle(int x, int y);
@@ -47,5 +53,8 @@ public interface ITerminalTextDataReadOnly {
 	 * <code>this</code>.
 	 */
 	public ITerminalTextDataSnapshot makeSnapshot();
+	
+	char[] getChars(int line);
+	Style[] getStyles(int line);
 
 }
