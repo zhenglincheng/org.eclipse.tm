@@ -49,7 +49,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"333\n" +
 				"444\n" +
 				"555\n" +
-				"\000\000\000", term.toString());
+				"\000\000\000", toMultiLineText(term));
 	}
 	public void testMaxSize() {
 		String s=
@@ -71,7 +71,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"333\n" +
 				"444\n" +
 				"555\n" +
-				"\000\000\000", term.toString());
+				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(7, term.getHeight());
 		assertEquals(
@@ -81,7 +81,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"444\n" +
 				"555\n" +
 				"\000\000\000\n" +
-				"\000\000\000", term.toString());
+				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(8, term.getHeight());
 		assertEquals(
@@ -92,7 +92,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"555\n" +
 				"\000\000\000\n" +
 				"\000\000\000\n" +
-				"\000\000\000", term.toString());
+				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(8, term.getHeight());
 		assertEquals(
@@ -103,7 +103,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"\000\000\000\n" +
 				"\000\000\000\n" +
 				"\000\000\000\n" +
-				"\000\000\000", term.toString());
+				"\000\000\000", toMultiLineText(term));
 	}
 	
 	public void testGetHeight() {

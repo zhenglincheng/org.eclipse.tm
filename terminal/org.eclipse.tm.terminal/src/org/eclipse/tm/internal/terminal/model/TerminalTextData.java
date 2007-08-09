@@ -44,9 +44,20 @@ public class TerminalTextData implements ITerminalTextData {
 		return fData.getHeight();
 	}
 	synchronized public void setDimensions(int width, int height) {
-		int n=getHeight();
+		int h=getHeight();
+		int w=getWidth();
+		if(w==width && h==height)
+			return;
 		fData.setDimensions(width, height);
-		sendLinesChangedToSnapshot(0, n);
+		// determine what has changed
+		if(w==width) {
+			if(h<height)
+				sendLinesChangedToSnapshot(h, height-h);
+			else
+				sendLinesChangedToSnapshot(height,h-height);
+		} else {
+			sendLinesChangedToSnapshot(0, h);
+		}
 	}
 	synchronized public LineSegment[] getLineSegments(int x, int y, int len) {
 		return fData.getLineSegments(x, y, len);
@@ -137,7 +148,17 @@ public class TerminalTextData implements ITerminalTextData {
 		return snapshot;
 	}
 	synchronized public void addLine() {
+		int h=getHeight();
 		fData.addLine();
+		// was is an append or a scroll?
+		if(getHeight()>h) {
+			//the line was appended 
+			sendLinesChangedToSnapshot(h, 1);
+		} else {
+			// the line was scrolled
+			sendScrolledToSnapshots(0, h, -1);
+		}
+			
 	}
 
 	synchronized public void copy(ITerminalTextData source) {

@@ -222,8 +222,47 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot.updateSnapshot(false);
 		termString=toMultiLineText(term);
 		assertEquals(termString,toMultiLineText(snapshot));
-}
+	}
 
+	public void testMaxSize() {
+		String s=
+			"111\n" +
+			"222\n" +
+			"333\n" +
+			"444\n" +
+			"555";
+		ITerminalTextData term=makeITerminalTextData();
+		term.setMaxHeight(8);
+		TerminalTextTestHelper.fill(term, s);
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		term.addLine();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
+
+		term.addLine();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
+
+		term.addLine();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
+
+		term.addLine();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
+
+		term.addLine();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
+
+	}
+
+	
 	public void testGetChar() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s="12345\n" +
