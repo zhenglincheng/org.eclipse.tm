@@ -23,201 +23,19 @@ import org.eclipse.tm.terminal.model.Style;
  * The public methods of this class have to be called from one thread! 
  *
  * Threading considerations:
- * This class is <b>not</b> threadsafe!
+ * This class is <b>not threadsafe</b>!
  */
 class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
-	/**
-	 * Collects the changes of the {@link ITerminalTextData}
-	 *
-	 */
-	static class Change {
-		/**
-		 * The first line changed
-		 */
-		int fFirstChangedLine;
-		/**
-		 * The last line changed
-		 */
-		int fLastChangedLine;
-		int fScrollWindowStartRow;
-		int fScrollWindowSize;
-		int fScrollWindowShift;
-		/**
-		 * true, if scrolling should not tracked anymore
-		 */
-		boolean fScrollDontTrack;
-		/**
-		 * The lines that need to be copied
-		 * into the snapshot (lines that have
-		 * not changed don't have to be copied)
-		 */
-		boolean[] fChangedLines;
-		
-		public Change(int nLines) {
-			fChangedLines=new boolean[nLines];
-			fFirstChangedLine=nLines;
-			fLastChangedLine=-1;
-		}
-		/**
-		 * @param y might bigger than the number of lines....
-		 */
-		public void markLineChanged(int y) {
-			if(y<fFirstChangedLine)
-				fFirstChangedLine=y;
-			if(y>fLastChangedLine)
-				fLastChangedLine=y;
-			// in case the terminal got resized we expand 
-			// don't remember the changed line because
-			// there is nothing to copy
-			if(y<fChangedLines.length) {
-				fChangedLines[y]=true;
-			}
-		}
-		/**
-		 * Marks all lines in the range as changed
-		 * @param y >=0
-		 * @param n might be out of range
-		 */
-		void markLinesChanged(int y, int n) {
-			if(n>0) {
-				// do not exceed the bounds of fChangedLines
-				// the terminal might have been resized and 
-				// we can only keep changes for the size of the
-				// previous terminal
-				int m=Math.min(n+y-1, fChangedLines.length-1);
-				for (int i = y+1; i < m; i++) {
-					fChangedLines[i]=true;
-				}
-				// this sets fFirstChangedLine as well
-				markLineChanged(y);
-				// this sets fLastChangedLine as well
-				markLineChanged(y+n-1);
-			}
-		}
-		/**
-		 * Marks all lines within the scrolling region
-		 * changed and resets the scrolling information
-		 */
-		void convertScrollingIntoChanges() {
-			markLinesChanged(fScrollWindowStartRow,fScrollWindowSize);
-			fScrollWindowStartRow=0;
-			fScrollWindowSize=0;
-			fScrollWindowShift=0;
-		}
-		/**
-		 * @return true if something has changed
-		 */
-		public boolean hasChanged() {
-			if(fFirstChangedLine!=fChangedLines.length || fLastChangedLine>0 || fScrollWindowShift!=0)
-				return true;
-			return false;
-		}
-		/**
-		 * @param startRow
-		 * @param size
-		 * @param shift
-		 */
-		public void scroll(int startRow, int size, int shift) {
-			// let's track only negative shifts
-			if(fScrollDontTrack) {
-				// we are in a state where we cannot track scrolling
-				// so let's simply mark the scrolled lines as changed
-				markLinesChanged(startRow, size);
-			} else if(shift>=0) {
-				// we cannot handle positive scroll
-				// forget about clever caching of scroll events
-				doNotTrackScrollingAnymore();
-				// mark all lines inside the scroll region as changed
-				markLinesChanged(startRow, size);
-			} else {
-				// we have already scrolled
-				if(fScrollWindowShift<0) {
-					// we have already scrolled
-					if(fScrollWindowStartRow==startRow && fScrollWindowSize==size) {
-						// we are scrolling the same region again?
-						fScrollWindowShift+=shift;
-						scrollChangesLinesWithNegativeShift(startRow,size,shift);
-					} else {
-						// mark all lines in the old scroll region as changed
-						doNotTrackScrollingAnymore();
-						// mark all lines changed, because
-						markLinesChanged(startRow, size);
-					}
-				} else {
-					// first scroll in this change -- we just notify it
-					fScrollWindowStartRow=startRow;
-					fScrollWindowSize=size;
-					fScrollWindowShift=shift;
-					scrollChangesLinesWithNegativeShift(startRow,size,shift);
-				}
-			}
-		}
-		/**
-		 * Some incompatible scrolling occurred. We cannot do the
-		 * scroll optimization anymore...
-		 */
-		private void doNotTrackScrollingAnymore() {
-			if(fScrollWindowSize>0) {
-				// convert the current scrolling into changes
-				markLinesChanged(fScrollWindowStartRow, fScrollWindowSize);
-				fScrollWindowStartRow=0;
-				fScrollWindowSize=0;
-				fScrollWindowShift=0;
-			}
-			// don't be clever on scrolling anymore
-			fScrollDontTrack=true;
-		}
-		/**
-		 * Scrolls the changed lines data
-		 *
-		 * @param y
-		 * @param n
-		 * @param shift must be negative!
-		 */
-		private void scrollChangesLinesWithNegativeShift(int y, int n, int shift) {
-			// assert shift <0;
-			// scroll the region
-			
-			// don't run out of bounds!
-			int m=Math.min(y+n+shift, fChangedLines.length+shift);
-			for (int i = y; i < m; i++) {
-				fChangedLines[i]=fChangedLines[i-shift];
-				// move the first changed line up.
-				// We don't have to move the maximum down,
-				// because with a shift scroll, the max is moved
-				// my the next loop in this method
-				if(i<fFirstChangedLine && fChangedLines[i]) {
-					fFirstChangedLine=i;
-				}
-			}
-			// mark the "opened" lines as changed
-			for (int i = Math.max(0,y+n+shift); i < y+n; i++) {
-				markLineChanged(i);
-			}
-		}
-		/**
-		 * Mark all lines changed
-		 */
-		public void setAllChanged(int height) {
-			fScrollWindowStartRow=0;
-			fScrollWindowSize=0;
-			fScrollWindowShift=0;
-			fFirstChangedLine=0;
-			fLastChangedLine=height-1;
-			// no need to keep an array of changes anymore
-			fChangedLines=new boolean[0];
-		}
-	}
 	/**
 	 * The changes of the current snapshot relative to the
 	 * previous snapshot
 	 */
-	volatile Change fCurrentChanges;
+	volatile ISnapshotChanges fCurrentChanges;
 	/**
 	 * Keeps track of changes that happened since the current
 	 * snapshot has been made.
 	 */
-	Change fFutureChanges;
+	ISnapshotChanges fFutureChanges;
 	/**
 	 * Is used as lock and is the reference to the terminal we take snapshots from.
 	 */
@@ -237,16 +55,14 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	TerminalTextDataSnapshot(TerminalTextData terminal) {
 		fSnapshot = new TerminalTextDataStore();
 		fTerminal = terminal;
-		fCurrentChanges = new Change(fTerminal.getHeight());
-		fFutureChanges = new Change(fTerminal.getHeight());
+		fCurrentChanges = new SnapshotChanges(fTerminal.getHeight());
+		fFutureChanges = new SnapshotChanges(fTerminal.getHeight());
 		fListenersNeedNotify=true;
 
 	}
-
-
+	
 	public void detach() {
 		fTerminal.removeSnapshot(this);
-		
 	}
 
 	public boolean hasChanged() {
@@ -263,7 +79,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		synchronized (fTerminal) {
 			// let's make the future changes current
 			fCurrentChanges=fFutureChanges;
-			fFutureChanges=new Change(fTerminal.getHeight());
+			fFutureChanges=new SnapshotChanges(fTerminal.getHeight());
 			// and update the snapshot
 			if(fSnapshot.getHeight()!=fTerminal.getHeight()||fSnapshot.getWidth()!=fTerminal.getWidth()) {
 				// if the dimensions have changed, we need a full copy
@@ -272,9 +88,9 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 				fCurrentChanges.setAllChanged(fTerminal.getHeight());
 			} else {
 				// first we do the scroll on the copy
-				fSnapshot.scroll(fCurrentChanges.fScrollWindowStartRow, fCurrentChanges.fScrollWindowSize, fCurrentChanges.fScrollWindowShift);
+				fSnapshot.scroll(fCurrentChanges.getScrollWindowStartRow(), fCurrentChanges.getScrollWindowSize(), fCurrentChanges.getScrollWindowShift());
 				// and then create the snapshot of the changed lines
-				fSnapshot.copyLines(fTerminal,0,0,fCurrentChanges.fChangedLines);
+				fCurrentChanges.copyChangedLines(fSnapshot, fTerminal);
 			}
 			fListenersNeedNotify=true;
 		}
@@ -308,42 +124,36 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getFirstChangedLine()
 	 */
 	public int getFirstChangedLine() {
-		return fCurrentChanges.fFirstChangedLine;
+		return fCurrentChanges.getFirstChangedLine();
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getLastChangedLine()
 	 */
 	public int getLastChangedLine() {
-		return fCurrentChanges.fLastChangedLine;
+		return fCurrentChanges.getLastChangedLine();
 	}
 
 	public boolean hasLineChanged(int y) {
-		if(y<fCurrentChanges.fChangedLines.length)
-			return fCurrentChanges.fChangedLines[y];
-		// since the height of the terminal could
-		// have changed but we have tracked only changes
-		// of the previous terminal height, any line outside
-		// the the range of the previous height has changed
-		return true;
+		return fCurrentChanges.hasLineChanged(y);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeY()
 	 */
 	public int getScrollWindowStartRow() {
-		return fCurrentChanges.fScrollWindowStartRow;
+		return fCurrentChanges.getScrollWindowStartRow();
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeN()
 	 */
 	public int getScrollWindowSize() {
-		return fCurrentChanges.fScrollWindowSize;
+		return fCurrentChanges.getScrollWindowSize();
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeShift()
 	 */
 	public int getScrollWindowShift() {
-		return fCurrentChanges.fScrollWindowShift;
+		return fCurrentChanges.getScrollWindowShift();
 	}
 	
 	/**
@@ -378,11 +188,13 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 */
 	private void notifyListers() {
 		// this code has to be called from a block synchronized on fTerminal
-		if(fListenersNeedNotify) {
-			for (int i = 0; i < fListener.length; i++) {
-				fListener[i].snapshotOutOfDate(this);
+		synchronized (fTerminal) {
+			if(fListenersNeedNotify) {
+				for (int i = 0; i < fListener.length; i++) {
+					fListener[i].snapshotOutOfDate(this);
+				}
+				fListenersNeedNotify=false;
 			}
-			fListenersNeedNotify=false;
 		}
 	}
 	public ITerminalTextDataSnapshot makeSnapshot() {
@@ -416,10 +228,10 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		return fInterestWindowStartRow;
 	}
 
-
 	public void setInterestWindow(int startRow, int size) {
 		fInterestWindowStartRow=startRow;
 		fInterestWindowSize=size;
+		notifyListers();
 	}
 
 

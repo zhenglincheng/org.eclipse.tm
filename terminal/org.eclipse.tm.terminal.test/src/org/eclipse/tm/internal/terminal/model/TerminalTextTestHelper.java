@@ -17,7 +17,7 @@ import org.eclipse.tm.terminal.model.StyleColor;
 
 public class TerminalTextTestHelper {
 	static public String toSimple(ITerminalTextDataReadOnly term) {
-		return term.toString().replaceAll("\000", " ").replaceAll("\n", "");
+		return toMultiLineText(term).replaceAll("\000", " ").replaceAll("\n", "");
 		
 	}
 	static public String toMultiLineText(ITerminalTextDataReadOnly term) {

@@ -157,8 +157,11 @@ public class TerminalTextData implements ITerminalTextData {
 		fData.copy(source);
 	}
 
-	synchronized public void copyLines(ITerminalTextData source, int sourceStart, int destStart, boolean[] linesToCopy) {
-		fData.copyLines(source, sourceStart, destStart, linesToCopy);
+	synchronized public void copySelective(ITerminalTextData source, int sourceStart, int destStart, boolean[] linesToCopy) {
+		fData.copySelective(source, sourceStart, destStart, linesToCopy);
+	}
+	public void copyRange(ITerminalTextData source, int sourceStart, int destStart, int length) {
+		fData.copyRange(source, sourceStart, destStart, length);
 	}
 	synchronized public char[] getChars(int line) {
 		return fData.getChars(line);

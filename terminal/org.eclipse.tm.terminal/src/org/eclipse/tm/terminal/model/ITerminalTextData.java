@@ -121,5 +121,6 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	
 	void addLine();
 	void copy(ITerminalTextData source);
-	void copyLines(ITerminalTextData source,int sourceStart, int destStart, boolean[] linesToCopy);
+	void copyRange(ITerminalTextData source, int sourceStart, int destStart,int length);
+	void copySelective(ITerminalTextData source,int sourceStart, int destStart, boolean[] linesToCopy);
 }

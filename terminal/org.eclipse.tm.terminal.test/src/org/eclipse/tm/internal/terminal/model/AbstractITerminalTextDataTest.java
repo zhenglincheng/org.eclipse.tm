@@ -22,6 +22,43 @@ import org.eclipse.tm.terminal.model.StyleColor;
 abstract public class AbstractITerminalTextDataTest extends TestCase {
 	abstract protected ITerminalTextData makeITerminalTextData();
 
+	protected String toSimple(ITerminalTextData term) {
+		return TerminalTextTestHelper.toSimple(term);
+	}
+	protected String toMultiLineText(ITerminalTextDataReadOnly term) {
+		return TerminalTextTestHelper.toMultiLineText(term);
+	}
+	
+	protected void fill(ITerminalTextData term, String s) {
+		TerminalTextTestHelper.fill(term,s);
+	}
+
+	protected void fill(ITerminalTextData term, int i, int j, String s) {
+		TerminalTextTestHelper.fill(term,i,j,s);
+	}
+
+	protected void fillSimple(ITerminalTextData term, String s) {
+		TerminalTextTestHelper.fillSimple(term, s);
+	}
+
+
+	/**
+	 * Used for multi line text
+	 * @param expected
+	 * @param actual
+	 */
+	protected void assertEqualsTerm(String expected,String actual) {
+		assertEquals(expected, actual);
+	}
+	/**
+	 * Used for simple text
+	 * @param expected
+	 * @param actual
+	 */
+	protected void assertEqualsSimple(String expected,String actual) {
+		assertEquals(-1,actual.indexOf('\n'));
+		assertEquals(expected, actual);
+	}
 	public void testGetWidth() {
 		ITerminalTextData term=makeITerminalTextData();
 		assertEquals(0, term.getWidth());
@@ -31,9 +68,6 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		assertEquals(0, term.getWidth());
 	}
 
-	String toMultiLineText(ITerminalTextDataReadOnly term) {
-		return TerminalTextTestHelper.toMultiLineText(term);
-	}
 	public void testAddLine() {
 		String s=
 			"111\n" +
@@ -42,9 +76,9 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"444\n" +
 			"555";
 		ITerminalTextData term=makeITerminalTextData();
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		term.addLine();
-		assertEquals(
+		assertEqualsTerm(
 				"222\n" +
 				"333\n" +
 				"444\n" +
@@ -60,12 +94,12 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"555";
 		ITerminalTextData term=makeITerminalTextData();
 		term.setMaxHeight(8);
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		assertEquals(5, term.getHeight());
 		assertEquals(8, term.getMaxHeight());
 		term.addLine();
 		assertEquals(6, term.getHeight());
-		assertEquals(
+		assertEqualsTerm(
 				"111\n" +
 				"222\n" +
 				"333\n" +
@@ -74,7 +108,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(7, term.getHeight());
-		assertEquals(
+		assertEqualsTerm(
 				"111\n" +
 				"222\n" +
 				"333\n" +
@@ -84,7 +118,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(8, term.getHeight());
-		assertEquals(
+		assertEqualsTerm(
 				"111\n" +
 				"222\n" +
 				"333\n" +
@@ -95,7 +129,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"\000\000\000", toMultiLineText(term));
 		term.addLine();
 		assertEquals(8, term.getHeight());
-		assertEquals(
+		assertEqualsTerm(
 				"222\n" +
 				"333\n" +
 				"444\n" +
@@ -105,7 +139,6 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"\000\000\000\n" +
 				"\000\000\000", toMultiLineText(term));
 	}
-	
 	public void testGetHeight() {
 		ITerminalTextData term=makeITerminalTextData();
 		assertEquals(0, term.getHeight());
@@ -140,33 +173,33 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
-		TerminalTextTestHelper.fill(term,0,0,s);
-		assertEquals(s, toMultiLineText(term));
+		fill(term,0,0,s);
+		assertEqualsTerm(s, toMultiLineText(term));
 		term.setDimensions(4, 3);
-		assertEquals(
+		assertEqualsTerm(
 				 "1234\n" +
 				 "abcd\n" +
 				 "ABCD", toMultiLineText(term));
 		// the columns should be restored
 		term.setDimensions(5, 3);
-		assertEquals(
+		assertEqualsTerm(
 				 "12345\n" +
 				 "abcde\n" +
 				 "ABCDE", toMultiLineText(term));
 		term.setDimensions(6, 3);
-		assertEquals(
+		assertEqualsTerm(
 				 "12345\000\n" +
 				 "abcde\000\n" +
 				 "ABCDE\000", toMultiLineText(term));
 		term.setChar(5, 0, 'x', null);
 		term.setChar(5, 1, 'y', null);
 		term.setChar(5, 2, 'z', null);
-		assertEquals(
+		assertEqualsTerm(
 				 "12345x\n" +
 				 "abcdey\n" +
 				 "ABCDEz", toMultiLineText(term));
 		term.setDimensions(4, 2);
-		assertEquals(
+		assertEqualsTerm(
 				 "1234\n" +
 				 "abcd", toMultiLineText(term));
 	}
@@ -177,8 +210,8 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
-		TerminalTextTestHelper.fill(term,0,0,s);
-		assertEquals(s, toMultiLineText(term));
+		fill(term,0,0,s);
+		assertEqualsTerm(s, toMultiLineText(term));
 		try {
 			term.setDimensions(4, -3);
 			fail();
@@ -267,7 +300,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	}
 	void assertSegment(int col,String text, Style style,LineSegment segment) {
 		assertEquals(col, segment.getColumn());
-		assertEquals(text, segment.getText());
+		assertEqualsTerm(text, segment.getText());
 		assertEquals(style, segment.getStyle());
 		
 	}
@@ -276,7 +309,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		 "abcde\n" +
 		 "ABCDE";
 		ITerminalTextData term=makeITerminalTextData();
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		assertEquals('1', term.getChar(0,0));
 		assertEquals('2', term.getChar(1,0));
 		assertEquals('3', term.getChar(2,0));
@@ -349,7 +382,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		
 	}
 
-	private Style getDefaultStyle() {
+	protected Style getDefaultStyle() {
 		return Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 	}
 
@@ -367,7 +400,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				assertEquals(c, term.getChar(x,y));
 			}
 		}
-		assertEquals(
+		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
 				+ "cde\n"
@@ -391,7 +424,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				assertEquals(c, term.getChar(x,y));
 			}
 		}
-		assertEquals(
+		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
 				+ "cde\n"
@@ -400,7 +433,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "fgh", toMultiLineText(term));
 	
 		term.setChars(1, 3, new char[]{'1','2'}, null);
-		assertEquals(
+		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
 				+ "cde\n"
@@ -409,7 +442,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "fgh", toMultiLineText(term));
 		// check if chars are correctly chopped
 		term.setChars(1, 4, new char[]{'1','2','3','4','5'}, null);
-		assertEquals(
+		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
 				+ "cde\n"
@@ -423,46 +456,46 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		String s= "ZYXWVU\n"
 				+ "abcdef\n"
 				+ "ABCDEF";
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		char[] chars=new char[]{'1','2','3','4','5','6','7','8'};
 		term.setChars(0, 1, chars, 0, 6,null);
-		assertEquals(
+		assertEqualsTerm(
 				  "ZYXWVU\n"
 				+ "123456\n"
 				+ "ABCDEF", toMultiLineText(term));
 
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		term.setChars(0, 1, chars, 0, 5, null);
-		assertEquals("ZYXWVU\n"
+		assertEqualsTerm("ZYXWVU\n"
 				+ "12345f\n"
 				+ "ABCDEF", toMultiLineText(term));
 
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		term.setChars(0, 1, chars, 1, 5, null);
-		assertEquals("ZYXWVU\n"
+		assertEqualsTerm("ZYXWVU\n"
 				+ "23456f\n"
 				+ "ABCDEF", toMultiLineText(term));
 
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		term.setChars(1, 1, chars, 1, 4, null);
-		assertEquals("ZYXWVU\n"
+		assertEqualsTerm("ZYXWVU\n"
 				+ "a2345f\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 
 		
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		term.setChars(2, 1, chars, 3, 4, null);
-		assertEquals("ZYXWVU\n"
+		assertEqualsTerm("ZYXWVU\n"
 				+ "ab4567\n"
 				+ "ABCDEF", toMultiLineText(term));
 
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		try {
 			term.setChars(0, 1, chars, 7, 10, null);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		try {
 			term.setChars(-1, 1, chars, 0, 2, null);
 			fail();
@@ -485,24 +518,86 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
-		TerminalTextTestHelper.fill(term,0,0,s);
+		fill(term,0,0,s);
 		ITerminalTextData termCopy=makeITerminalTextData();
 		termCopy.copy(term);
-		assertEquals(s, toMultiLineText(termCopy));
-		assertEquals(s, toMultiLineText(term));
+		assertEqualsTerm(s, toMultiLineText(termCopy));
+		assertEqualsTerm(s, toMultiLineText(term));
 		
 		termCopy.setChar(1, 1, 'X', null);
-		assertEquals(s, toMultiLineText(term));
+		assertEqualsTerm(s, toMultiLineText(term));
 		term.setDimensions(4, 2);
 		assertEquals(5, termCopy.getWidth());
 		assertEquals(3, termCopy.getHeight());
 		
-		assertEquals("12345\n" +
+		assertEqualsTerm("12345\n" +
 				 "aXcde\n" +
 				 "ABCDE", toMultiLineText(termCopy));
 
 		assertEquals(4, term.getWidth());
 		assertEquals(2, term.getHeight());
+	}
+	public void testSetCopyLines() {
+		ITerminalTextData term=makeITerminalTextData();
+		String s="012345";
+		fillSimple(term, s);
+		ITerminalTextData termCopy=makeITerminalTextData();
+		String sCopy="abcde";
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,0,0,0);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple(sCopy, toSimple(termCopy));
+
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,0,0,5);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("01234", toSimple(termCopy));
+	
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,0,0,2);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("01cde", toSimple(termCopy));
+
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,0,1,2);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("a01de", toSimple(termCopy));
+
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,1,1,2);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("a12de", toSimple(termCopy));
+
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,1,1,4);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("a1234", toSimple(termCopy));
+
+		fillSimple(termCopy, sCopy);
+		termCopy.copyRange(term,2,1,4);
+		assertEqualsSimple(s, toSimple(term));
+		assertEqualsSimple("a2345", toSimple(termCopy));
+
+		try {
+			fillSimple(termCopy, sCopy);
+			termCopy.copyRange(term,1,1,5);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
+		try {
+			fillSimple(termCopy, sCopy);
+			termCopy.copyRange(term,0,0,6);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
+		try {
+			fillSimple(termCopy, sCopy);
+			termCopy.copyRange(term,7,0,1);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
+		try {
+			fillSimple(termCopy, sCopy);
+			termCopy.copyRange(term,0,7,1);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
 	}
 	public void testSetCopyIntoSelective() {
 		ITerminalTextData term=makeITerminalTextData();
@@ -512,7 +607,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"333\n" +
 			"444\n" +
 			"555";
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		ITerminalTextData termCopy=makeITerminalTextData();
 		String sCopy=
 			"aaa\n" +
@@ -520,25 +615,25 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"ccc\n" +
 			"ddd\n" +
 			"eee";
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,0,0,new boolean []{true,true,false,false,true});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(			
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,0,0,new boolean []{true,true,false,false,true});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(			
 				"111\n" +
 				"222\n" +
 				"ccc\n" +
 				"ddd\n" +
 				"555", toMultiLineText(termCopy));
 
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,0,0,new boolean []{true,true,true,true,true});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(s, toMultiLineText(termCopy));
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,0,0,new boolean []{true,true,true,true,true});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(s, toMultiLineText(termCopy));
 	
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,0,0,new boolean []{false,false,false,false,false});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(sCopy, toMultiLineText(termCopy));
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,0,0,new boolean []{false,false,false,false,false});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(sCopy, toMultiLineText(termCopy));
 	}
 	public void testSetCopyIntoSelectiveWithOffset() {
 		ITerminalTextData term=makeITerminalTextData();
@@ -548,7 +643,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"333\n" +
 			"444\n" +
 			"555";
-		TerminalTextTestHelper.fill(term, s);
+		fill(term, s);
 		ITerminalTextData termCopy=makeITerminalTextData();
 		String sCopy=
 			"aaa\n" +
@@ -556,35 +651,35 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"ccc\n" +
 			"ddd\n" +
 			"eee";
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,1,0,new boolean []{true,false,false,true});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(			
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,1,0,new boolean []{true,false,false,true});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(			
 				"222\n" +
 				"bbb\n" +
 				"ccc\n" +
 				"555\n" +
 				"eee", toMultiLineText(termCopy));
 
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,2,0,new boolean []{true,true});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(			
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,2,0,new boolean []{true,true});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(			
 				"333\n" +
 				"444\n" +
 				"ccc\n" +
 				"ddd\n" +
 				"eee", toMultiLineText(termCopy));
 
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,0,0,new boolean []{true,true,true,true,true});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(s, toMultiLineText(termCopy));
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,0,0,new boolean []{true,true,true,true,true});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(s, toMultiLineText(termCopy));
 	
-		TerminalTextTestHelper.fill(termCopy, sCopy);
-		termCopy.copyLines(term,0,0,new boolean []{false,false,false,false,false});
-		assertEquals(s, toMultiLineText(term));
-		assertEquals(sCopy, toMultiLineText(termCopy));
+		fill(termCopy, sCopy);
+		termCopy.copySelective(term,0,0,new boolean []{false,false,false,false,false});
+		assertEqualsTerm(s, toMultiLineText(term));
+		assertEqualsTerm(sCopy, toMultiLineText(termCopy));
 	}
 	public void testScrollNoop() {
 		scrollTest(0,0,0, "012345","012345");
@@ -595,15 +690,28 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		scrollTest(0,2,-1,"012345","1 2345");
 		scrollTest(0,1,-1,"012345"," 12345");
 		scrollTest(0,6,-1,"012345","12345 ");
-		scrollTest(0,6,-1,"012345","12345 ");
 		scrollTest(0,6,-6,"012345","      ");
 		scrollTest(0,6,-7,"012345","      ");
 		scrollTest(0,6,-8,"012345","      ");
 		scrollTest(0,6,-2,"012345","2345  ");
 		scrollTest(1,1,-1,"012345","0 2345");
+		scrollTest(1,1,-1,"012345","0 2345");
 		scrollTest(1,2,-1,"012345","02 345");
 		scrollTest(5,1,-1,"012345","01234 ");
 		scrollTest(5,1,-1,"012345","01234 ");
+	}
+	public void testScrollNegative2() {
+		scrollTest(0,2,-1,"  23  ","  23  ");
+		scrollTest(0,1,-1,"  23  ","  23  ");
+		scrollTest(0,6,-1,"  23  "," 23   ");
+		scrollTest(0,6,-6,"  23  ","      ");
+		scrollTest(0,6,-7,"  23  ","      ");
+		scrollTest(0,6,-8,"  23  ","      ");
+		scrollTest(0,6,-2,"  23  ","23    ");
+		scrollTest(1,1,-1,"  23  ","  23  ");
+		scrollTest(1,2,-1,"  23  "," 2 3  ");
+		scrollTest(5,1,-1,"  23  ","  23  ");
+		scrollTest(5,1,-1,"  23  ","  23  ");
 	}
 	public void testScrollPositive() {
 		scrollTest(0,2,1, "012345",     " 02345");
@@ -644,9 +752,9 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	 */
 	void scrollTest(int y,int n, int shift, String start,String result) {
 		ITerminalTextData term=makeITerminalTextData();
-		TerminalTextTestHelper.fillSimple(term,start);
+		fillSimple(term,start);
 		term.scroll(y, n, shift);
-		assertEquals(result, TerminalTextTestHelper.toSimple(term));
+		assertEqualsSimple(result, toSimple(term));
 		
 	}
 }
