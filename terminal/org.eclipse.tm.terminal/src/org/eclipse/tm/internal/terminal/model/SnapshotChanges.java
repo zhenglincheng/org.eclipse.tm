@@ -39,10 +39,48 @@ public class SnapshotChanges implements ISnapshotChanges {
 		fFirstChangedLine=nLines;
 		fLastChangedLine=-1;
 	}
+	boolean isInInterestWindow(int line, int size) {
+		if(fInterestWindowSize<=0)
+			return true;
+		if(line+size<=fInterestWindowStartLine || line>=fInterestWindowStartLine+fInterestWindowSize)
+			return false;
+		return true;
+	}
+	boolean isInInterestWindow(int line) {
+		if(fInterestWindowSize<=0)
+			return true;
+		if(line<fInterestWindowStartLine || line>=fInterestWindowStartLine+fInterestWindowSize)
+			return false;
+		return true;
+	}
+	/**
+	 * @param line
+	 * @return the line within the window
+	 */
+	int fitLineToWindow(int line) {
+		if(fInterestWindowSize<=0)
+			return line;
+		if(line<fInterestWindowStartLine)
+			return fInterestWindowStartLine;
+		return line;
+	}
+	int fitSizeToWindow(int line, int size) {
+		if(fInterestWindowSize<=0)
+			return size;
+		if(line<fInterestWindowStartLine) {
+			size-=fInterestWindowStartLine-line;
+		}
+		if(line+size>fInterestWindowStartLine+fInterestWindowSize)
+			size=fInterestWindowStartLine+fInterestWindowSize-line;
+		return size;
+	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#markLineChanged(int)
 	 */
 	public void markLineChanged(int line) {
+		if(!isInInterestWindow(line))
+			return;
+		line=fitLineToWindow(line);
 		if(line<fFirstChangedLine)
 			fFirstChangedLine=line;
 		if(line>fLastChangedLine)
@@ -58,20 +96,22 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#markLinesChanged(int, int)
 	 */
 	public void markLinesChanged(int line, int n) {
-		if(n>0) {
-			// do not exceed the bounds of fChangedLines
-			// the terminal might have been resized and 
-			// we can only keep changes for the size of the
-			// previous terminal
-			int m=Math.min(n+line-1, fChangedLines.length-1);
-			for (int i = line+1; i < m; i++) {
-				fChangedLines[i]=true;
-			}
-			// this sets fFirstChangedLine as well
-			markLineChanged(line);
-			// this sets fLastChangedLine as well
-			markLineChanged(line+n-1);
+		if(n<=0 || !isInInterestWindow(line,n))
+			return;
+		// do not exceed the bounds of fChangedLines
+		// the terminal might have been resized and 
+		// we can only keep changes for the size of the
+		// previous terminal
+		line=fitLineToWindow(line);
+		n=fitSizeToWindow(line, n);
+		int m=Math.min(line+n-1, fChangedLines.length-1);
+		for (int i = line+1; i < m; i++) {
+			fChangedLines[i]=true;
 		}
+		// this sets fFirstChangedLine as well
+		markLineChanged(line);
+		// this sets fLastChangedLine as well
+		markLineChanged(line+n-1);
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#convertScrollingIntoChanges()
@@ -178,8 +218,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 		fScrollWindowStartLine=0;
 		fScrollWindowSize=0;
 		fScrollWindowShift=0;
-		fFirstChangedLine=0;
-		fLastChangedLine=height-1;
+		fFirstChangedLine=fitLineToWindow(0);
+		fLastChangedLine=fitSizeToWindow(0, height)-1;
 		// no need to keep an array of changes anymore
 		fChangedLines=new boolean[0];
 	}
@@ -217,6 +257,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasLineChanged(int)
 	 */
 	public boolean hasLineChanged(int line) {
+		if(!isInInterestWindow(line))
+			return false;
 		if(line<fChangedLines.length)
 			return fChangedLines[line];
 		// since the height of the terminal could

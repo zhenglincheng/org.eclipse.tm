@@ -440,15 +440,11 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "d12\n"
 				+ "efg\n"
 				+ "fgh", toMultiLineText(term));
-		// check if chars are correctly chopped
-		term.setChars(4, 1, new char[]{'1','2','3','4','5'}, null);
-		assertEqualsTerm(
-				  "abc\n"
-				+ "bcd\n"
-				+ "cde\n"
-				+ "d12\n"
-				+ "e12\n"
-				+ "fgh", toMultiLineText(term));
+		try {
+			// check if we cannot exceed the range
+			term.setChars(4, 1, new char[]{'1','2','3','4','5'}, null);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
 	
 	}
 	public void testSetCharsLen() {
@@ -504,8 +500,10 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			term.setChars(-1, 1, chars, 0, 2, null);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
-		// this one will not fail,because we make sure not to write off bound...
-		term.setChars(1, 10, chars, 0, 2, null);
+		try {
+			term.setChars(1, 10, chars, 0, 2, null);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
 		try {
 			term.setChars(10, 1, chars, 0, 2, null);
 			fail();

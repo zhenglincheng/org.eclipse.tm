@@ -179,9 +179,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setChars(int, int, char[], int, int, org.eclipse.tm.internal.terminal.text.Style)
 	 */
 	public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
-		int n=Math.min(len, fWidth-column);
-		ensureLineLength(line,column+n);
-		for (int i = 0; i < n; i++) {
+		ensureLineLength(line,column+len);
+		for (int i = 0; i < len; i++) {
 			fChars[line][column+i]=chars[i+start];
 			fStyle[line][column+i]=style;		
 		}

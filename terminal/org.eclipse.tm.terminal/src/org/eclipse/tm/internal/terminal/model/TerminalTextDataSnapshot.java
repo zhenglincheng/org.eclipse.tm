@@ -80,6 +80,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 			// let's make the future changes current
 			fCurrentChanges=fFutureChanges;
 			fFutureChanges=new SnapshotChanges(fTerminal.getHeight());
+			fFutureChanges.setInterestWindow(fInterestWindowStartLine, fInterestWindowSize);
 			// and update the snapshot
 			if(fSnapshot.getHeight()!=fTerminal.getHeight()||fSnapshot.getWidth()!=fTerminal.getWidth()) {
 				if(fInterestWindowSize==-1)
@@ -234,7 +235,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 		fSnapshot.setWindow(startLine, size);
-		fCurrentChanges.setInterestWindow(startLine, size);
+		fFutureChanges.setInterestWindow(startLine, size);
 		notifyListers();
 	}
 
