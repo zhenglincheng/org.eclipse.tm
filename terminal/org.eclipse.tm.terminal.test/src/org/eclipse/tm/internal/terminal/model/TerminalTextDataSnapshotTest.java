@@ -38,6 +38,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 		
 		// new snapshots are fully changed
@@ -60,6 +62,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		assertEquals(toMultiLineText(term),toMultiLineText(snapshot));
 		snapshot.detach();
 		// after detach changes to the term has no effect
@@ -78,6 +82,9 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		assertTrue(snapshot.hasChanged());
+		snapshot.updateSnapshot(false);
+
 		assertFalse(snapshot.hasChanged());
 		
 		// make a change and expect it to be changed
@@ -140,6 +147,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 	ITerminalTextDataSnapshot snapshot(String text, ITerminalTextData term) {
 		TerminalTextTestHelper.fill(term,text);
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		return snapshot;
 		
 	}
@@ -153,6 +162,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		String termString=toMultiLineText(term);
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		assertEquals(termString,toMultiLineText(snapshot));
 		
 		// make changes and assert that the snapshot has not changed
@@ -235,6 +246,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.setMaxHeight(8);
 		TerminalTextTestHelper.fill(term, s);
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		term.addLine();
 		assertTrue(snapshot.hasChanged());
 		snapshot.updateSnapshot(false);
@@ -275,6 +288,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(termUnchanged,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		for (int line = 0; line < snapshot.getHeight(); line++) {
 			for (int column = 0; column < snapshot.getWidth(); column++) {
 				assertEquals(term.getChar(line, column),snapshot.getChar(line, column));
@@ -308,6 +323,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		int expectedHeight=term.getHeight();
 		assertEquals(expectedHeight, snapshot.getHeight());
 		term.setDimensions(term.getHeight()-1, term.getWidth());
@@ -336,6 +353,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 			}
 		}
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		
 		for (int line = 0; line < term.getHeight(); line++) {
 			for (int column = 0; column < term.getWidth(); column++) {
@@ -356,6 +375,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		int expectedWidth=term.getWidth();
 		assertEquals(expectedWidth, snapshot.getWidth());
 		term.setDimensions(term.getHeight(), term.getWidth()-1);
@@ -881,6 +902,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		SnapshotListener listener=new SnapshotListener();
 		snapshot.addListener(listener);
 		assertEquals(0, listener.N);
@@ -969,6 +992,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+
 		SnapshotListener listener1=new SnapshotListener();
 		SnapshotListener listener2=new SnapshotListener();
 		SnapshotListener listener3=new SnapshotListener();

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.tm.terminal.model.ITerminalTextData;
 import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 import org.eclipse.tm.terminal.model.LineSegment;
 import org.eclipse.tm.terminal.model.Style;
@@ -44,7 +43,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 * A snapshot copy of of fTerminal
 	 */
 	// snapshot does not need internal synchronisation
-	final ITerminalTextData fSnapshot;
+	final TerminalTextDataWindow fSnapshot;
 	// this variable is synchronized on fTerminal!
 	private SnapshotOutOfDateListener[] fListener=new SnapshotOutOfDateListener[0];
 	// this variable is synchronized on fTerminal!
@@ -53,10 +52,11 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	private int fInterestWindowStartLine;
 
 	TerminalTextDataSnapshot(TerminalTextData terminal) {
-		fSnapshot = new TerminalTextDataStore();
+		fSnapshot = new TerminalTextDataWindow();
 		fTerminal = terminal;
 		fCurrentChanges = new SnapshotChanges(fTerminal.getHeight());
 		fFutureChanges = new SnapshotChanges(fTerminal.getHeight());
+		fFutureChanges.markLinesChanged(0, fTerminal.getHeight());
 		fListenersNeedNotify=true;
 
 	}
@@ -82,6 +82,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 			fFutureChanges=new SnapshotChanges(fTerminal.getHeight());
 			// and update the snapshot
 			if(fSnapshot.getHeight()!=fTerminal.getHeight()||fSnapshot.getWidth()!=fTerminal.getWidth()) {
+				fSnapshot.setWindow(0, fTerminal.getHeight());
 				// if the dimensions have changed, we need a full copy
 				fSnapshot.copy(fTerminal);
 				// and we mark all lines as changed

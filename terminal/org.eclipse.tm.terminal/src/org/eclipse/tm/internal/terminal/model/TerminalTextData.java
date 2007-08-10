@@ -132,7 +132,6 @@ public class TerminalTextData implements ITerminalTextData {
 	synchronized public ITerminalTextDataSnapshot makeSnapshot() {
 		// poor mans approach to modify the array
 		ITerminalTextDataSnapshot snapshot=new TerminalTextDataSnapshot(this);
-		snapshot.updateSnapshot(false);
 		List list=new ArrayList();
 		list.addAll(Arrays.asList(fSnapshots));
 		list.add(snapshot);
