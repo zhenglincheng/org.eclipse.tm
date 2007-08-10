@@ -32,18 +32,18 @@ public interface ITerminalTextDataReadOnly {
 	LineSegment[] getLineSegments(int startCol, int line, int numberOfCols);
 
 	/**
-	 * @param x must be >=0 and < width
-	 * @param y must be >=0 and < height
-	 * @return the character at x,y
+	 * @param line must be >=0 and < height
+	 * @param column must be >=0 and < width
+	 * @return the character at column,line
 	 */
-	char getChar(int x, int y);
+	char getChar(int line, int column);
 
 	/**
-	 * @param x must be >=0 and < width
-	 * @param y must be >=0 and < height
-	 * @return style at x,y or null
+	 * @param line must be >=0 and < height
+	 * @param column must be >=0 and < width
+	 * @return style at column,line or null
 	 */
-	Style getStyle(int x, int y);
+	Style getStyle(int line, int column);
 
 	/**
 	 * Creates a new instance of {@link ITerminalTextDataSnapshot} that

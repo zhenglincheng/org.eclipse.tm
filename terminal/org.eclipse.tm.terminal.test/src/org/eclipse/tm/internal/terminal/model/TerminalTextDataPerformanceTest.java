@@ -20,7 +20,7 @@ import org.eclipse.tm.terminal.model.StyleColor;
 public class TerminalTextDataPerformanceTest extends TestCase {
 	long TIME=100;
 	private void initPerformance(ITerminalTextData term) {
-		term.setDimensions(200,300);
+		term.setDimensions(300,200);
 	}
 	public void testPerformance0() {
 		ITerminalTextData term=new TerminalTextData();
@@ -51,9 +51,9 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 		long t0=System.currentTimeMillis();
 		for (int i = 0; i < 10000000; i++) {
 			char c=s.charAt(i%s.length());
-			for (int y = 0; y < term.getHeight(); y++) {
-				for (int x = 0; x < term.getWidth(); x++) {
-					term.setChar(x, y, c, style);
+			for (int line = 0; line < term.getHeight(); line++) {
+				for (int column = 0; column < term.getWidth(); column++) {
+					term.setChar(line, column, c, style);
 					n++;
 				}
 			}
@@ -95,8 +95,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int j = 0; j < chars.length; j++) {
 				chars[j]=s.charAt((i+j)%s.length());
 			}
-			for (int y = 0; y < term.getHeight(); y++) {
-				term.setChars(0, y, chars, style);
+			for (int line = 0; line < term.getHeight(); line++) {
+				term.setChars(line, 0, chars, style);
 				n+=chars.length;
 			}
 			if(System.currentTimeMillis()-t0>TIME) {
@@ -120,8 +120,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int j = 0; j < chars.length; j++) {
 				chars[j]=s.charAt((i+j)%s.length());
 			}
-			for (int y = 0; y < term.getHeight(); y++) {
-				term.setChars(0, y, chars, 0,1,style);
+			for (int line = 0; line < term.getHeight(); line++) {
+				term.setChars(line, 0, chars, 0,1,style);
 				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
@@ -147,8 +147,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int j = 0; j < chars.length; j++) {
 				chars[j]=s.charAt((i+j)%s.length());
 			}
-			for (int y = 0; y < term.getHeight(); y++) {
-				term.setChars(0, y, chars, 0,1,style);
+			for (int line = 0; line < term.getHeight(); line++) {
+				term.setChars(line, 0, chars, 0,1,style);
 				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
@@ -181,8 +181,8 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int j = 0; j < chars.length; j++) {
 				chars[j]=s.charAt((i+j)%s.length());
 			}
-			for (int y = 0; y < term.getHeight(); y++) {
-				term.setChars(0, y, chars, 0,1,style);
+			for (int line = 0; line < term.getHeight(); line++) {
+				term.setChars(line, 0, chars, 0,1,style);
 				copy.copy(term);
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
@@ -208,11 +208,11 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int j = 0; j < chars.length; j++) {
 				chars[j]=s.charAt((i+j)%s.length());
 			}
-			for (int y = 0; y < term.getHeight(); y++) {
-				term.setChars(0, y, chars, 0,1,style);
-				linesToCopy[y]=true;
+			for (int line = 0; line < term.getHeight(); line++) {
+				term.setChars(line, 0, chars, 0,1,style);
+				linesToCopy[line]=true;
 				copy.copySelective(term,0,0, linesToCopy);
-				linesToCopy[y]=false;
+				linesToCopy[line]=false;
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
 					System.out.println((n*1000)/(System.currentTimeMillis()-t0)+" copy()/sec");

@@ -147,8 +147,8 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		term.setDimensions(8, 8);
 		LineSegment[] segments;
 		
-		term.setChars(0, 2,"0123".toCharArray(), s1);
-		term.setChars(4, 2,"abcd".toCharArray(), null);
+		term.setChars(2, 0,"0123".toCharArray(), s1);
+		term.setChars(2, 4,"abcd".toCharArray(), null);
 		segments=term.getLineSegments(0, 2, term.getWidth());
 		assertEquals(2, segments.length);
 		assertSegment(0, "0123", s1, segments[0]);
@@ -173,9 +173,9 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		assertSegment(0, "0", s1, segments[0]);
 		
 		// line 1
-		term.setChars(0, 1,"x".toCharArray(), s1);
+		term.setChars(1, 0,"x".toCharArray(), s1);
 		term.setChars(1, 1,"y".toCharArray(), s2);
-		term.setChars(2, 1,"z".toCharArray(), s3);
+		term.setChars(1, 2,"z".toCharArray(), s3);
 		
 		segments=term.getLineSegments(0, 1, term.getWidth());
 		assertEquals(1, segments.length);
@@ -194,56 +194,56 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		ITerminalTextData term=makeITerminalTextData();
 		fill(term, s);
 		assertEquals('\000', term.getChar(0,0));
-		assertEquals('\000', term.getChar(1,0));
-		assertEquals('\000', term.getChar(2,0));
-		assertEquals('\000', term.getChar(3,0));
-		assertEquals('\000', term.getChar(4,0));
 		assertEquals('\000', term.getChar(0,1));
+		assertEquals('\000', term.getChar(0,2));
+		assertEquals('\000', term.getChar(0,3));
+		assertEquals('\000', term.getChar(0,4));
+		assertEquals('\000', term.getChar(1,0));
 		assertEquals('\000', term.getChar(1,1));
-		assertEquals('\000', term.getChar(2,1));
-		assertEquals('\000', term.getChar(3,1));
-		assertEquals('\000', term.getChar(4,1));
-		assertEquals('A', term.getChar(0,2));
-		assertEquals('B', term.getChar(1,2));
+		assertEquals('\000', term.getChar(1,2));
+		assertEquals('\000', term.getChar(1,3));
+		assertEquals('\000', term.getChar(1,4));
+		assertEquals('A', term.getChar(2,0));
+		assertEquals('B', term.getChar(2,1));
 		assertEquals('C', term.getChar(2,2));
-		assertEquals('D', term.getChar(3,2));
-		assertEquals('E', term.getChar(4,2));
+		assertEquals('D', term.getChar(2,3));
+		assertEquals('E', term.getChar(2,4));
 	}
 	public void testGetStyle() {
 		ITerminalTextData term=makeITerminalTextData();
 		Style style=getDefaultStyle();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				term.setChar(x, y, c, style.setForground(StyleColor.getStyleColor(""+c)));
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				term.setChar(line, column, c, style.setForground(StyleColor.getStyleColor(""+c)));
 			}
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
 				Style s=null;
-				if(y>=fOffset&&y<fOffset+fSize)
+				if(line>=fOffset&&line<fOffset+fSize)
 					s=style.setForground(StyleColor.getStyleColor(""+c));
-				assertSame(s, term.getStyle(x, y));
+				assertSame(s, term.getStyle(line, column));
 			}
 		}
 		
 	}
 	public void testSetChar() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				term.setChar(x, y, (char)('a'+x+y), null);
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				term.setChar(line, column, (char)('a'+column+line), null);
 			}
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
 				char c=0;
-				if(y>=fOffset&&y<fOffset+fSize)
-					c=(char)('a'+x+y);
-				assertEquals(c, term.getChar(x,y));
+				if(line>=fOffset&&line<fOffset+fSize)
+					c=(char)('a'+column+line);
+				assertEquals(c, term.getChar(line,column));
 			}
 		}
 		assertEqualsTerm(
@@ -257,20 +257,20 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 
 	public void testSetChars() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
 			char[] chars=new char[term.getWidth()];
-			for (int x = 0; x < term.getWidth(); x++) {
-				chars[x]=(char)('a'+x+y);
+			for (int column = 0; column < term.getWidth(); column++) {
+				chars[column]=(char)('a'+column+line);
 			}
-			term.setChars(0, y, chars, null);
+			term.setChars(line, 0, chars, null);
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
 				char c=0;
-				if(y>=fOffset&&y<fOffset+fSize)
-					c=(char)('a'+x+y);
-				assertEquals(c, term.getChar(x,y));
+				if(line>=fOffset&&line<fOffset+fSize)
+					c=(char)('a'+column+line);
+				assertEquals(c, term.getChar(line,column));
 			}
 		}
 		assertEqualsTerm(
@@ -281,7 +281,7 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 				+ "efg\n"
 				+ "fgh", toMultiLineText(term));
 	
-		term.setChars(1, 3, new char[]{'1','2'}, null);
+		term.setChars(3, 1, new char[]{'1','2'}, null);
 		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
@@ -290,7 +290,7 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 				+ "efg\n"
 				+ "fgh", toMultiLineText(term));
 		// check if chars are correctly chopped
-		term.setChars(1, 4, new char[]{'1','2','3','4','5'}, null);
+		term.setChars(4, 1, new char[]{'1','2','3','4','5'}, null);
 		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
@@ -307,20 +307,20 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 				+ "ABCDEF";
 		fill(term, s);
 		char[] chars=new char[]{'1','2','3','4','5','6','7','8'};
-		term.setChars(0, 1, chars, 0, 6,null);
+		term.setChars(1, 0, chars, 0, 6,null);
 		assertEqualsTerm(
 				  "ZYXWVU\n"
 				+ "123456\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 		fill(term, s);
-		term.setChars(0, 1, chars, 0, 5, null);
+		term.setChars(1, 0, chars, 0, 5, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "12345f\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 		fill(term, s);
-		term.setChars(0, 1, chars, 1, 5, null);
+		term.setChars(1, 0, chars, 1, 5, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "23456f\n"
 				+ "ABCDEF", toMultiLineText(term));
@@ -334,7 +334,7 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 
 		
 		fill(term, s);
-		term.setChars(2, 1, chars, 3, 4, null);
+		term.setChars(1, 2, chars, 3, 4, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "ab4567\n"
 				+ "ABCDEF", toMultiLineText(term));

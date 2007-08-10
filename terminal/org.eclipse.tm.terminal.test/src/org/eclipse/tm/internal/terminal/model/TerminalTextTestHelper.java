@@ -23,11 +23,11 @@ public class TerminalTextTestHelper {
 	static public String toMultiLineText(ITerminalTextDataReadOnly term) {
 		StringBuffer buff=new StringBuffer();
 		int width=term.getWidth();
-		for (int y = 0; y < term.getHeight(); y++) {
-			if(y>0)
+		for (int line = 0; line < term.getHeight(); line++) {
+			if(line>0)
 				buff.append("\n"); //$NON-NLS-1$
-			for (int x = 0; x < width; x++) {
-				buff.append(term.getChar(x, y));
+			for (int column = 0; column < width; column++) {
+				buff.append(term.getChar(line, column));
 			}
 		}
 		return buff.toString();
@@ -42,10 +42,10 @@ public class TerminalTextTestHelper {
 	 */
 	static public void fillSimple(ITerminalTextData term, String s) {
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
-		term.setDimensions(1, s.length());
+		term.setDimensions(s.length(), 1);
 		for (int i = 0; i < s.length(); i++) {
 			char c=s.charAt(i);
-			term.setChar(0, i, c, style.setForground(StyleColor.getStyleColor(""+c)));
+			term.setChar(i, 0, c, style.setForground(StyleColor.getStyleColor(""+c)));
 		}
 	}
 	/**
@@ -68,21 +68,21 @@ public class TerminalTextTestHelper {
 				len++;
 			}
 		}
-		term.setDimensions(width, height);
+		term.setDimensions(height, width);
 		fill(term,0,0,s);
 	}
 	
-	static public void fill(ITerminalTextData term, int x, int y, String s) {
-		int xx=x;
-		int yy=y;
+	static public void fill(ITerminalTextData term, int column, int line, String s) {
+		int xx=column;
+		int yy=line;
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
 		for (int i = 0; i < s.length(); i++) {
 			char c=s.charAt(i);
 			if(c=='\n') {
 				yy++;
-				xx=x;
+				xx=column;
 			} else {
-				term.setChar(xx, yy, c, style.setForground(StyleColor.getStyleColor(""+c)));
+				term.setChar(yy, xx, c, style.setForground(StyleColor.getStyleColor(""+c)));
 				xx++;
 			}
 		}

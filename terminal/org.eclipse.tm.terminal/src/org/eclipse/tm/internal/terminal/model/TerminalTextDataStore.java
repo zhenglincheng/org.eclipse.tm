@@ -50,7 +50,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setDimensions(int, int)
 	 */
-	public void setDimensions(int width, int height) {
+	public void setDimensions(int height, int width) {
 		// just extend the region
 		if(height>fChars.length) {
 			int h=4*height/3;
@@ -94,12 +94,12 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getLineSegments(int, int, int)
 	 */
-	public LineSegment[] getLineSegments(int x, int y, int len) {
+	public LineSegment[] getLineSegments(int column, int line, int len) {
 		// get the styles and chars for this line
-		Style[] styles=fStyle[y];
-		char[] chars=fChars[y];
-		int col=x;
-		int n=x+len;
+		Style[] styles=fStyle[line];
+		char[] chars=fChars[line];
+		int col=column;
+		int n=column+len;
 		
 		// expand the line if needed....
 		if(styles==null)
@@ -113,9 +113,9 @@ public class TerminalTextDataStore implements ITerminalTextData {
 			chars=(char[]) resizeArray(chars, n);
 	
 		// and create the line segments
-		Style style=styles[x];
+		Style style=styles[column];
 		List segments=new ArrayList();
-		for (int i = x; i < n; i++) {
+		for (int i = column; i < n; i++) {
 			if(styles[i]!=style) {
 				segments.add(new LineSegment(col,new String(chars,col,i-col),style));
 				style=styles[i];
@@ -130,20 +130,20 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getChar(int, int)
 	 */
-	public char getChar(int x, int y) {
-		assert x<fWidth;
-		if(fChars[y]==null||x>=fChars[y].length)
+	public char getChar(int line, int column) {
+		assert column<fWidth;
+		if(fChars[line]==null||column>=fChars[line].length)
 			return 0;
-		return fChars[y][x];
+		return fChars[line][column];
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getStyle(int, int)
 	 */
-	public Style getStyle(int x, int y) {
-		assert x<fWidth;
-		if(fStyle[y]==null || x>=fStyle[y].length)
+	public Style getStyle(int line, int column) {
+		assert column<fWidth;
+		if(fStyle[line]==null || column>=fStyle[line].length)
 			return null;
-		return fStyle[y][x];
+		return fStyle[line][column];
 	}
 	
 	void ensureLineLength(int iLine, int length) {
@@ -164,56 +164,56 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setChar(int, int, char, org.eclipse.tm.internal.terminal.text.Style)
 	 */
-	public void setChar(int x, int y, char c, Style style) {
-		ensureLineLength(y,x+1);
-		fChars[y][x]=c;
-		fStyle[y][x]=style;		
+	public void setChar(int line, int column, char c, Style style) {
+		ensureLineLength(line,column+1);
+		fChars[line][column]=c;
+		fStyle[line][column]=style;		
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setChars(int, int, char[], org.eclipse.tm.internal.terminal.text.Style)
 	 */
-	public void setChars(int x, int y, char[] chars, Style style) {
-		setChars(x,y,chars,0,chars.length,style);
+	public void setChars(int line, int column, char[] chars, Style style) {
+		setChars(line,column,chars,0,chars.length,style);
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setChars(int, int, char[], int, int, org.eclipse.tm.internal.terminal.text.Style)
 	 */
-	public void setChars(int x, int y, char[] chars, int start, int len, Style style) {
-		int n=Math.min(len, fWidth-x);
-		ensureLineLength(y,x+n);
+	public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
+		int n=Math.min(len, fWidth-column);
+		ensureLineLength(line,column+n);
 		for (int i = 0; i < n; i++) {
-			fChars[y][x+i]=chars[i+start];
-			fStyle[y][x+i]=style;		
+			fChars[line][column+i]=chars[i+start];
+			fStyle[line][column+i]=style;		
 		}
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#scroll(int, int, int)
 	 */
-	public void scroll(int startRow, int size, int shift) {
+	public void scroll(int startLine, int size, int shift) {
 		if(shift<0) {
 			// move the region up
 			// shift is negative!!
-			for (int i = startRow; i < startRow+size+shift; i++) {
+			for (int i = startLine; i < startLine+size+shift; i++) {
 				fChars[i]=fChars[i-shift];
 				fStyle[i]=fStyle[i-shift];
 			}
 			// then clean the opened lines
-			cleanLines(Math.max(0, startRow+size+shift),Math.min(-shift, getHeight()-startRow));
+			cleanLines(Math.max(0, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
 		} else {
-			for (int i = startRow+size-1; i >=startRow && i-shift>=0; i--) {
+			for (int i = startLine+size-1; i >=startLine && i-shift>=0; i--) {
 				fChars[i]=fChars[i-shift];
 				fStyle[i]=fStyle[i-shift];
 			}
-			cleanLines(startRow, Math.min(shift, getHeight()-startRow));
+			cleanLines(startLine, Math.min(shift, getHeight()-startLine));
 		}
 	}
 	/**
 	 * Replaces the lines with new empty data
-	 * @param y
+	 * @param line
 	 * @param len
 	 */
-	private void cleanLines(int y, int len) {
-		for (int i = y; i < y+len; i++) {
+	private void cleanLines(int line, int len) {
+		for (int i = line; i < line+len; i++) {
 			fChars[i]=null;
 			fStyle[i]=null;
 		}
@@ -225,11 +225,11 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 */
 	public String toString() {
 		StringBuffer buff=new StringBuffer();
-		for (int y = 0; y < getHeight(); y++) {
-			if(y>0)
+		for (int line = 0; line < getHeight(); line++) {
+			if(line>0)
 				buff.append("\n"); //$NON-NLS-1$
-			for (int x = 0; x < fWidth; x++) {
-				buff.append(getChar(x, y));
+			for (int column = 0; column < fWidth; column++) {
+				buff.append(getChar(line, column));
 			}
 		}
 		return buff.toString();
@@ -242,7 +242,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 
 	public void addLine() {
 		if(fMaxHeight>0 && getHeight()<fMaxHeight) {
-			setDimensions(getWidth(), getHeight()+1);
+			setDimensions(getHeight()+1, getWidth());
 		} else {
 			scroll(0,getHeight(),-1);
 		}

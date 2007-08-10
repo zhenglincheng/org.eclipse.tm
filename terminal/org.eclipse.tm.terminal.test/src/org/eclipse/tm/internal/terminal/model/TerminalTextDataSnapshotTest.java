@@ -43,8 +43,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		// new snapshots are fully changed
 		assertEquals(0,snapshot.getFirstChangedLine());
 		assertEquals(term.getHeight()-1,snapshot.getLastChangedLine());
-		for (int y = 0; y <= snapshot.getLastChangedLine(); y++) {
-			assertTrue(snapshot.hasLineChanged(y));
+		for (int line = 0; line <= snapshot.getLastChangedLine(); line++) {
+			assertTrue(snapshot.hasLineChanged(line));
 		}
 		// nothing has scrolled
 		assertEquals(0, snapshot.getScrollWindowSize());
@@ -275,24 +275,24 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(termUnchanged,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
-		for (int y = 0; y < snapshot.getHeight(); y++) {
-			for (int x = 0; x < snapshot.getWidth(); x++) {
-				assertEquals(term.getChar(x, y),snapshot.getChar(x, y));
+		for (int line = 0; line < snapshot.getHeight(); line++) {
+			for (int column = 0; column < snapshot.getWidth(); column++) {
+				assertEquals(term.getChar(line, column),snapshot.getChar(line, column));
 			}
 		}
 		// make a change 
 		term.setChar(0, 0, '?', null);
 		// check against unchanged data
-		for (int y = 0; y < snapshot.getHeight(); y++) {
-			for (int x = 0; x < snapshot.getWidth(); x++) {
-				assertEquals(termUnchanged.getChar(x, y),snapshot.getChar(x, y));
+		for (int line = 0; line < snapshot.getHeight(); line++) {
+			for (int column = 0; column < snapshot.getWidth(); column++) {
+				assertEquals(termUnchanged.getChar(line, column),snapshot.getChar(line, column));
 			}
 		}
 		// update and compare against the terminal
 		snapshot.updateSnapshot(true);
-		for (int y = 0; y < snapshot.getHeight(); y++) {
-			for (int x = 0; x < snapshot.getWidth(); x++) {
-				assertEquals(term.getChar(x, y),snapshot.getChar(x, y));
+		for (int line = 0; line < snapshot.getHeight(); line++) {
+			for (int column = 0; column < snapshot.getWidth(); column++) {
+				assertEquals(term.getChar(line, column),snapshot.getChar(line, column));
 			}
 		}
 		
@@ -310,14 +310,14 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		int expectedHeight=term.getHeight();
 		assertEquals(expectedHeight, snapshot.getHeight());
-		term.setDimensions(term.getWidth(), term.getHeight()-1);
+		term.setDimensions(term.getHeight()-1, term.getWidth());
 		assertEquals(expectedHeight, snapshot.getHeight());
 		
 		//
 		snapshot.updateSnapshot(false);
 		expectedHeight=term.getHeight();
 		assertEquals(expectedHeight, snapshot.getHeight());
-		term.setDimensions(term.getWidth(), term.getHeight()-1);
+		term.setDimensions(term.getHeight()-1, term.getWidth());
 		assertEquals(expectedHeight, snapshot.getHeight());
 	}
 //
@@ -328,19 +328,19 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 	public void testGetStyle() {
 		ITerminalTextData term=makeITerminalTextData();
 		Style style=Style.getStyle(StyleColor.getStyleColor("fg"), StyleColor.getStyleColor("bg"), false, false, false, false);
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				term.setChar(x, y, c, style.setForground(StyleColor.getStyleColor(""+c)));
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				term.setChar(line, column, c, style.setForground(StyleColor.getStyleColor(""+c)));
 			}
 		}
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				assertSame(style.setForground(StyleColor.getStyleColor(""+c)), snapshot.getStyle(x, y));
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				assertSame(style.setForground(StyleColor.getStyleColor(""+c)), snapshot.getStyle(line, column));
 			}
 		}
 		
@@ -358,14 +358,14 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		int expectedWidth=term.getWidth();
 		assertEquals(expectedWidth, snapshot.getWidth());
-		term.setDimensions(term.getWidth()-1, term.getHeight());
+		term.setDimensions(term.getHeight(), term.getWidth()-1);
 		assertEquals(expectedWidth, snapshot.getWidth());
 		
 		//
 		snapshot.updateSnapshot(false);
 		expectedWidth=term.getWidth();
 		assertEquals(expectedWidth, snapshot.getWidth());
-		term.setDimensions(term.getWidth()-1, term.getHeight());
+		term.setDimensions(term.getHeight(), term.getWidth()-1);
 		assertEquals(expectedWidth, snapshot.getWidth());
 	}
 
@@ -391,8 +391,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getFirstChangedLine());
 		
 		snapshot=snapshot(s,term);		
-		term.setChar(0, 3, 'x', null);
-		term.setChar(0, 4, 'x', null);
+		term.setChar(3, 0, 'x', null);
+		term.setChar(4, 0, 'x', null);
 		snapshot.updateSnapshot(false);
 		assertEquals(3, snapshot.getFirstChangedLine());
 		
@@ -415,7 +415,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		// when scrolling the end of the region 'has changed'
 		snapshot=snapshot(s,term);
 		term.scroll(2, 2, -1);
-		term.setChar(0, 1, 'x', null);
+		term.setChar(1, 0, 'x', null);
 		snapshot.updateSnapshot(true);
 		assertEquals(1, snapshot.getFirstChangedLine());
 		
@@ -442,8 +442,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getLastChangedLine());
 		
 		snapshot=snapshot(s,term);		
-		term.setChar(0, 3, 'x', null);
-		term.setChar(0, 4, 'x', null);
+		term.setChar(3, 0, 'x', null);
+		term.setChar(4, 0, 'x', null);
 		snapshot.updateSnapshot(false);
 		assertEquals(4, snapshot.getLastChangedLine());
 		
@@ -466,7 +466,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		// when scrolling the end of the region 'has changed'
 		snapshot=snapshot(s,term);
 		term.scroll(2, 2, -1);
-		term.setChar(0, 1, 'x', null);
+		term.setChar(1, 0, 'x', null);
 		snapshot.updateSnapshot(true);
 		assertEquals(3, snapshot.getLastChangedLine());
 		
@@ -478,8 +478,8 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 	void assertChangedLines(ITerminalTextDataSnapshot snapshot, String expected) {
 		assertEquals(expected.length(),snapshot.getHeight());
 		StringBuffer buffer=new StringBuffer();
-		for (int y = 0; y < expected.length(); y++) {
-			if(snapshot.hasLineChanged(y))
+		for (int line = 0; line < expected.length(); line++) {
+			if(snapshot.hasLineChanged(line))
 				buffer.append('1');
 			else
 				buffer.append('0');
@@ -601,13 +601,13 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		snapshot=snapshot(s,term);
 		term.scroll(2,3,-1);
-		term.setChar(0, 7, '.', null);
+		term.setChar(7, 0, '.', null);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "0000100100");
 		
 		snapshot=snapshot(s,term);
 		term.scroll(2,3,-2);
-		term.setChar(0, 9, '.', null);
+		term.setChar(9, 0, '.', null);
 		term.setChars(0, 0, new char[]{'.','!'}, null);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1001100001");
@@ -621,7 +621,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 
 		snapshot=snapshot(s,term);
 		term.scroll(2,7,-1);
-		term.setChar(2, 5, '.', null);
+		term.setChar(5, 2, '.', null);
 		term.scroll(2,7,-2);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "0001001110");
@@ -629,7 +629,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		snapshot=snapshot(s,term);
 		term.scroll(2,7,-1);
-		term.setChar(2, 5, '.', null);
+		term.setChar(5, 2, '.', null);
 		term.scroll(2,7,-2);
 		snapshot.updateSnapshot(false);
 		assertChangedLines(snapshot, "0011111110");
@@ -756,7 +756,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		ITerminalTextDataSnapshot snapshot;
 		
 		snapshot=snapshot(s,term);
-		term.setDimensions(term.getWidth()+1, term.getHeight());
+		term.setDimensions(term.getHeight(), term.getWidth()+1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111");
 		assertEquals(0, snapshot.getFirstChangedLine());
@@ -766,7 +766,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getScrollWindowShift());
 
 		snapshot=snapshot(s,term);
-		term.setDimensions(term.getWidth(), term.getHeight()+1);
+		term.setDimensions(term.getHeight()+1, term.getWidth());
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "11111");
 		assertEquals(0, snapshot.getFirstChangedLine());
@@ -776,7 +776,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getScrollWindowShift());
 	
 		snapshot=snapshot(s,term);
-		term.setDimensions(term.getWidth(), term.getHeight()-1);
+		term.setDimensions(term.getHeight()-1, term.getWidth());
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "111");
 		assertEquals(0, snapshot.getFirstChangedLine());
@@ -812,7 +812,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		snapshot=snapshot(s,term);
 		term.scroll(1,2,-1);
-		term.setDimensions(4, 5);
+		term.setDimensions(5, 4);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "11111");
 		assertEquals(0, snapshot.getScrollWindowStartRow());
@@ -821,7 +821,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 
 		snapshot=snapshot(s,term);
 		term.scroll(1,2,-1);
-		term.setDimensions(2, 7);
+		term.setDimensions(7, 2);
 		term.scroll(4,2,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111111");
@@ -831,7 +831,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot=snapshot(s,term);
 
 		term.scroll(1,2,-1);
-		term.setDimensions(term.getWidth()+1,term.getHeight());
+		term.setDimensions(term.getHeight(),term.getWidth()+1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111111111");
 		assertEquals(0, snapshot.getScrollWindowStartRow());
@@ -853,7 +853,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		ITerminalTextDataSnapshot snapshot;
 		
 		snapshot=snapshot(s,term);
-		term.setDimensions(6, 14);
+		term.setDimensions(14, 6);
 		term.scroll(0,14,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "11111111111111");
@@ -863,18 +863,18 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 	}
 	/**
 	 * Makes a simple shift test
-	 * @param y scroll start
+	 * @param line scroll start
 	 * @param n number of lines to be scrolled
 	 * @param shift amount of lines to be shifted
 	 * @param start the original data
 	 * @param result the expected result
 	 */
-	void scrollTest(int y,int n, int shift, String start,String result) {
+	void scrollTest(int line,int n, int shift, String start,String result) {
 		ITerminalTextData term=makeITerminalTextData();
 		TerminalTextTestHelper.fillSimple(term,start);
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
 		ITerminalTextDataSnapshot snapshot1=term.makeSnapshot();
-		term.scroll(y, n, shift);
+		term.scroll(line, n, shift);
 		assertEquals(result, TerminalTextTestHelper.toSimple(term));
 		snapshot.updateSnapshot(false);
 		assertEquals(result, TerminalTextTestHelper.toSimple(toMultiLineText(snapshot)));
@@ -920,7 +920,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		// make a change and expect it to be changed
 		term.setChars(1, 1, new char[]{'?','!','.'},null);
 		assertEquals(1, listener.N);
-		term.setChars(1, 2, new char[]{'?','!','.'},null);
+		term.setChars(2, 1, new char[]{'?','!','.'},null);
 		assertEquals(1, listener.N);
 		
 		snapshot.updateSnapshot(false);
@@ -1022,7 +1022,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(1, listener1.N);
 		assertEquals(1, listener2.N);
 		assertEquals(1, listener3.N);
-		term.setChars(1, 2, new char[]{'?','!','.'},null);
+		term.setChars(2, 1, new char[]{'?','!','.'},null);
 		assertEquals(1, listener1.N);
 		assertEquals(1, listener2.N);
 		assertEquals(1, listener3.N);

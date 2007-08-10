@@ -18,9 +18,9 @@ package org.eclipse.tm.terminal.model;
  * modified by another thread. Suppose you would want to draw the content of
  * the {@link ITerminalTextData} using the following loop:
  * <pre>
- * for(int y=0;y&lt;term.getHeight();y++) 
- *     for(int x=0; x&lt;term.getWidth();x++)
- *         drawCharacter(x,y,term.getChar(x,y),term.getStyle(x,y));
+ * for(int line=0;line&lt;term.getHeight();line++) 
+ *     for(int column=0; column&lt;term.getWidth();column++)
+ *         drawCharacter(column,line,term.getChar(column,line),term.getStyle(column,line));
  * </pre>
  * This might fail because the background thread could change the dimensions of the 
  * {@link ITerminalTextData} while you iterate the loop. One solution would be to
@@ -39,11 +39,11 @@ package org.eclipse.tm.terminal.model;
  * 
  * <pre>
  * // iterate over the potentially changed lines
- * for(int y=snap.getFirstChangedLine();y&lt;=snap.getLastChangedLine();y++) 
+ * for(int line=snap.getFirstChangedLine();line&lt;=snap.getLastChangedLine();line++) 
  *     // redraw only if the line has changed
- *     if(snap.hasLineChanged(y))
- *         for(int x=0; x&lt;snap.getWidth();x++)
- *            drawCharacter(x,y,snap.getChar(x,y),snap.getStyle(x,y));
+ *     if(snap.hasLineChanged(line))
+ *         for(int column=0; column&lt;snap.getWidth();column++)
+ *            drawCharacter(column,line,snap.getChar(column,line),snap.getStyle(column,line));
  * </pre>
  * 
  * <p><b>Scroll optimization:</b> Often new lines are appended at the bottom of the
@@ -57,11 +57,11 @@ package org.eclipse.tm.terminal.model;
  * // scroll the visible region of the UI <b>before</b> drawing the changed lines.
  * doUIScrolling(snap.getScrollChangeY(),snap.getScrollChangeN(),snap.getScrollChangeShift());
  * // iterate over the potentially changed lines
- * for(int y=snap.getFirstChangedLine();y&lt;=snap.getFirstChangedLine();y++) 
+ * for(int line=snap.getFirstChangedLine();line&lt;=snap.getFirstChangedLine();line++) 
  *     // redraw only if the line has changed
- *     if(snap.hasLineChanged(y))
- *         for(int x=0; x&lt;snap.getWidth();x++)
- *            drawCharacter(x,y,snap.getChar(x,y),snap.getStyle(x,y));
+ *     if(snap.hasLineChanged(line))
+ *         for(int column=0; column&lt;snap.getWidth();column++)
+ *            drawCharacter(column,line,snap.getChar(column,line),snap.getStyle(column,line));
  * </pre>
  * </p>
  * 
@@ -106,10 +106,10 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	boolean hasChanged();
 
 	/**
-	 * @param startRow -1 means follow the end of the data
+	 * @param startLine -1 means follow the end of the data
 	 * @param size number of lines to follow
 	 */
-	void setInterestWindow(int startRow, int size);
+	void setInterestWindow(int startLine, int size);
 	int getInterestWindowStartRow();
 	int getInterestWindowSize();
 	
@@ -156,18 +156,18 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * 
 	 * <p>A typical for loop using this method would look like this (note the <code>&lt;=</code> in the for loop):
 	 * <pre>
-	 * for(int y=snap.{@link #getFirstChangedLine()}; y <b>&lt;=</b> snap.getLastChangedLine(); y++)
-	 *    if(snap.{@link #hasLineChanged(int) hasLineChanged(y)})
-	 *       doSomething(y);
+	 * for(int line=snap.{@link #getFirstChangedLine()}; line <b>&lt;=</b> snap.getLastChangedLine(); line++)
+	 *    if(snap.{@link #hasLineChanged(int) hasLineChanged(line)})
+	 *       doSomething(line);
 	 * </pre>
 	 */
 	int getLastChangedLine();
 
 	/**
-	 * @param y
+	 * @param line
 	 * @return true if the line has changed since the previous snapshot
 	 */
-	boolean hasLineChanged(int y);
+	boolean hasLineChanged(int line);
 	
 	/**
 	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method

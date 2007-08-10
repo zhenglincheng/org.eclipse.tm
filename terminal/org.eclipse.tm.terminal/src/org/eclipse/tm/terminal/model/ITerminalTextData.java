@@ -25,46 +25,42 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * Sets the dimensions of the data. If the dimensions are smaller than the current
 	 * dimensions, the lines and rows will be chopped. If the dimensions are bigger, then
 	 * the new elements will be filled with 0 chars and null Style.
-	 * 
-	 * @param width
 	 * @param height
+	 * @param width
 	 */
-	void setDimensions(int width, int height);
+	void setDimensions(int height, int width);
 
 	void setMaxHeight(int height);
 	int getMaxHeight();
 
 	/**
 	 * Set a single character and the associated {@link Style}.
-	 * 
-	 * @param x x must be >=0 and < width
-	 * @param y y must be >=0 and < height
+	 * @param line line must be >=0 and < height
+	 * @param column column must be >=0 and < width
 	 * @param c the new character at this position
 	 * @param style the style or null
 	 */
-	void setChar(int x, int y, char c, Style style);
+	void setChar(int line, int column, char c, Style style);
 
 	/**
 	 * Set an array of characters showing in the same {@link Style}.
-	 * 
-	 * @param x x must be >=0 and < width
-	 * @param y y must be >=0 and < height
+	 * @param line line must be >=0 and < height
+	 * @param column column must be >=0 and < width
 	 * @param chars the new characters at this position
 	 * @param style the style or null
 	 */
-	void setChars(int x, int y, char[] chars, Style style);
+	void setChars(int line, int column, char[] chars, Style style);
 
 	/**
 	 * Set a subrange of an array of characters showing in the same {@link Style}.
-	 * 
-	 * @param x x must be >=0 and < width
-	 * @param y y must be >=0 and < height
+	 * @param line line must be >=0 and < height
+	 * @param column column must be >=0 and < width
 	 * @param chars the new characters at this position
 	 * @param start the start index in the chars array
 	 * @param len the number of characters to insert. Characters beyond width are not inserted.
 	 * @param style the style or null
 	 */
-	void setChars(int x, int y, char[] chars, int start, int len, Style style);
+	void setChars(int line, int column, char[] chars, int start, int len, Style style);
 	
 
 //	/**
@@ -112,12 +108,12 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * 3 cccc
 	 * 4 eeee
 	 * </pre>
-	 * @param startRow the start row of the shift
+	 * @param startLine the start row of the shift
 	 * @param size the number of lines to shift
 	 * @param shift how much scrolling is done. New scrolled area is filled with <code>'\000</code>'.
 	 * Negative number means scroll down, positive scroll up (see example above).
 	 */
-	void scroll(int startRow, int size, int shift);
+	void scroll(int startLine, int size, int shift);
 	
 	void addLine();
 	void copy(ITerminalTextData source);

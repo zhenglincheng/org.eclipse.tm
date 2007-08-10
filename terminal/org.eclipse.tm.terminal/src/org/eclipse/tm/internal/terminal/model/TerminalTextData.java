@@ -43,12 +43,12 @@ public class TerminalTextData implements ITerminalTextData {
 		// no need for an extra variable
 		return fData.getHeight();
 	}
-	synchronized public void setDimensions(int width, int height) {
+	synchronized public void setDimensions(int height, int width) {
 		int h=getHeight();
 		int w=getWidth();
 		if(w==width && h==height)
 			return;
-		fData.setDimensions(width, height);
+		fData.setDimensions(height, width);
 		// determine what has changed
 		if(w==width) {
 			if(h<height)
@@ -59,62 +59,62 @@ public class TerminalTextData implements ITerminalTextData {
 			sendLinesChangedToSnapshot(0, h);
 		}
 	}
-	synchronized public LineSegment[] getLineSegments(int x, int y, int len) {
-		return fData.getLineSegments(x, y, len);
+	synchronized public LineSegment[] getLineSegments(int column, int line, int len) {
+		return fData.getLineSegments(column, line, len);
 	}
-	synchronized public char getChar(int x, int y) {
-		return fData.getChar(x, y);
+	synchronized public char getChar(int line, int column) {
+		return fData.getChar(line, column);
 	}
-	synchronized public Style getStyle(int x, int y) {
-		return fData.getStyle(x, y);
+	synchronized public Style getStyle(int line, int column) {
+		return fData.getStyle(line, column);
 	}
-	synchronized public void setChar(int x, int y, char c, Style style) {
-		fData.setChar(x, y, c, style);
-		sendLineChangedToSnapshots(y);
+	synchronized public void setChar(int line, int column, char c, Style style) {
+		fData.setChar(line, column, c, style);
+		sendLineChangedToSnapshots(line);
 	}
-	synchronized public void setChars(int x, int y, char[] chars, Style style) {
-		fData.setChars(x, y, chars, style);
-		sendLineChangedToSnapshots(y);
+	synchronized public void setChars(int line, int column, char[] chars, Style style) {
+		fData.setChars(line, column, chars, style);
+		sendLineChangedToSnapshots(line);
 	}
-	synchronized public void setChars(int x, int y, char[] chars, int start, int len, Style style) {
-		fData.setChars(x, y, chars, start, len, style);
-		sendLineChangedToSnapshots(y);
+	synchronized public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
+		fData.setChars(line, column, chars, start, len, style);
+		sendLineChangedToSnapshots(line);
 	}
-	synchronized public void scroll(int startRow, int size, int shift) {
-		fData.scroll(startRow, size, shift);
-		sendScrolledToSnapshots(startRow, size, shift);
+	synchronized public void scroll(int startLine, int size, int shift) {
+		fData.scroll(startLine, size, shift);
+		sendScrolledToSnapshots(startLine, size, shift);
 	}
 	synchronized public String toString() {
 		return fData.toString();
 	}
 	/**
-	 * @param y notifies snapshots that line y has changed
+	 * @param line notifies snapshots that line line has changed
 	 */
-	protected void sendLineChangedToSnapshots(int y) {
+	protected void sendLineChangedToSnapshots(int line) {
 		for (int i = 0; i < fSnapshots.length; i++) {
-			fSnapshots[i].markLineChanged(y);
+			fSnapshots[i].markLineChanged(line);
 		}
 	}
 	/**
 	 * Notify snapshots that multiple lines have changed
-	 * @param y changed line
+	 * @param line changed line
 	 * @param n number of changed lines
 	 */
-	protected void sendLinesChangedToSnapshot(int y,int n) {
+	protected void sendLinesChangedToSnapshot(int line,int n) {
 		for (int i = 0; i < fSnapshots.length; i++) {
-			fSnapshots[i].markLinesChanged(y, n);
+			fSnapshots[i].markLinesChanged(line, n);
 		}
 	}
 	
 	/**
 	 * Notify snapshot that a region was scrolled
-	 * @param startRow
+	 * @param startLine
 	 * @param size
 	 * @param shift
 	 */
-	protected void sendScrolledToSnapshots(int startRow,int size, int shift) {
+	protected void sendScrolledToSnapshots(int startLine,int size, int shift) {
 		for (int i = 0; i < fSnapshots.length; i++) {
-			fSnapshots[i].scroll(startRow, size, shift);
+			fSnapshots[i].scroll(startLine, size, shift);
 		}
 	}
 	/**

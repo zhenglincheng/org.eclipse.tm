@@ -101,20 +101,20 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		}
 	}
 
-	public char getChar(int x, int y) {
-		return fSnapshot.getChar(x, y);
+	public char getChar(int line, int column) {
+		return fSnapshot.getChar(line, column);
 	}
 
 	public int getHeight() {
 		return fSnapshot.getHeight();
 	}
 
-	public LineSegment[] getLineSegments(int x, int y, int len) {
-		return fSnapshot.getLineSegments(x, y, len);
+	public LineSegment[] getLineSegments(int column, int line, int len) {
+		return fSnapshot.getLineSegments(column, line, len);
 	}
 
-	public Style getStyle(int x, int y) {
-		return fSnapshot.getStyle(x, y);
+	public Style getStyle(int line, int column) {
+		return fSnapshot.getStyle(line, column);
 	}
 
 	public int getWidth() {
@@ -133,8 +133,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		return fCurrentChanges.getLastChangedLine();
 	}
 
-	public boolean hasLineChanged(int y) {
-		return fCurrentChanges.hasLineChanged(y);
+	public boolean hasLineChanged(int line) {
+		return fCurrentChanges.hasLineChanged(line);
 	}
 
 	/* (non-Javadoc)
@@ -157,30 +157,30 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	}
 	
 	/**
-	 * Announces a change in line y
-	 * @param y
+	 * Announces a change in line line
+	 * @param line
 	 */
-	void markLineChanged(int y) {
+	void markLineChanged(int line) {
 		// threading
-		fFutureChanges.markLineChanged(y);
+		fFutureChanges.markLineChanged(line);
 		notifyListers();
 	}
 	/**
-	 * Announces a change of n lines beginning with line y
-	 * @param y
+	 * Announces a change of n lines beginning with line line
+	 * @param line
 	 * @param n
 	 */
-	void markLinesChanged(int y,int n) {
-		fFutureChanges.markLinesChanged(y,n);
+	void markLinesChanged(int line,int n) {
+		fFutureChanges.markLinesChanged(line,n);
 		notifyListers();
 	}
 	/**
-	 * @param startRow
+	 * @param startLine
 	 * @param size
 	 * @param shift
 	 */
-	void scroll(int startRow, int size, int shift) {
-		fFutureChanges.scroll(startRow,size,shift);
+	void scroll(int startLine, int size, int shift) {
+		fFutureChanges.scroll(startLine,size,shift);
 		notifyListers();
 	}
 	/**
@@ -228,8 +228,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		return fInterestWindowStartRow;
 	}
 
-	public void setInterestWindow(int startRow, int size) {
-		fInterestWindowStartRow=startRow;
+	public void setInterestWindow(int startLine, int size) {
+		fInterestWindowStartRow=startLine;
 		fInterestWindowSize=size;
 		notifyListers();
 	}

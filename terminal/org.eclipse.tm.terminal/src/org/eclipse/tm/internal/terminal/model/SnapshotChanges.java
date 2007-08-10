@@ -42,35 +42,35 @@ public class SnapshotChanges implements ISnapshotChanges {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#markLineChanged(int)
 	 */
-	public void markLineChanged(int y) {
-		if(y<fFirstChangedLine)
-			fFirstChangedLine=y;
-		if(y>fLastChangedLine)
-			fLastChangedLine=y;
+	public void markLineChanged(int line) {
+		if(line<fFirstChangedLine)
+			fFirstChangedLine=line;
+		if(line>fLastChangedLine)
+			fLastChangedLine=line;
 		// in case the terminal got resized we expand 
 		// don't remember the changed line because
 		// there is nothing to copy
-		if(y<fChangedLines.length) {
-			fChangedLines[y]=true;
+		if(line<fChangedLines.length) {
+			fChangedLines[line]=true;
 		}
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#markLinesChanged(int, int)
 	 */
-	public void markLinesChanged(int y, int n) {
+	public void markLinesChanged(int line, int n) {
 		if(n>0) {
 			// do not exceed the bounds of fChangedLines
 			// the terminal might have been resized and 
 			// we can only keep changes for the size of the
 			// previous terminal
-			int m=Math.min(n+y-1, fChangedLines.length-1);
-			for (int i = y+1; i < m; i++) {
+			int m=Math.min(n+line-1, fChangedLines.length-1);
+			for (int i = line+1; i < m; i++) {
 				fChangedLines[i]=true;
 			}
 			// this sets fFirstChangedLine as well
-			markLineChanged(y);
+			markLineChanged(line);
 			// this sets fLastChangedLine as well
-			markLineChanged(y+n-1);
+			markLineChanged(line+n-1);
 		}
 	}
 	/* (non-Javadoc)
@@ -93,38 +93,38 @@ public class SnapshotChanges implements ISnapshotChanges {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#scroll(int, int, int)
 	 */
-	public void scroll(int startRow, int size, int shift) {
+	public void scroll(int startLine, int size, int shift) {
 		// let's track only negative shifts
 		if(fScrollDontTrack) {
 			// we are in a state where we cannot track scrolling
 			// so let's simply mark the scrolled lines as changed
-			markLinesChanged(startRow, size);
+			markLinesChanged(startLine, size);
 		} else if(shift>=0) {
 			// we cannot handle positive scroll
 			// forget about clever caching of scroll events
 			doNotTrackScrollingAnymore();
 			// mark all lines inside the scroll region as changed
-			markLinesChanged(startRow, size);
+			markLinesChanged(startLine, size);
 		} else {
 			// we have already scrolled
 			if(fScrollWindowShift<0) {
 				// we have already scrolled
-				if(fScrollWindowStartRow==startRow && fScrollWindowSize==size) {
+				if(fScrollWindowStartRow==startLine && fScrollWindowSize==size) {
 					// we are scrolling the same region again?
 					fScrollWindowShift+=shift;
-					scrollChangesLinesWithNegativeShift(startRow,size,shift);
+					scrollChangesLinesWithNegativeShift(startLine,size,shift);
 				} else {
 					// mark all lines in the old scroll region as changed
 					doNotTrackScrollingAnymore();
 					// mark all lines changed, because
-					markLinesChanged(startRow, size);
+					markLinesChanged(startLine, size);
 				}
 			} else {
 				// first scroll in this change -- we just notify it
-				fScrollWindowStartRow=startRow;
+				fScrollWindowStartRow=startLine;
 				fScrollWindowSize=size;
 				fScrollWindowShift=shift;
-				scrollChangesLinesWithNegativeShift(startRow,size,shift);
+				scrollChangesLinesWithNegativeShift(startLine,size,shift);
 			}
 		}
 	}
@@ -146,17 +146,17 @@ public class SnapshotChanges implements ISnapshotChanges {
 	/**
 	 * Scrolls the changed lines data
 	 *
-	 * @param y
+	 * @param line
 	 * @param n
 	 * @param shift must be negative!
 	 */
-	private void scrollChangesLinesWithNegativeShift(int y, int n, int shift) {
+	private void scrollChangesLinesWithNegativeShift(int line, int n, int shift) {
 		// assert shift <0;
 		// scroll the region
 		
 		// don't run out of bounds!
-		int m=Math.min(y+n+shift, fChangedLines.length+shift);
-		for (int i = y; i < m; i++) {
+		int m=Math.min(line+n+shift, fChangedLines.length+shift);
+		for (int i = line; i < m; i++) {
 			fChangedLines[i]=fChangedLines[i-shift];
 			// move the first changed line up.
 			// We don't have to move the maximum down,
@@ -167,7 +167,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 			}
 		}
 		// mark the "opened" lines as changed
-		for (int i = Math.max(0,y+n+shift); i < y+n; i++) {
+		for (int i = Math.max(0,line+n+shift); i < line+n; i++) {
 			markLineChanged(i);
 		}
 	}
@@ -216,9 +216,9 @@ public class SnapshotChanges implements ISnapshotChanges {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasLineChanged(int)
 	 */
-	public boolean hasLineChanged(int y) {
-		if(y<fChangedLines.length)
-			return fChangedLines[y];
+	public boolean hasLineChanged(int line) {
+		if(line<fChangedLines.length)
+			return fChangedLines[line];
 		// since the height of the terminal could
 		// have changed but we have tracked only changes
 		// of the previous terminal height, any line outside
@@ -241,8 +241,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 		return fInterestWindowStartRow;
 	}
 
-	public void setInterestWindow(int startRow, int size) {
-		fInterestWindowStartRow=startRow;
+	public void setInterestWindow(int startLine, int size) {
+		fInterestWindowStartRow=startLine;
 		fInterestWindowSize=size;
 	}
 

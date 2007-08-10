@@ -62,9 +62,9 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	public void testGetWidth() {
 		ITerminalTextData term=makeITerminalTextData();
 		assertEquals(0, term.getWidth());
-		term.setDimensions(10, term.getHeight());
+		term.setDimensions(term.getHeight(), 10);
 		assertEquals(10, term.getWidth());
-		term.setDimensions(0, term.getHeight());
+		term.setDimensions(term.getHeight(), 0);
 		assertEquals(0, term.getWidth());
 	}
 
@@ -142,25 +142,25 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	public void testGetHeight() {
 		ITerminalTextData term=makeITerminalTextData();
 		assertEquals(0, term.getHeight());
-		term.setDimensions(term.getWidth(), 10);
+		term.setDimensions(10, term.getWidth());
 		assertEquals(10, term.getHeight());
-		term.setDimensions(term.getWidth(), 0);
+		term.setDimensions(0, term.getWidth());
 		assertEquals(0, term.getHeight());
 	}
 
 	public void testSetDimensions() {
 		ITerminalTextData term=makeITerminalTextData();
 		assertEquals(0, term.getHeight());
-		term.setDimensions(5, 10);
+		term.setDimensions(10, 5);
 		assertEquals(5, term.getWidth());
 		assertEquals(10, term.getHeight());
-		term.setDimensions(10, 5);
+		term.setDimensions(5, 10);
 		assertEquals(10, term.getWidth());
 		assertEquals(5, term.getHeight());
-		term.setDimensions(0, 15);
+		term.setDimensions(15, 0);
 		assertEquals(0, term.getWidth());
 		assertEquals(15, term.getHeight());
-		term.setDimensions(12, 0);
+		term.setDimensions(0, 12);
 		assertEquals(12, term.getWidth());
 		assertEquals(0, term.getHeight());
 		term.setDimensions(0, 0);
@@ -169,36 +169,36 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	}
 	public void testResize() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(5, 3);
+		term.setDimensions(3, 5);
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
 		fill(term,0,0,s);
 		assertEqualsTerm(s, toMultiLineText(term));
-		term.setDimensions(4, 3);
+		term.setDimensions(3, 4);
 		assertEqualsTerm(
 				 "1234\n" +
 				 "abcd\n" +
 				 "ABCD", toMultiLineText(term));
 		// the columns should be restored
-		term.setDimensions(5, 3);
+		term.setDimensions(3, 5);
 		assertEqualsTerm(
 				 "12345\n" +
 				 "abcde\n" +
 				 "ABCDE", toMultiLineText(term));
-		term.setDimensions(6, 3);
+		term.setDimensions(3, 6);
 		assertEqualsTerm(
 				 "12345\000\n" +
 				 "abcde\000\n" +
 				 "ABCDE\000", toMultiLineText(term));
-		term.setChar(5, 0, 'x', null);
-		term.setChar(5, 1, 'y', null);
-		term.setChar(5, 2, 'z', null);
+		term.setChar(0, 5, 'x', null);
+		term.setChar(1, 5, 'y', null);
+		term.setChar(2, 5, 'z', null);
 		assertEqualsTerm(
 				 "12345x\n" +
 				 "abcdey\n" +
 				 "ABCDEz", toMultiLineText(term));
-		term.setDimensions(4, 2);
+		term.setDimensions(2, 4);
 		assertEqualsTerm(
 				 "1234\n" +
 				 "abcd", toMultiLineText(term));
@@ -206,14 +206,14 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 
 	public void testResizeFailure() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(5, 3);
+		term.setDimensions(3, 5);
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
 		fill(term,0,0,s);
 		assertEqualsTerm(s, toMultiLineText(term));
 		try {
-			term.setDimensions(4, -3);
+			term.setDimensions(-3, 4);
 			fail();
 		} catch (RuntimeException e) {
 		} catch (AssertionFailedError e) {
@@ -233,7 +233,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		LineSegment[] segments;
 		
 		term.setChars(0, 0,"0123".toCharArray(), s1);
-		term.setChars(4, 0,"abcd".toCharArray(), null);
+		term.setChars(0, 4,"abcd".toCharArray(), null);
 		segments=term.getLineSegments(0, 0, term.getWidth());
 		assertEquals(2, segments.length);
 		assertSegment(0, "0123", s1, segments[0]);
@@ -258,9 +258,9 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		assertSegment(0, "0", s1, segments[0]);
 		
 		// line 1
-		term.setChars(0, 1,"x".toCharArray(), s1);
+		term.setChars(1, 0,"x".toCharArray(), s1);
 		term.setChars(1, 1,"y".toCharArray(), s2);
-		term.setChars(2, 1,"z".toCharArray(), s3);
+		term.setChars(1, 2,"z".toCharArray(), s3);
 		
 		segments=term.getLineSegments(0, 1, term.getWidth());
 		assertEquals(4, segments.length);
@@ -270,7 +270,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		assertSegment(3, "\000\000\000\000\000", null, segments[3]);
 		
 		// line 2
-		term.setChars(4, 2,"klm".toCharArray(), s1);		
+		term.setChars(2, 4,"klm".toCharArray(), s1);		
 		segments=term.getLineSegments(0, 2, term.getWidth());
 		assertEquals(3, segments.length);
 		assertSegment(0, "\000\000\000\000", null, segments[0]);
@@ -291,7 +291,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	}
 	public void testGetLineSegmentsOutOfBounds() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(8, 1);
+		term.setDimensions(1, 8);
 		term.setChars(0,0,"xx".toCharArray(),null);
 		LineSegment[] segments=term.getLineSegments(5, 0, 2);
 		assertEquals(1, segments.length);
@@ -311,22 +311,22 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		ITerminalTextData term=makeITerminalTextData();
 		fill(term, s);
 		assertEquals('1', term.getChar(0,0));
-		assertEquals('2', term.getChar(1,0));
-		assertEquals('3', term.getChar(2,0));
-		assertEquals('4', term.getChar(3,0));
-		assertEquals('5', term.getChar(4,0));
-		assertEquals('a', term.getChar(0,1));
+		assertEquals('2', term.getChar(0,1));
+		assertEquals('3', term.getChar(0,2));
+		assertEquals('4', term.getChar(0,3));
+		assertEquals('5', term.getChar(0,4));
+		assertEquals('a', term.getChar(1,0));
 		assertEquals('b', term.getChar(1,1));
-		assertEquals('c', term.getChar(2,1));
-		assertEquals('d', term.getChar(3,1));
-		assertEquals('e', term.getChar(4,1));
-		assertEquals('A', term.getChar(0,2));
-		assertEquals('B', term.getChar(1,2));
+		assertEquals('c', term.getChar(1,2));
+		assertEquals('d', term.getChar(1,3));
+		assertEquals('e', term.getChar(1,4));
+		assertEquals('A', term.getChar(2,0));
+		assertEquals('B', term.getChar(2,1));
 		assertEquals('C', term.getChar(2,2));
-		assertEquals('D', term.getChar(3,2));
-		assertEquals('E', term.getChar(4,2));
+		assertEquals('D', term.getChar(2,3));
+		assertEquals('E', term.getChar(2,4));
 		try {
-			term.getChar(-1,0);
+			term.getChar(0,-1);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {
 		} catch (RuntimeException e) {
@@ -338,25 +338,25 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		} catch (RuntimeException e) {
 		}
 		try {
-			term.getChar(0,-1);
+			term.getChar(-1,0);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {
 		} catch (RuntimeException e) {
 		}
 		try {
-			term.getChar(5,0);
+			term.getChar(0,5);
 			fail();
 		} catch (AssertionFailedError e) {
 		} catch (RuntimeException e) {
 		}
 		try {
-			term.getChar(5,3);
+			term.getChar(3,5);
 			fail();
 		} catch (AssertionFailedError e) {
 		} catch (RuntimeException e) {
 		}
 		try {
-			term.getChar(0,3);
+			term.getChar(3,0);
 			fail();
 		} catch (AssertionFailedError e) {
 		} catch (RuntimeException e) {
@@ -366,17 +366,17 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	public void testGetStyle() {
 		ITerminalTextData term=makeITerminalTextData();
 		Style style=getDefaultStyle();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				term.setChar(x, y, c, style.setForground(StyleColor.getStyleColor(""+c)));
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				term.setChar(line, column, c, style.setForground(StyleColor.getStyleColor(""+c)));
 			}
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				assertSame(style.setForground(StyleColor.getStyleColor(""+c)), term.getStyle(x, y));
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				assertSame(style.setForground(StyleColor.getStyleColor(""+c)), term.getStyle(line, column));
 			}
 		}
 		
@@ -388,16 +388,16 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 
 	public void testSetChar() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				term.setChar(x, y, (char)('a'+x+y), null);
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				term.setChar(line, column, (char)('a'+column+line), null);
 			}
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				assertEquals(c, term.getChar(x,y));
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				assertEquals(c, term.getChar(line,column));
 			}
 		}
 		assertEqualsTerm(
@@ -410,18 +410,18 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	}
 	public void testSetChars() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(3, 6);
-		for (int y = 0; y < term.getHeight(); y++) {
+		term.setDimensions(6, 3);
+		for (int line = 0; line < term.getHeight(); line++) {
 			char[] chars=new char[term.getWidth()];
-			for (int x = 0; x < term.getWidth(); x++) {
-				chars[x]=(char)('a'+x+y);
+			for (int column = 0; column < term.getWidth(); column++) {
+				chars[column]=(char)('a'+column+line);
 			}
-			term.setChars(0, y, chars, null);
+			term.setChars(line, 0, chars, null);
 		}
-		for (int y = 0; y < term.getHeight(); y++) {
-			for (int x = 0; x < term.getWidth(); x++) {
-				char c=(char)('a'+x+y);
-				assertEquals(c, term.getChar(x,y));
+		for (int line = 0; line < term.getHeight(); line++) {
+			for (int column = 0; column < term.getWidth(); column++) {
+				char c=(char)('a'+column+line);
+				assertEquals(c, term.getChar(line,column));
 			}
 		}
 		assertEqualsTerm(
@@ -432,7 +432,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "efg\n"
 				+ "fgh", toMultiLineText(term));
 	
-		term.setChars(1, 3, new char[]{'1','2'}, null);
+		term.setChars(3, 1, new char[]{'1','2'}, null);
 		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
@@ -441,7 +441,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "efg\n"
 				+ "fgh", toMultiLineText(term));
 		// check if chars are correctly chopped
-		term.setChars(1, 4, new char[]{'1','2','3','4','5'}, null);
+		term.setChars(4, 1, new char[]{'1','2','3','4','5'}, null);
 		assertEqualsTerm(
 				  "abc\n"
 				+ "bcd\n"
@@ -458,20 +458,20 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				+ "ABCDEF";
 		fill(term, s);
 		char[] chars=new char[]{'1','2','3','4','5','6','7','8'};
-		term.setChars(0, 1, chars, 0, 6,null);
+		term.setChars(1, 0, chars, 0, 6,null);
 		assertEqualsTerm(
 				  "ZYXWVU\n"
 				+ "123456\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 		fill(term, s);
-		term.setChars(0, 1, chars, 0, 5, null);
+		term.setChars(1, 0, chars, 0, 5, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "12345f\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 		fill(term, s);
-		term.setChars(0, 1, chars, 1, 5, null);
+		term.setChars(1, 0, chars, 1, 5, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "23456f\n"
 				+ "ABCDEF", toMultiLineText(term));
@@ -485,36 +485,36 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 
 		
 		fill(term, s);
-		term.setChars(2, 1, chars, 3, 4, null);
+		term.setChars(1, 2, chars, 3, 4, null);
 		assertEqualsTerm("ZYXWVU\n"
 				+ "ab4567\n"
 				+ "ABCDEF", toMultiLineText(term));
 
 		fill(term, s);
 		try {
-			term.setChars(0, 1, chars, 7, 10, null);
+			term.setChars(1, 0, chars, 7, 10, null);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
 		fill(term, s);
 		try {
-			term.setChars(-1, 1, chars, 0, 2, null);
-			fail();
-		} catch (ArrayIndexOutOfBoundsException e) {}
-		try {
 			term.setChars(1, -1, chars, 0, 2, null);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
-		// this one will not fail,because we make sure not to write off bound...
-		term.setChars(10, 1, chars, 0, 2, null);
 		try {
-			term.setChars(1, 10, chars, 0, 2, null);
+			term.setChars(-1, 1, chars, 0, 2, null);
+			fail();
+		} catch (ArrayIndexOutOfBoundsException e) {}
+		// this one will not fail,because we make sure not to write off bound...
+		term.setChars(1, 10, chars, 0, 2, null);
+		try {
+			term.setChars(10, 1, chars, 0, 2, null);
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
 //		assertEquals(s, toSimpleText(term));
 	}
 	public void testSetCopyInto() {
 		ITerminalTextData term=makeITerminalTextData();
-		term.setDimensions(5, 3);
+		term.setDimensions(3, 5);
 		String s="12345\n" +
 				 "abcde\n" +
 				 "ABCDE";
@@ -526,7 +526,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		
 		termCopy.setChar(1, 1, 'X', null);
 		assertEqualsTerm(s, toMultiLineText(term));
-		term.setDimensions(4, 2);
+		term.setDimensions(2, 4);
 		assertEquals(5, termCopy.getWidth());
 		assertEquals(3, termCopy.getHeight());
 		
@@ -744,16 +744,16 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 	}
 	/**
 	 * Makes a simple shift test
-	 * @param y scroll start
+	 * @param line scroll start
 	 * @param n number of lines to be scrolled
 	 * @param shift amount of lines to be shifted
 	 * @param start the original data
 	 * @param result the expected result
 	 */
-	void scrollTest(int y,int n, int shift, String start,String result) {
+	void scrollTest(int line,int n, int shift, String start,String result) {
 		ITerminalTextData term=makeITerminalTextData();
 		fillSimple(term,start);
-		term.scroll(y, n, shift);
+		term.scroll(line, n, shift);
 		assertEqualsSimple(result, toSimple(term));
 		
 	}
