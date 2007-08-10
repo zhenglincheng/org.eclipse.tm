@@ -50,7 +50,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	// this variable is synchronized on fTerminal!
 	private boolean fListenersNeedNotify;
 	private int fInterestWindowSize;
-	private int fInterestWindowStartRow;
+	private int fInterestWindowStartLine;
 
 	TerminalTextDataSnapshot(TerminalTextData terminal) {
 		fSnapshot = new TerminalTextDataStore();
@@ -88,7 +88,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 				fCurrentChanges.setAllChanged(fTerminal.getHeight());
 			} else {
 				// first we do the scroll on the copy
-				fSnapshot.scroll(fCurrentChanges.getScrollWindowStartRow(), fCurrentChanges.getScrollWindowSize(), fCurrentChanges.getScrollWindowShift());
+				fSnapshot.scroll(fCurrentChanges.getScrollWindowStartLine(), fCurrentChanges.getScrollWindowSize(), fCurrentChanges.getScrollWindowShift());
 				// and then create the snapshot of the changed lines
 				fCurrentChanges.copyChangedLines(fSnapshot, fTerminal);
 			}
@@ -140,8 +140,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeY()
 	 */
-	public int getScrollWindowStartRow() {
-		return fCurrentChanges.getScrollWindowStartRow();
+	public int getScrollWindowStartLine() {
+		return fCurrentChanges.getScrollWindowStartLine();
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeN()
@@ -224,12 +224,12 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	}
 
 
-	public int getInterestWindowStartRow() {
-		return fInterestWindowStartRow;
+	public int getInterestWindowStartLine() {
+		return fInterestWindowStartLine;
 	}
 
 	public void setInterestWindow(int startLine, int size) {
-		fInterestWindowStartRow=startLine;
+		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 		notifyListers();
 	}

@@ -43,7 +43,7 @@ public interface ISnapshotChanges {
 
 	int getLastChangedLine();
 
-	int getScrollWindowStartRow();
+	int getScrollWindowStartLine();
 
 	int getScrollWindowSize();
 
@@ -58,7 +58,7 @@ public interface ISnapshotChanges {
 	 * @param size number of lines to follow
 	 */
 	void setInterestWindow(int startLine, int size);
-	int getInterestWindowStartRow();
+	int getInterestWindowStartLine();
 	int getInterestWindowSize();
 
 }

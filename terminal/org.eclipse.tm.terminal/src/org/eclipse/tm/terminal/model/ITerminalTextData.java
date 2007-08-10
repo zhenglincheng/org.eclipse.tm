@@ -23,7 +23,7 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 
 	/**
 	 * Sets the dimensions of the data. If the dimensions are smaller than the current
-	 * dimensions, the lines and rows will be chopped. If the dimensions are bigger, then
+	 * dimensions, the lines will be chopped. If the dimensions are bigger, then
 	 * the new elements will be filled with 0 chars and null Style.
 	 * @param height
 	 * @param width
@@ -108,7 +108,7 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * 3 cccc
 	 * 4 eeee
 	 * </pre>
-	 * @param startLine the start row of the shift
+	 * @param startLine the start line of the shift
 	 * @param size the number of lines to shift
 	 * @param shift how much scrolling is done. New scrolled area is filled with <code>'\000</code>'.
 	 * Negative number means scroll down, positive scroll up (see example above).

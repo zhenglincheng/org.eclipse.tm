@@ -110,7 +110,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * @param size number of lines to follow
 	 */
 	void setInterestWindow(int startLine, int size);
-	int getInterestWindowStartRow();
+	int getInterestWindowStartLine();
 	int getInterestWindowSize();
 	
 	/**
@@ -123,7 +123,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * @param detectScrolling if <code>true</code> the snapshot tries to identify scroll
 	 * changes since the last snapshot. In this case the information about scrolling
 	 * can be retrieved using the following methods:
-	 * {@link #getScrollWindowStartRow()}, {@link #getScrollWindowSize()} and {@link #getScrollWindowShift()}
+	 * {@link #getScrollWindowStartLine()}, {@link #getScrollWindowSize()} and {@link #getScrollWindowShift()}
 	 * <br><b>Note:</b> The method {@link #hasLineChanged(int)} returns changes <b>after</b> the
 	 * scrolling has been applied.
 	 */
@@ -175,7 +175,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * @return The first line scrolled in this snapshot compared
 	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}.
 	 */
-	int getScrollWindowStartRow();
+	int getScrollWindowStartLine();
 
 	/**
 	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method

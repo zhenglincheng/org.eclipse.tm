@@ -16,7 +16,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * The last line changed
 	 */
 	private int fLastChangedLine;
-	private int fScrollWindowStartRow;
+	private int fScrollWindowStartLine;
 	private int fScrollWindowSize;
 	private int fScrollWindowShift;
 	/**
@@ -31,7 +31,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	private boolean[] fChangedLines;
 	
 	private int fInterestWindowSize;
-	private int fInterestWindowStartRow;
+	private int fInterestWindowStartLine;
 
 	
 	public SnapshotChanges(int nLines) {
@@ -77,8 +77,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#convertScrollingIntoChanges()
 	 */
 	public void convertScrollingIntoChanges() {
-		markLinesChanged(fScrollWindowStartRow,fScrollWindowSize);
-		fScrollWindowStartRow=0;
+		markLinesChanged(fScrollWindowStartLine,fScrollWindowSize);
+		fScrollWindowStartLine=0;
 		fScrollWindowSize=0;
 		fScrollWindowShift=0;
 	}
@@ -109,7 +109,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 			// we have already scrolled
 			if(fScrollWindowShift<0) {
 				// we have already scrolled
-				if(fScrollWindowStartRow==startLine && fScrollWindowSize==size) {
+				if(fScrollWindowStartLine==startLine && fScrollWindowSize==size) {
 					// we are scrolling the same region again?
 					fScrollWindowShift+=shift;
 					scrollChangesLinesWithNegativeShift(startLine,size,shift);
@@ -121,7 +121,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 				}
 			} else {
 				// first scroll in this change -- we just notify it
-				fScrollWindowStartRow=startLine;
+				fScrollWindowStartLine=startLine;
 				fScrollWindowSize=size;
 				fScrollWindowShift=shift;
 				scrollChangesLinesWithNegativeShift(startLine,size,shift);
@@ -135,8 +135,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 	private void doNotTrackScrollingAnymore() {
 		if(fScrollWindowSize>0) {
 			// convert the current scrolling into changes
-			markLinesChanged(fScrollWindowStartRow, fScrollWindowSize);
-			fScrollWindowStartRow=0;
+			markLinesChanged(fScrollWindowStartLine, fScrollWindowSize);
+			fScrollWindowStartLine=0;
 			fScrollWindowSize=0;
 			fScrollWindowShift=0;
 		}
@@ -175,7 +175,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#setAllChanged(int)
 	 */
 	public void setAllChanged(int height) {
-		fScrollWindowStartRow=0;
+		fScrollWindowStartLine=0;
 		fScrollWindowSize=0;
 		fScrollWindowShift=0;
 		fFirstChangedLine=0;
@@ -196,10 +196,10 @@ public class SnapshotChanges implements ISnapshotChanges {
 		return fLastChangedLine;
 	}
 	/* (non-Javadoc)
-	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#getScrollWindowStartRow()
+	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#getScrollWindowStartLine()
 	 */
-	public int getScrollWindowStartRow() {
-		return fScrollWindowStartRow;
+	public int getScrollWindowStartLine() {
+		return fScrollWindowStartLine;
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#getScrollWindowSize()
@@ -237,12 +237,12 @@ public class SnapshotChanges implements ISnapshotChanges {
 	}
 
 
-	public int getInterestWindowStartRow() {
-		return fInterestWindowStartRow;
+	public int getInterestWindowStartLine() {
+		return fInterestWindowStartLine;
 	}
 
 	public void setInterestWindow(int startLine, int size) {
-		fInterestWindowStartRow=startLine;
+		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 	}
 

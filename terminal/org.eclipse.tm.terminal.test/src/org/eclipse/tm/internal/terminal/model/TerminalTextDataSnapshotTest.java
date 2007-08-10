@@ -569,7 +569,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(2, snapshot.getFirstChangedLine());
 		assertEquals(7, snapshot.getLastChangedLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowShift());
 		
 		// scrolls with different ranges cause no scroll
@@ -583,7 +583,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(7, snapshot.getLastChangedLine());
 		assertEquals(0, snapshot.getScrollWindowShift());
 		assertEquals(0, snapshot.getScrollWindowSize());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 	}
 	public void testHasLineChanged() {
 		ITerminalTextData term=makeITerminalTextData();
@@ -652,7 +652,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		term.scroll(2,3,-1);
 		snapshot.updateSnapshot(true);
-		assertEquals(2, snapshot.getScrollWindowStartRow());
+		assertEquals(2, snapshot.getScrollWindowStartLine());
 		assertEquals(3, snapshot.getScrollWindowSize());
 		assertEquals(-1, snapshot.getScrollWindowShift());
 		assertEquals(4, snapshot.getFirstChangedLine());
@@ -660,7 +660,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		term.scroll(2,3,-2);
 		snapshot.updateSnapshot(true);
-		assertEquals(2, snapshot.getScrollWindowStartRow());
+		assertEquals(2, snapshot.getScrollWindowStartLine());
 		assertEquals(3, snapshot.getScrollWindowSize());
 		assertEquals(-2, snapshot.getScrollWindowShift());
 		assertEquals(3, snapshot.getFirstChangedLine());
@@ -669,7 +669,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(2,4,-1);
 		term.scroll(2,4,-1);
 		snapshot.updateSnapshot(true);
-		assertEquals(2, snapshot.getScrollWindowStartRow());
+		assertEquals(2, snapshot.getScrollWindowStartLine());
 		assertEquals(4, snapshot.getScrollWindowSize());
 		assertEquals(-2, snapshot.getScrollWindowShift());
 		assertEquals(4, snapshot.getFirstChangedLine());
@@ -679,7 +679,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot=snapshot(s,term);
 		term.scroll(2,3,-1);
 		snapshot.updateSnapshot(false);
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 		assertEquals(2, snapshot.getFirstChangedLine());
@@ -705,7 +705,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(4,2,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1100110000");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -714,7 +714,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(2,2,-2);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111000000");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -724,7 +724,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(0,3,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111000000");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -734,7 +734,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(0,3,-10);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111000000");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -743,7 +743,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(1,3,1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "0111000000");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	}
@@ -761,7 +761,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertChangedLines(snapshot, "1111");
 		assertEquals(0, snapshot.getFirstChangedLine());
 		assertEquals(3, snapshot.getLastChangedLine());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -771,7 +771,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertChangedLines(snapshot, "11111");
 		assertEquals(0, snapshot.getFirstChangedLine());
 		assertEquals(4, snapshot.getLastChangedLine());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	
@@ -781,7 +781,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertChangedLines(snapshot, "111");
 		assertEquals(0, snapshot.getFirstChangedLine());
 		assertEquals(2, snapshot.getLastChangedLine());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	
@@ -791,7 +791,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertChangedLines(snapshot, "");
 		assertEquals(0, snapshot.getFirstChangedLine());
 		assertEquals(-1, snapshot.getLastChangedLine());
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	
@@ -815,7 +815,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.setDimensions(5, 4);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "11111");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 
@@ -825,7 +825,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(4,2,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111111");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 		snapshot=snapshot(s,term);
@@ -834,7 +834,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.setDimensions(term.getHeight(),term.getWidth()+1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "1111111111");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	}
@@ -857,7 +857,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.scroll(0,14,-1);
 		snapshot.updateSnapshot(true);
 		assertChangedLines(snapshot, "11111111111111");
-		assertEquals(0, snapshot.getScrollWindowStartRow());
+		assertEquals(0, snapshot.getScrollWindowStartLine());
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	}

@@ -221,7 +221,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	
 	/*
 	 * @return a text representation of the object.
-	 * Rows are separated by '\n'. No style information is returned.
+	 * Lines are separated by '\n'. No style information is returned.
 	 */
 	public String toString() {
 		StringBuffer buff=new StringBuffer();
