@@ -103,13 +103,14 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	/**
 	 * @return true if the data has changed since the previous snapshot.
 	 */
-	boolean hasChanged();
+	boolean isOutOfDate();
 
 	/**
 	 * The window of interest is the region the snapshot should track.
-	 * Changes outside this region are ignored.
+	 * Changes outside this region are ignored. The change takes effect after
+	 * an update!
 	 * @param startLine -1 means track the end of the data
-	 * @param size number of lines to track
+	 * @param size number of lines to track. A size of -1 means track all.
 	 */
 	void setInterestWindow(int startLine, int size);
 	int getInterestWindowStartLine();

@@ -72,7 +72,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		term.setDimensions(2, 2);
 		assertEquals(s, toMultiLineText(snapshot));
 	}
-	public void testHasChanged() {
+	public void testIsOutOfDate() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s="12345\n" +
 				 "abcde\n" +
@@ -82,66 +82,66 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		TerminalTextTestHelper.fill(term,s);
 		
 		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// make a change and expect it to be changed
 		term.setChar(0, 0, '?', null);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// make a change and expect it to be changed
 		term.setChars(1, 1, new char[]{'?','!','.'},null);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// scroll
 		term.scroll(1, 2, -1);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// scroll
 		term.scroll(1, 2, 1);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 
 		// scroll
 		term.scroll(1, 2, -1);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(true);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// scroll
 		term.scroll(1, 2, 1);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(true);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// setDimensions
 		term.setDimensions(2, 2);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 		// setDimensions
 		term.setDimensions(20, 20);
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 		
 	}
 	ITerminalTextDataSnapshot snapshot(String text, ITerminalTextData term) {
@@ -249,27 +249,27 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot.updateSnapshot(false);
 
 		term.addLine();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 
 		term.addLine();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 
 		term.addLine();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 
 		term.addLine();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 
 		term.addLine();
-		assertTrue(snapshot.hasChanged());
+		assertTrue(snapshot.isOutOfDate());
 		snapshot.updateSnapshot(false);
 		assertEquals(toMultiLineText(term), toMultiLineText(snapshot));
 
@@ -979,7 +979,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(1, listener.N);
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 	}
 
 	public void testRemoveListener() {
@@ -1157,7 +1157,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 
 
 		snapshot.updateSnapshot(false);
-		assertFalse(snapshot.hasChanged());
+		assertFalse(snapshot.isOutOfDate());
 	}
 
 }

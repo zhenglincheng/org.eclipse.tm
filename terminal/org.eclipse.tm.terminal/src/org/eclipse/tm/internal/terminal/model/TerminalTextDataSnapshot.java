@@ -58,14 +58,14 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fFutureChanges = new SnapshotChanges(fTerminal.getHeight());
 		fFutureChanges.markLinesChanged(0, fTerminal.getHeight());
 		fListenersNeedNotify=true;
-
+		fInterestWindowSize=-1;
 	}
 	
 	public void detach() {
 		fTerminal.removeSnapshot(this);
 	}
 
-	public boolean hasChanged() {
+	public boolean isOutOfDate() {
 		// this is called from fTerminal, therefore we lock on fTerminal
 		synchronized (fTerminal) {
 			return fFutureChanges.hasChanged();
@@ -82,7 +82,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 			fFutureChanges=new SnapshotChanges(fTerminal.getHeight());
 			// and update the snapshot
 			if(fSnapshot.getHeight()!=fTerminal.getHeight()||fSnapshot.getWidth()!=fTerminal.getWidth()) {
-				fSnapshot.setWindow(0, fTerminal.getHeight());
+				if(fInterestWindowSize==-1)
+					fSnapshot.setWindow(0, fTerminal.getHeight());
 				// if the dimensions have changed, we need a full copy
 				fSnapshot.copy(fTerminal);
 				// and we mark all lines as changed
@@ -232,6 +233,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	public void setInterestWindow(int startLine, int size) {
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
+		fSnapshot.setWindow(startLine, size);
+		fCurrentChanges.setInterestWindow(startLine, size);
 		notifyListers();
 	}
 
