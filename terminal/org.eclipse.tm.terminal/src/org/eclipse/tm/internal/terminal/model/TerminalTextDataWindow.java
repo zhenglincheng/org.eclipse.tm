@@ -56,10 +56,10 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		return fHeight;
 	}
 
-	public LineSegment[] getLineSegments(int startCol, int line, int numberOfCols) {
+	public LineSegment[] getLineSegments(int line, int startCol, int numberOfCols) {
 		if(!isInWindow(line))
 			return new LineSegment[]{new LineSegment(startCol,new String(new char[numberOfCols]),null)};
-		return fData.getLineSegments(startCol, line-fWindowOffset, numberOfCols);
+		return fData.getLineSegments(line-fWindowOffset, startCol, numberOfCols);
 	}
 
 	public int getMaxHeight() {

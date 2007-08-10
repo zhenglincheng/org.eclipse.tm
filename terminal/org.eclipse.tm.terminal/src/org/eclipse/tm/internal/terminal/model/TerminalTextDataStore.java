@@ -94,7 +94,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getLineSegments(int, int, int)
 	 */
-	public LineSegment[] getLineSegments(int column, int line, int len) {
+	public LineSegment[] getLineSegments(int line, int column, int len) {
 		// get the styles and chars for this line
 		Style[] styles=fStyle[line];
 		char[] chars=fChars[line];

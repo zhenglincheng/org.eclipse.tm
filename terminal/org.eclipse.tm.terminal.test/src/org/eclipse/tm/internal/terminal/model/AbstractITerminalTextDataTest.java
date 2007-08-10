@@ -240,16 +240,16 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		assertSegment(4, "abcd", null, segments[1]);
 		
 		
-		segments=term.getLineSegments(4, 0, term.getWidth()-4);
+		segments=term.getLineSegments(0, 4, term.getWidth()-4);
 		assertEquals(1, segments.length);
 		assertSegment(4, "abcd", null, segments[0]);
 		
-		segments=term.getLineSegments(3, 0, 2);
+		segments=term.getLineSegments(0, 3, 2);
 		assertEquals(2, segments.length);
 		assertSegment(3, "3", s1, segments[0]);
 		assertSegment(4, "a", null, segments[1]);
 		
-		segments=term.getLineSegments(7, 0, 1);
+		segments=term.getLineSegments(0, 7, 1);
 		assertEquals(1, segments.length);
 		assertSegment(7, "d", null, segments[0]);
 		
@@ -262,7 +262,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		term.setChars(1, 1,"y".toCharArray(), s2);
 		term.setChars(1, 2,"z".toCharArray(), s3);
 		
-		segments=term.getLineSegments(0, 1, term.getWidth());
+		segments=term.getLineSegments(1, 0, term.getWidth());
 		assertEquals(4, segments.length);
 		assertSegment(0, "x", s1, segments[0]);
 		assertSegment(1, "y", s2, segments[1]);
@@ -271,14 +271,14 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		
 		// line 2
 		term.setChars(2, 4,"klm".toCharArray(), s1);		
-		segments=term.getLineSegments(0, 2, term.getWidth());
+		segments=term.getLineSegments(2, 0, term.getWidth());
 		assertEquals(3, segments.length);
 		assertSegment(0, "\000\000\000\000", null, segments[0]);
 		assertSegment(4, "klm", s1, segments[1]);
 		assertSegment(7, "\000", null, segments[2]);
 		
 		// line 3
-		segments=term.getLineSegments(0, 3, term.getWidth());
+		segments=term.getLineSegments(3, 0, term.getWidth());
 		assertEquals(1, segments.length);
 		assertSegment(0, "\000\000\000\000\000\000\000\000", null, segments[0]);
 		
@@ -293,7 +293,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		ITerminalTextData term=makeITerminalTextData();
 		term.setDimensions(1, 8);
 		term.setChars(0,0,"xx".toCharArray(),null);
-		LineSegment[] segments=term.getLineSegments(5, 0, 2);
+		LineSegment[] segments=term.getLineSegments(0, 5, 2);
 		assertEquals(1, segments.length);
 		
 		

@@ -109,8 +109,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		return fSnapshot.getHeight();
 	}
 
-	public LineSegment[] getLineSegments(int column, int line, int len) {
-		return fSnapshot.getLineSegments(column, line, len);
+	public LineSegment[] getLineSegments(int line, int column, int len) {
+		return fSnapshot.getLineSegments(line, column, len);
 	}
 
 	public Style getStyle(int line, int column) {

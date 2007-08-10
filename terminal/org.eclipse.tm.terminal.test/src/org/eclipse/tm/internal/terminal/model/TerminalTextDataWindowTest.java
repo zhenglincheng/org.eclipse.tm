@@ -149,26 +149,26 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		
 		term.setChars(2, 0,"0123".toCharArray(), s1);
 		term.setChars(2, 4,"abcd".toCharArray(), null);
-		segments=term.getLineSegments(0, 2, term.getWidth());
+		segments=term.getLineSegments(2, 0, term.getWidth());
 		assertEquals(2, segments.length);
 		assertSegment(0, "0123", s1, segments[0]);
 		assertSegment(4, "abcd", null, segments[1]);
 		
 		
-		segments=term.getLineSegments(4, 2, term.getWidth()-4);
+		segments=term.getLineSegments(2, 4, term.getWidth()-4);
 		assertEquals(1, segments.length);
 		assertSegment(4, "abcd", null, segments[0]);
 		
-		segments=term.getLineSegments(3, 2, 2);
+		segments=term.getLineSegments(2, 3, 2);
 		assertEquals(2, segments.length);
 		assertSegment(3, "3", s1, segments[0]);
 		assertSegment(4, "a", null, segments[1]);
 		
-		segments=term.getLineSegments(7, 2, 1);
+		segments=term.getLineSegments(2, 7, 1);
 		assertEquals(1, segments.length);
 		assertSegment(7, "d", null, segments[0]);
 		
-		segments=term.getLineSegments(0, 2, 1);
+		segments=term.getLineSegments(2, 0, 1);
 		assertEquals(1, segments.length);
 		assertSegment(0, "0", s1, segments[0]);
 		
@@ -177,12 +177,12 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		term.setChars(1, 1,"y".toCharArray(), s2);
 		term.setChars(1, 2,"z".toCharArray(), s3);
 		
-		segments=term.getLineSegments(0, 1, term.getWidth());
+		segments=term.getLineSegments(1, 0, term.getWidth());
 		assertEquals(1, segments.length);
 		assertSegment(0, "\000\000\000\000\000\000\000\000", null, segments[0]);
 		
 		// line 3
-		segments=term.getLineSegments(0, 3, term.getWidth());
+		segments=term.getLineSegments(3, 0, term.getWidth());
 		assertEquals(1, segments.length);
 		assertSegment(0, "\000\000\000\000\000\000\000\000", null, segments[0]);
 		

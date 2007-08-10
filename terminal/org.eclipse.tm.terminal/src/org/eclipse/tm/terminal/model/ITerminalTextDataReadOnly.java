@@ -24,12 +24,12 @@ public interface ITerminalTextDataReadOnly {
 	int getHeight();
 
 	/**
-	 * @param startCol must be >=0 and < width
 	 * @param line be >=0 and < height
+	 * @param startCol must be >=0 and < width
 	 * @param numberOfCols must be > 0
 	 * @return a the line segments of the specified range
 	 */
-	LineSegment[] getLineSegments(int startCol, int line, int numberOfCols);
+	LineSegment[] getLineSegments(int line, int startCol, int numberOfCols);
 
 	/**
 	 * @param line must be >=0 and < height

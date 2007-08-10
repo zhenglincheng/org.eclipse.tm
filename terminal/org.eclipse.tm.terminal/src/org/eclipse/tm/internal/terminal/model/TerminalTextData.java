@@ -59,8 +59,8 @@ public class TerminalTextData implements ITerminalTextData {
 			sendLinesChangedToSnapshot(0, h);
 		}
 	}
-	synchronized public LineSegment[] getLineSegments(int column, int line, int len) {
-		return fData.getLineSegments(column, line, len);
+	synchronized public LineSegment[] getLineSegments(int line, int column, int len) {
+		return fData.getLineSegments(line, column, len);
 	}
 	synchronized public char getChar(int line, int column) {
 		return fData.getChar(line, column);
