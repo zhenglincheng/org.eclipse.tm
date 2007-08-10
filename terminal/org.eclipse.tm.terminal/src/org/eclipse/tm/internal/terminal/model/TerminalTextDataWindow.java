@@ -17,13 +17,13 @@ import org.eclipse.tm.terminal.model.Style;
 
 /**
  * This class stores the data only within a window {@link #setWindow(int, int)} and 
- * {@link #getWindowOffset()} and {@link #getWindowSize()}. Everything outside 
+ * {@link #getWindowStartLine()} and {@link #getWindowSize()}. Everything outside 
  * the is <code>char=='\000'</code> and <code>style=null</code>.
  *
  */
 public class TerminalTextDataWindow implements ITerminalTextData {
 	final ITerminalTextData fData;
-	int fWindowOffset;
+	int fWindowStartLine;
 	int fWindowSize;
 	int fHeight;
 	int fMaxHeight;
@@ -38,18 +38,18 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	 * @return true if the line is within the window
 	 */
 	boolean isInWindow(int line) {
-		return line>=fWindowOffset && line<fWindowOffset+fWindowSize;
+		return line>=fWindowStartLine && line<fWindowStartLine+fWindowSize;
 	}
 	public char getChar(int line, int column) {
 		if(!isInWindow(line))
 			return 0;
-		return fData.getChar(line-fWindowOffset, column);
+		return fData.getChar(line-fWindowStartLine, column);
 	}
 
 	public char[] getChars(int line) {
 		if(!isInWindow(line))
 			return null;
-		return fData.getChars(line-fWindowOffset);
+		return fData.getChars(line-fWindowStartLine);
 	}
 
 	public int getHeight() {
@@ -59,7 +59,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	public LineSegment[] getLineSegments(int line, int startCol, int numberOfCols) {
 		if(!isInWindow(line))
 			return new LineSegment[]{new LineSegment(startCol,new String(new char[numberOfCols]),null)};
-		return fData.getLineSegments(line-fWindowOffset, startCol, numberOfCols);
+		return fData.getLineSegments(line-fWindowStartLine, startCol, numberOfCols);
 	}
 
 	public int getMaxHeight() {
@@ -69,13 +69,13 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	public Style getStyle(int line, int column) {
 		if(!isInWindow(line))
 			return null;
-		return fData.getStyle(line-fWindowOffset, column);
+		return fData.getStyle(line-fWindowStartLine, column);
 	}
 
 	public Style[] getStyles(int line) {
 		if(!isInWindow(line))
 			return null;
-		return fData.getStyles(line-fWindowOffset);
+		return fData.getStyles(line-fWindowStartLine);
 	}
 
 	public int getWidth() {
@@ -95,13 +95,13 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	public void copy(ITerminalTextData source) {
 		// we inherit the dimensions of the source
 		setDimensions(source.getHeight(), source.getWidth());
-		int n=Math.min(fWindowSize, source.getHeight()-fWindowOffset);
+		int n=Math.min(fWindowSize, source.getHeight()-fWindowStartLine);
 		if(n>0)
-			fData.copyRange(source, fWindowOffset, 0, n);
+			fData.copyRange(source, fWindowStartLine, 0, n);
 	}
 	public void copyRange(ITerminalTextData source, int sourceStart, int destStart, int length) {
 		int n=length;
-		int dStart=destStart-fWindowOffset;
+		int dStart=destStart-fWindowStartLine;
 		int sStart=sourceStart;
 		// if start outside our range, cut the length to copy
 		if(dStart<0) {
@@ -117,7 +117,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	}
 	public void copySelective(ITerminalTextData source, int sourceStart, int destStart, boolean[] linesToCopy) {
 		int n=linesToCopy.length;
-		int dStart=destStart-fWindowOffset;
+		int dStart=destStart-fWindowStartLine;
 		int sStart=sourceStart;
 		// the offset into linesToCopy
 		int offset=0;
@@ -138,7 +138,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	}
 	public void scroll(int startLine, int size, int shift) {
 		int n=size;
-		int start=startLine-fWindowOffset;
+		int start=startLine-fWindowStartLine;
 		// if start outside our range, cut the length to copy
 		if(start<0) {
 			n+=start;
@@ -152,17 +152,17 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	public void setChar(int line, int column, char c, Style style) {
 		if(!isInWindow(line))
 			return;
-		fData.setChar(line-fWindowOffset, column, c, style);
+		fData.setChar(line-fWindowStartLine, column, c, style);
 	}
 	public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
 		if(!isInWindow(line))
 			return;
-		fData.setChars(line-fWindowOffset, column, chars, start, len, style);
+		fData.setChars(line-fWindowStartLine, column, chars, start, len, style);
 	}
 	public void setChars(int line, int column, char[] chars, Style style) {
 		if(!isInWindow(line))
 			return;
-		fData.setChars(line-fWindowOffset, column, chars, style);
+		fData.setChars(line-fWindowStartLine, column, chars, style);
 	}
 	public void setDimensions(int height, int width) {
 		fData.setDimensions(fWindowSize, width);
@@ -171,13 +171,13 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	public void setMaxHeight(int height) {
 		fMaxHeight=height;
 	}
-	public void setWindow(int offset, int size) {
-		fWindowOffset=offset;
+	public void setWindow(int startLine, int size) {
+		fWindowStartLine=startLine;
 		fWindowSize=size;
 		fData.setDimensions(fWindowSize, getWidth());
 	}
-	public int getWindowOffset() {
-		return fWindowOffset;
+	public int getWindowStartLine() {
+		return fWindowStartLine;
 	}
 	public int getWindowSize() {
 		return fWindowSize;
