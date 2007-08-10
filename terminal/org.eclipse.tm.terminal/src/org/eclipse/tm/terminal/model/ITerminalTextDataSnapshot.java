@@ -106,8 +106,10 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	boolean hasChanged();
 
 	/**
-	 * @param startLine -1 means follow the end of the data
-	 * @param size number of lines to follow
+	 * The window of interest is the region the snapshot should track.
+	 * Changes outside this region are ignored.
+	 * @param startLine -1 means track the end of the data
+	 * @param size number of lines to track
 	 */
 	void setInterestWindow(int startLine, int size);
 	int getInterestWindowStartLine();
@@ -115,7 +117,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	
 	/**
 	 * Create a new snapshot of the {@link ITerminalTextData}. It will efficiently
-	 * copy the data of the {@link ITerminalTextData} into aninternal representation.
+	 * copy the data of the {@link ITerminalTextData} into an internal representation.
 	 * The snapshot also keeps track of the changes since the previous snapshot. 
 	 * <p>With the methods {@link #getFirstChangedLine()}, {@link #getLastChangedLine()} and
 	 * {@link #hasLineChanged(int)}
