@@ -861,28 +861,6 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(0, snapshot.getScrollWindowSize());
 		assertEquals(0, snapshot.getScrollWindowShift());
 	}
-	/**
-	 * Makes a simple shift test
-	 * @param line scroll start
-	 * @param n number of lines to be scrolled
-	 * @param shift amount of lines to be shifted
-	 * @param start the original data
-	 * @param result the expected result
-	 */
-	void scrollTest(int line,int n, int shift, String start,String result) {
-		ITerminalTextData term=makeITerminalTextData();
-		TerminalTextTestHelper.fillSimple(term,start);
-		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
-		ITerminalTextDataSnapshot snapshot1=term.makeSnapshot();
-		term.scroll(line, n, shift);
-		assertEquals(result, TerminalTextTestHelper.toSimple(term));
-		snapshot.updateSnapshot(false);
-		assertEquals(result, TerminalTextTestHelper.toSimple(toMultiLineText(snapshot)));
-		snapshot1.updateSnapshot(true);
-		assertEquals(result, TerminalTextTestHelper.toSimple(toMultiLineText(snapshot1)));
-		
-		
-	}
 	private final class SnapshotListener implements ITerminalTextDataSnapshot.SnapshotOutOfDateListener {
 		int N;
 		public void snapshotOutOfDate(ITerminalTextDataSnapshot snapshot) {
@@ -1108,7 +1086,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		listener1.reset();
 		listener2.reset();
 		listener3.reset();
-		// remove the duplicate listerner
+		// remove the duplicate listener
 		snapshot.removeListener(listener3);
 
 		
