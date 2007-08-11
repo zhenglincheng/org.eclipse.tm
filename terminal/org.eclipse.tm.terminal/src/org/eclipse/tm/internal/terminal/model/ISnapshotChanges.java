@@ -36,6 +36,8 @@ public interface ISnapshotChanges {
 
 	/**
 	 * Mark all lines changed
+	 * @param height if no window is set this is the number of 
+	 * lines that are marked as changed
 	 */
 	void setAllChanged(int height);
 

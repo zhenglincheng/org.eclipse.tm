@@ -137,7 +137,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * to the previous snapshot. 
 	 * 
 	 * <p><b>Note:</b> If no line has changed, this 
-	 * returns {@link ITerminalTextDataReadOnly#getHeight()}
+	 * returns {@link Integer#MAX_VALUE}
 	 * 
 	 * <p><b>Note:</b> if {@link #updateSnapshot(boolean)} has been called with <code>true</code>,
 	 * then this does not include lines that only have been scrolled. This is the

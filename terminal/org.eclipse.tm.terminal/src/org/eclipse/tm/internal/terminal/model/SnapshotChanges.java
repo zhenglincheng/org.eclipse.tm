@@ -36,9 +36,22 @@ public class SnapshotChanges implements ISnapshotChanges {
 	
 	public SnapshotChanges(int nLines) {
 		fChangedLines=new boolean[nLines];
-		fFirstChangedLine=nLines;
+		fFirstChangedLine=Integer.MAX_VALUE;
 		fLastChangedLine=-1;
 	}
+	public SnapshotChanges(int windowStart, int windowSize) {
+		fChangedLines=new boolean[windowStart+windowSize];
+		fFirstChangedLine=Integer.MAX_VALUE;
+		fLastChangedLine=-1;
+		fInterestWindowStartLine=windowStart;
+		fInterestWindowSize=windowSize;
+
+	}
+	/**
+	 * @param line
+	 * @param size
+	 * @return true if the range overlaps with the interest window
+	 */
 	boolean isInInterestWindow(int line, int size) {
 		if(fInterestWindowSize<=0)
 			return true;
@@ -46,6 +59,10 @@ public class SnapshotChanges implements ISnapshotChanges {
 			return false;
 		return true;
 	}
+	/**
+	 * @param line
+	 * @return true if the line is within the interest window
+	 */
 	boolean isInInterestWindow(int line) {
 		if(fInterestWindowSize<=0)
 			return true;
@@ -64,11 +81,20 @@ public class SnapshotChanges implements ISnapshotChanges {
 			return fInterestWindowStartLine;
 		return line;
 	}
+	/**
+	 * The result is only defined if {@link #isInInterestWindow(int, int)} returns true!
+	 * @param line the line <b>before</b> {@link #fitLineToWindow(int)} has been called!
+	 * @param size
+	 * @return the adjusted size. 
+	 * <p>Note:</p> {@link #fitLineToWindow(int)} has to be called on the line to
+	 * move the window correctly!
+	 */
 	int fitSizeToWindow(int line, int size) {
 		if(fInterestWindowSize<=0)
 			return size;
 		if(line<fInterestWindowStartLine) {
 			size-=fInterestWindowStartLine-line;
+			line=fInterestWindowStartLine;
 		}
 		if(line+size>fInterestWindowStartLine+fInterestWindowSize)
 			size=fInterestWindowStartLine+fInterestWindowSize-line;
@@ -88,8 +114,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 		// in case the terminal got resized we expand 
 		// don't remember the changed line because
 		// there is nothing to copy
-		if(line<fChangedLines.length) {
-			fChangedLines[line]=true;
+		if(line<getChangedLineLength()) {
+			setChangedLine(line,true);
 		}
 	}
 	/* (non-Javadoc)
@@ -102,11 +128,11 @@ public class SnapshotChanges implements ISnapshotChanges {
 		// the terminal might have been resized and 
 		// we can only keep changes for the size of the
 		// previous terminal
-		line=fitLineToWindow(line);
 		n=fitSizeToWindow(line, n);
-		int m=Math.min(line+n-1, fChangedLines.length-1);
-		for (int i = line+1; i < m; i++) {
-			fChangedLines[i]=true;
+		line=fitLineToWindow(line);
+		int m=Math.min(line+n, getChangedLineLength());
+		for (int i = line; i < m; i++) {
+			setChangedLine(i,true);
 		}
 		// this sets fFirstChangedLine as well
 		markLineChanged(line);
@@ -126,7 +152,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasChanged()
 	 */
 	public boolean hasChanged() {
-		if(fFirstChangedLine!=fChangedLines.length || fLastChangedLine>0 || fScrollWindowShift!=0)
+		if(fFirstChangedLine!=Integer.MAX_VALUE || fLastChangedLine>0 || fScrollWindowShift!=0)
 			return true;
 		return false;
 	}
@@ -134,6 +160,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#scroll(int, int, int)
 	 */
 	public void scroll(int startLine, int size, int shift) {
+		size=fitSizeToWindow(startLine, size);
+		startLine=fitLineToWindow(startLine);
 		// let's track only negative shifts
 		if(fScrollDontTrack) {
 			// we are in a state where we cannot track scrolling
@@ -191,18 +219,17 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @param shift must be negative!
 	 */
 	private void scrollChangesLinesWithNegativeShift(int line, int n, int shift) {
-		// assert shift <0;
+		assert shift <0;
 		// scroll the region
-		
 		// don't run out of bounds!
-		int m=Math.min(line+n+shift, fChangedLines.length+shift);
+		int m=Math.min(line+n+shift,getChangedLineLength()+shift);
 		for (int i = line; i < m; i++) {
-			fChangedLines[i]=fChangedLines[i-shift];
+			setChangedLine(i, getChangedLine(i-shift));
 			// move the first changed line up.
 			// We don't have to move the maximum down,
 			// because with a shift scroll, the max is moved
 			// my the next loop in this method
-			if(i<fFirstChangedLine && fChangedLines[i]) {
+			if(i<fFirstChangedLine && getChangedLine(i)) {
 				fFirstChangedLine=i;
 			}
 		}
@@ -219,7 +246,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 		fScrollWindowSize=0;
 		fScrollWindowShift=0;
 		fFirstChangedLine=fitLineToWindow(0);
-		fLastChangedLine=fitSizeToWindow(0, height)-1;
+		fLastChangedLine=fFirstChangedLine+fitSizeToWindow(0, height)-1;
 		// no need to keep an array of changes anymore
 		fChangedLines=new boolean[0];
 	}
@@ -259,19 +286,15 @@ public class SnapshotChanges implements ISnapshotChanges {
 	public boolean hasLineChanged(int line) {
 		if(!isInInterestWindow(line))
 			return false;
-		if(line<fChangedLines.length)
-			return fChangedLines[line];
-		// since the height of the terminal could
-		// have changed but we have tracked only changes
-		// of the previous terminal height, any line outside
-		// the the range of the previous height has changed
-		return true;
+		
+		return getChangedLine(line);
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#copyChangedLines(org.eclipse.tm.terminal.model.ITerminalTextData, org.eclipse.tm.terminal.model.ITerminalTextData)
 	 */
 	public void copyChangedLines(ITerminalTextData dest, ITerminalTextData source) {
 		dest.copySelective(source,0,0,fChangedLines);
+		//
 	}
 	
 	public int getInterestWindowSize() {
@@ -287,5 +310,19 @@ public class SnapshotChanges implements ISnapshotChanges {
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 	}
-
+	boolean getChangedLine(int line) {
+		if(line<fChangedLines.length)
+			return fChangedLines[line];
+		// since the height of the terminal could
+		// have changed but we have tracked only changes
+		// of the previous terminal height, any line outside
+		// the the range of the previous height has changed
+		return isInInterestWindow(line);
+	}
+	int getChangedLineLength() {
+		return fChangedLines.length;
+	}
+	void setChangedLine(int line,boolean changed){
+		fChangedLines[line]=changed;
+	}
 }

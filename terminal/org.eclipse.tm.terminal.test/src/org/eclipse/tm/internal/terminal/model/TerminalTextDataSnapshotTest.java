@@ -404,7 +404,7 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		
 		// if nothing has changed the first changed line i height
 		snapshot.updateSnapshot(false);
-		assertEquals(snapshot.getHeight(), snapshot.getFirstChangedLine());
+		assertEquals(Integer.MAX_VALUE, snapshot.getFirstChangedLine());
 		
 		snapshot=snapshot(s,term);
 		term.setChar(0, 0, 'x', null);
