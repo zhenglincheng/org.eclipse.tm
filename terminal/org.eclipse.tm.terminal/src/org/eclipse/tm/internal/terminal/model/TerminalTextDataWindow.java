@@ -99,10 +99,10 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		if(n>0)
 			fData.copyRange(source, fWindowStartLine, 0, n);
 	}
-	public void copyRange(ITerminalTextData source, int sourceStart, int destStart, int length) {
+	public void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine, int length) {
 		int n=length;
-		int dStart=destStart-fWindowStartLine;
-		int sStart=sourceStart;
+		int dStart=destStartLine-fWindowStartLine;
+		int sStart=sourceStartLine;
 		// if start outside our range, cut the length to copy
 		if(dStart<0) {
 			n+=dStart;
@@ -115,26 +115,9 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 			fData.copyRange(source, sStart, dStart, n);
 		
 	}
-	public void copySelective(ITerminalTextData source, int sourceStart, int destStart, boolean[] linesToCopy) {
-		int n=linesToCopy.length;
-		int dStart=destStart-fWindowStartLine;
-		int sStart=sourceStart;
-		// the offset into linesToCopy
-		int offset=0;
-		// if start outside our range, cut the length to copy
-		if(dStart<0) {
-			n+=dStart;
-			sStart-=dStart;
-			offset=-dStart;
-			dStart=0;
-		}
-		// do not exceed the window size
-		n=Math.min(n,fWindowSize);
-		// do the copying line by line
-		for (int i = 0; i < n; i++) {
-			if(linesToCopy[i+offset])
-				fData.copyRange(source, sStart+i, dStart+i, 1);
-		}
+	public void copyLine(ITerminalTextData source, int sourceLine, int destLine) {
+		if(isInWindow(destLine))
+			fData.copyLine(source, sourceLine, destLine-fWindowStartLine);
 	}
 	public void scroll(int startLine, int size, int shift) {
 		int n=size;

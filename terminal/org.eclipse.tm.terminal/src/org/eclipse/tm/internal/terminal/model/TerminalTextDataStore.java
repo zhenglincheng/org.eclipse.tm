@@ -260,20 +260,16 @@ public class TerminalTextDataStore implements ITerminalTextData {
 		}
 		fHeight=n;
 	}
-	public void copyRange(ITerminalTextData source, int sourceStart, int destStart,int length) {
+	public void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine,int length) {
 		for (int i = 0; i < length; i++) {
-			fChars[i+destStart]=source.getChars(i+sourceStart);
-			fStyle[i+destStart]=source.getStyles(i+sourceStart);
+			fChars[i+destStartLine]=source.getChars(i+sourceStartLine);
+			fStyle[i+destStartLine]=source.getStyles(i+sourceStartLine);
 		}
 	}
 
-	public void copySelective(ITerminalTextData source, int sourceStart, int destStart, boolean[] linesToCopy) {
-		for (int i = 0; i < linesToCopy.length; i++) {
-			if(linesToCopy[i]) {
-				fChars[i+destStart]=source.getChars(i+sourceStart);
-				fStyle[i+destStart]=source.getStyles(i+sourceStart);
-			}
-		}
+	public void copyLine(ITerminalTextData source, int sourceLine, int destLine) {
+		fChars[destLine]=source.getChars(sourceLine);
+		fStyle[destLine]=source.getStyles(sourceLine);
 	}
 
 	public char[] getChars(int line) {

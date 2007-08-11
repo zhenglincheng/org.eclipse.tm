@@ -597,7 +597,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			fail();
 		} catch (ArrayIndexOutOfBoundsException e) {}
 	}
-	public void testSetCopyIntoSelective() {
+	public void testCopyLine() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s=
 			"111\n" +
@@ -606,34 +606,42 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"444\n" +
 			"555";
 		fill(term, s);
-		ITerminalTextData termCopy=makeITerminalTextData();
+		ITerminalTextData dest=makeITerminalTextData();
 		String sCopy=
 			"aaa\n" +
 			"bbb\n" +
 			"ccc\n" +
 			"ddd\n" +
 			"eee";
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,0,0,new boolean []{true,true,false,false,true});
+		fill(dest, sCopy);
+		copySelective(dest,term,0,0,new boolean []{true,true,false,false,true});
 		assertEqualsTerm(s, toMultiLineText(term));
 		assertEqualsTerm(			
 				"111\n" +
 				"222\n" +
 				"ccc\n" +
 				"ddd\n" +
-				"555", toMultiLineText(termCopy));
+				"555", toMultiLineText(dest));
 
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,0,0,new boolean []{true,true,true,true,true});
+		fill(dest, sCopy);
+		copySelective(dest,term,0,0,new boolean []{true,true,true,true,true});
 		assertEqualsTerm(s, toMultiLineText(term));
-		assertEqualsTerm(s, toMultiLineText(termCopy));
+		assertEqualsTerm(s, toMultiLineText(dest));
 	
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,0,0,new boolean []{false,false,false,false,false});
+		fill(dest, sCopy);
+		copySelective(dest,term,0,0,new boolean []{false,false,false,false,false});
 		assertEqualsTerm(s, toMultiLineText(term));
-		assertEqualsTerm(sCopy, toMultiLineText(termCopy));
+		assertEqualsTerm(sCopy, toMultiLineText(dest));
 	}
-	public void testSetCopyIntoSelectiveWithOffset() {
+	protected void copySelective(ITerminalTextData dest, ITerminalTextData source, int sourceStartLine, int destStartLine, boolean[] linesToCopy) {
+		for (int i = 0; i < linesToCopy.length; i++) {
+			if(linesToCopy[i]) {
+				dest.copyLine(source, i+sourceStartLine, i+destStartLine);
+			}
+		}
+	}
+
+	public void testCopyLineWithOffset() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s=
 			"111\n" +
@@ -642,42 +650,42 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"444\n" +
 			"555";
 		fill(term, s);
-		ITerminalTextData termCopy=makeITerminalTextData();
+		ITerminalTextData dest=makeITerminalTextData();
 		String sCopy=
 			"aaa\n" +
 			"bbb\n" +
 			"ccc\n" +
 			"ddd\n" +
 			"eee";
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,1,0,new boolean []{true,false,false,true});
+		fill(dest, sCopy);
+		copySelective(dest,term,1,0,new boolean []{true,false,false,true});
 		assertEqualsTerm(s, toMultiLineText(term));
 		assertEqualsTerm(			
 				"222\n" +
 				"bbb\n" +
 				"ccc\n" +
 				"555\n" +
-				"eee", toMultiLineText(termCopy));
+				"eee", toMultiLineText(dest));
 
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,2,0,new boolean []{true,true});
+		fill(dest, sCopy);
+		copySelective(dest,term,2,0,new boolean []{true,true});
 		assertEqualsTerm(s, toMultiLineText(term));
 		assertEqualsTerm(			
 				"333\n" +
 				"444\n" +
 				"ccc\n" +
 				"ddd\n" +
-				"eee", toMultiLineText(termCopy));
+				"eee", toMultiLineText(dest));
 
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,0,0,new boolean []{true,true,true,true,true});
+		fill(dest, sCopy);
+		copySelective(dest,term,0,0,new boolean []{true,true,true,true,true});
 		assertEqualsTerm(s, toMultiLineText(term));
-		assertEqualsTerm(s, toMultiLineText(termCopy));
+		assertEqualsTerm(s, toMultiLineText(dest));
 	
-		fill(termCopy, sCopy);
-		termCopy.copySelective(term,0,0,new boolean []{false,false,false,false,false});
+		fill(dest, sCopy);
+		copySelective(dest,term,0,0,new boolean []{false,false,false,false,false});
 		assertEqualsTerm(s, toMultiLineText(term));
-		assertEqualsTerm(sCopy, toMultiLineText(termCopy));
+		assertEqualsTerm(sCopy, toMultiLineText(dest));
 	}
 	public void testScrollNoop() {
 		scrollTest(0,0,0, "012345","012345");

@@ -293,7 +293,11 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#copyChangedLines(org.eclipse.tm.terminal.model.ITerminalTextData, org.eclipse.tm.terminal.model.ITerminalTextData)
 	 */
 	public void copyChangedLines(ITerminalTextData dest, ITerminalTextData source) {
-		dest.copySelective(source,0,0,fChangedLines);
+		for (int i = fFirstChangedLine; i <= fLastChangedLine; i++) {
+			if(getChangedLine(i))
+				dest.copyLine(source,i,i);
+			
+		}
 		//
 	}
 	

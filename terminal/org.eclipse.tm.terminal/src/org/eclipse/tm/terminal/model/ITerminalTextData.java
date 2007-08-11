@@ -116,7 +116,25 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	void scroll(int startLine, int size, int shift);
 	
 	void addLine();
+	/**
+	 * Copies the entire source into this and changes the size accordingly
+	 * @param source
+	 */
 	void copy(ITerminalTextData source);
-	void copyRange(ITerminalTextData source, int sourceStart, int destStart,int length);
-	void copySelective(ITerminalTextData source,int sourceStart, int destStart, boolean[] linesToCopy);
+	/**
+	 * Copy a sourceLine from source to this at destLine.
+	 * @param source
+	 * @param sourceLine
+	 * @param destLine
+	 */
+	void copyLine(ITerminalTextData source,int sourceLine, int destLine);
+	/**
+	 * Copy <code>length</code> lines from source starting at sourceLine into this starting at
+	 * destLine.
+	 * @param source
+	 * @param sourceStartLine
+	 * @param destStartLine
+	 * @param length
+	 */
+	void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine,int length);
 }

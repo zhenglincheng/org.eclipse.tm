@@ -211,7 +211,7 @@ public class TerminalTextDataPerformanceTest extends TestCase {
 			for (int line = 0; line < term.getHeight(); line++) {
 				term.setChars(line, 0, chars, 0,1,style);
 				linesToCopy[line]=true;
-				copy.copySelective(term,0,0, linesToCopy);
+				copy.copyLine(term,0,0);
 				linesToCopy[line]=false;
 				n+=1;
 				if(System.currentTimeMillis()-t0>TIME) {
