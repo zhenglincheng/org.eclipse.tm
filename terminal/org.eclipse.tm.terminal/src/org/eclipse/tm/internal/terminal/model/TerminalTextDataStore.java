@@ -51,6 +51,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setDimensions(int, int)
 	 */
 	public void setDimensions(int height, int width) {
+		assert height>=0;
+		assert width>=0;
 		// just extend the region
 		if(height>fChars.length) {
 			int h=4*height/3;
@@ -295,5 +297,10 @@ public class TerminalTextDataStore implements ITerminalTextData {
 
 	public int getMaxHeight() {
 		return fMaxHeight;
+	}
+
+	public void cleanLine(int line) {
+		fChars[line]=null;
+		fStyle[line]=null;
 	}
 }

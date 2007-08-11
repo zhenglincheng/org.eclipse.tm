@@ -398,6 +398,12 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 	public void testScrollFail() {
 		// do nothing
 	}
+	public void testScrollAll() {
+		scrollTest(0,6,1,  "  2345","   2  ");
+		scrollTest(0,6,-1, "  2345","  3   ");
+		scrollTest(0,6,2,  "  2345","      ");
+		scrollTest(0,6,-2, "  2345","      ");
+	}
 	public void testCopyLineWithOffset() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s=

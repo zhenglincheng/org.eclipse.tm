@@ -148,6 +148,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		fData.setChars(line-fWindowStartLine, column, chars, style);
 	}
 	public void setDimensions(int height, int width) {
+		assert height>=0;
 		fData.setDimensions(fWindowSize, width);
 		fHeight=height;
 	}
@@ -167,5 +168,9 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	}
 	public void setHeight(int height) {
 		fHeight = height;
+	}
+	public void cleanLine(int line) {
+		if(isInWindow(line))
+			fData.cleanLine(line-fWindowStartLine);
 	}
 }

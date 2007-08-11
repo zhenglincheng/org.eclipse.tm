@@ -174,4 +174,8 @@ public class TerminalTextData implements ITerminalTextData {
 	public void setMaxHeight(int height) {
 		fData.setMaxHeight(height);
 	}
+	public void cleanLine(int line) {
+		fData.cleanLine(line);
+		sendLineChangedToSnapshots(line);
+	}
 }

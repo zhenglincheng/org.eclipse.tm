@@ -9,8 +9,6 @@
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.model;
-
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.eclipse.tm.terminal.model.ITerminalTextData;
@@ -77,6 +75,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			"555";
 		ITerminalTextData term=makeITerminalTextData();
 		fill(term, s);
+		term.setMaxHeight(5);
 		term.addLine();
 		assertEqualsTerm(
 				"222\n" +
@@ -85,6 +84,33 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"555\n" +
 				"\000\000\000", toMultiLineText(term));
 	}
+	public void testCleanLine() {
+		String s=
+			"111\n" +
+			"222\n" +
+			"333\n" +
+			"444\n" +
+			"555";
+		ITerminalTextData term=makeITerminalTextData();
+		fill(term, s);
+		term.cleanLine(0);
+		assertEqualsTerm(
+				"\000\000\000\n" +
+				"222\n" +
+				"333\n" +
+				"444\n" +
+				"555", toMultiLineText(term));
+		
+		fill(term, s);
+		term.cleanLine(4);
+		assertEqualsTerm(
+				"111\n" +
+				"222\n" +
+				"333\n" +
+				"444\n" +
+				"\000\000\000", toMultiLineText(term));
+	}
+
 	public void testMaxSize() {
 		String s=
 			"111\n" +
@@ -134,6 +160,17 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 				"333\n" +
 				"444\n" +
 				"555\n" +
+				"\000\000\000\n" +
+				"\000\000\000\n" +
+				"\000\000\000\n" +
+				"\000\000\000", toMultiLineText(term));
+		term.addLine();
+		assertEquals(8, term.getHeight());
+		assertEqualsTerm(
+				"333\n" +
+				"444\n" +
+				"555\n" +
+				"\000\000\000\n" +
 				"\000\000\000\n" +
 				"\000\000\000\n" +
 				"\000\000\000\n" +
@@ -216,14 +253,14 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			term.setDimensions(-3, 4);
 			fail();
 		} catch (RuntimeException e) {
-		} catch (AssertionFailedError e) {
+		} catch (AssertionError e) {
 			// OK
 		}
 //		assertEquals(5, term.getWidth());
 //		assertEquals(3, term.getHeight());
 //		assertEquals(s, toSimpleText(term));
 	}
-
+	
 	public void testGetLineSegments() {
 		Style s1=getDefaultStyle();
 		Style s2=s1.setBold(true);
@@ -346,19 +383,19 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		try {
 			term.getChar(0,5);
 			fail();
-		} catch (AssertionFailedError e) {
+		} catch (AssertionError e) {
 		} catch (RuntimeException e) {
 		}
 		try {
 			term.getChar(3,5);
 			fail();
-		} catch (AssertionFailedError e) {
+		} catch (AssertionError e) {
 		} catch (RuntimeException e) {
 		}
 		try {
 			term.getChar(3,0);
 			fail();
-		} catch (AssertionFailedError e) {
+		} catch (AssertionError e) {
 		} catch (RuntimeException e) {
 		}
 	}
@@ -691,6 +728,12 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		scrollTest(0,0,0, "012345","012345");
 		scrollTest(0,1,0, "012345","012345");
 		scrollTest(0,6,0, "012345","012345");
+	}
+	public void testScrollAll() {
+		scrollTest(0,6,1,  "012345"," 01234");
+		scrollTest(0,6,-1, "012345","12345 ");
+		scrollTest(0,6,2,  "012345","  0123");
+		scrollTest(0,6,-2, "012345","2345  ");
 	}
 	public void testScrollNegative() {
 		scrollTest(0,2,-1,"012345","1 2345");

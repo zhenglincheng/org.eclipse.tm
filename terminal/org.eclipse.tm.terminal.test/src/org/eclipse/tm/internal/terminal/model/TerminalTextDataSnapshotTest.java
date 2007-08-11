@@ -462,6 +462,11 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot.updateSnapshot(false);
 		assertEquals(0, snapshot.getLastChangedLine());
 		
+		snapshot=snapshot(s,term);
+		term.cleanLine(1);
+		snapshot.updateSnapshot(false);
+		assertEquals(1, snapshot.getLastChangedLine());
+
 		snapshot=snapshot(s,term);		
 		term.setChar(3, 0, 'x', null);
 		term.setChar(4, 0, 'x', null);

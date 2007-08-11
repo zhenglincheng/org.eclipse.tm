@@ -63,6 +63,11 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	void setChars(int line, int column, char[] chars, int start, int len, Style style);
 	
 
+	/**
+	 * Cleans the entire line.
+	 * @param line
+	 */
+	void cleanLine(int line);
 //	/**
 //	 * @param line
 //	 * @return true if this line belongs to the previous line but is simply
