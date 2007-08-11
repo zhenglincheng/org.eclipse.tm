@@ -35,12 +35,12 @@ public class SnapshotChanges implements ISnapshotChanges {
 
 	
 	public SnapshotChanges(int nLines) {
-		fChangedLines=new boolean[nLines];
+		setChangedLinesLength(nLines);
 		fFirstChangedLine=Integer.MAX_VALUE;
 		fLastChangedLine=-1;
 	}
 	public SnapshotChanges(int windowStart, int windowSize) {
-		fChangedLines=new boolean[windowStart+windowSize];
+		setChangedLinesLength(windowStart+windowSize);
 		fFirstChangedLine=Integer.MAX_VALUE;
 		fLastChangedLine=-1;
 		fInterestWindowStartLine=windowStart;
@@ -224,12 +224,12 @@ public class SnapshotChanges implements ISnapshotChanges {
 		// don't run out of bounds!
 		int m=Math.min(line+n+shift,getChangedLineLength()+shift);
 		for (int i = line; i < m; i++) {
-			setChangedLine(i, getChangedLine(i-shift));
+			setChangedLine(i, hasLineChanged(i-shift));
 			// move the first changed line up.
 			// We don't have to move the maximum down,
 			// because with a shift scroll, the max is moved
 			// my the next loop in this method
-			if(i<fFirstChangedLine && getChangedLine(i)) {
+			if(i<fFirstChangedLine && hasLineChanged(i)) {
 				fFirstChangedLine=i;
 			}
 		}
@@ -248,7 +248,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 		fFirstChangedLine=fitLineToWindow(0);
 		fLastChangedLine=fFirstChangedLine+fitSizeToWindow(0, height)-1;
 		// no need to keep an array of changes anymore
-		fChangedLines=new boolean[0];
+		setChangedLinesLength(0);
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#getFirstChangedLine()
@@ -281,40 +281,60 @@ public class SnapshotChanges implements ISnapshotChanges {
 		return fScrollWindowShift;
 	}
 	/* (non-Javadoc)
-	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasLineChanged(int)
-	 */
-	public boolean hasLineChanged(int line) {
-		if(!isInInterestWindow(line))
-			return false;
-		
-		return getChangedLine(line);
-	}
-	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#copyChangedLines(org.eclipse.tm.terminal.model.ITerminalTextData, org.eclipse.tm.terminal.model.ITerminalTextData)
 	 */
 	public void copyChangedLines(ITerminalTextData dest, ITerminalTextData source) {
 		for (int i = fFirstChangedLine; i <= fLastChangedLine; i++) {
-			if(getChangedLine(i))
+			if(hasLineChanged(i))
 				dest.copyLine(source,i,i);
-			
 		}
-		//
 	}
 	
 	public int getInterestWindowSize() {
 		return fInterestWindowSize;
 	}
 
-
 	public int getInterestWindowStartLine() {
 		return fInterestWindowStartLine;
 	}
 
 	public void setInterestWindow(int startLine, int size) {
+		int oldStartLine=fInterestWindowStartLine;
+		int oldSize=fInterestWindowSize;
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
+		if(oldSize>0) {
+			int shift=oldStartLine-startLine;
+			if(shift==0) {
+				if(size>oldSize) {
+					// add lines to the end
+					markLinesChanged(oldStartLine+oldSize, size-oldSize);
+				}
+				// else no lines within the window have changed
+					
+			} else if(Math.abs(shift)<size) {
+				if(shift<0) {
+					// we can scroll
+					scroll(startLine, oldSize, shift);
+					// mark the lines at the end as new
+					for (int i = oldStartLine+oldSize; i < startLine+size; i++) {
+						markLineChanged(i);
+					}
+				} else {
+					// we cannot shift positive -- mark all changed
+					markLinesChanged(startLine, size);
+				}
+			} else {
+				// no scrolling possible
+				markLinesChanged(startLine, size);
+			}
+				
+		}
 	}
-	boolean getChangedLine(int line) {
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasLineChanged(int)
+	 */
+	public boolean hasLineChanged(int line) {
 		if(line<fChangedLines.length)
 			return fChangedLines[line];
 		// since the height of the terminal could
@@ -328,5 +348,8 @@ public class SnapshotChanges implements ISnapshotChanges {
 	}
 	void setChangedLine(int line,boolean changed){
 		fChangedLines[line]=changed;
+	}
+	void setChangedLinesLength(int length) {
+		fChangedLines=new boolean[length];
 	}
 }

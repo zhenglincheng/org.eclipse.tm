@@ -452,6 +452,16 @@ public class SnapshotChangesTest extends TestCase {
 	public void testScroll() {
 		SnapshotChanges changes;
 		changes=new SnapshotChanges(2,3);
+		changes.scroll(0, 7, -1);
+		assertEquals(4, changes.getFirstChangedLine());
+		assertEquals(4, changes.getLastChangedLine());
+		assertEquals(2, changes.getScrollWindowStartLine());
+		assertEquals(3, changes.getScrollWindowSize());
+		assertEquals(-1, changes.getScrollWindowShift());
+		assertTrue(changes.hasChanged());
+		assertChangedLines(changes, "0000100000");
+
+		changes=new SnapshotChanges(2,3);
 		changes.scroll(0, 7, -2);
 		assertEquals(3, changes.getFirstChangedLine());
 		assertEquals(4, changes.getLastChangedLine());
@@ -552,12 +562,89 @@ public class SnapshotChangesTest extends TestCase {
 		dest=new TerminalTextDataStore();
 		TerminalTextTestHelper.fillSimple(dest, "abcdefghijk");
 		
-//		changes.copyChangedLines(dest, source);
-//		assertEquals("ab234fghijk",TerminalTextTestHelper.toSimple(dest));
+		changes.copyChangedLines(dest, source);
+		assertEquals("ab234fghijk",TerminalTextTestHelper.toSimple(dest));
 
+		changes=new SnapshotChanges(2,3);
+		changes.scroll(0,7,-1);
+		source=new TerminalTextDataStore();
+		TerminalTextTestHelper.fillSimple(source, "01234567890");
+		dest=new TerminalTextDataStore();
+		TerminalTextTestHelper.fillSimple(dest, "abcdefghijk");
+		// only one line has changed! The other lines are scrolled!
+		assertChangedLines(changes,"00001000");
+		changes.copyChangedLines(dest, source);
+		assertEquals("abcd4fghijk",TerminalTextTestHelper.toSimple(dest));
 	}
 
-	public void testGetInterestWindowSize() {
+	public void testSetInterestWindowSize() {
+		SnapshotChanges changes;
+		changes=new SnapshotChanges(2,3);
+		// move the window
+		changes.setInterestWindow(3, 3);
+		// only one line has changed! The other lines are scrolled!
+		assertEquals(3, changes.getScrollWindowStartLine());
+		assertEquals(3, changes.getScrollWindowSize());
+		assertEquals(-1, changes.getScrollWindowShift());
+		
+		assertChangedLines(changes,"0000010");
+		changes.convertScrollingIntoChanges();
+		assertChangedLines(changes,"0001110");
+
+		changes=new SnapshotChanges(2,3);
+		// move the window
+		changes.setInterestWindow(3, 4);
+		// only one line has changed! The other lines are scrolled!
+		assertEquals(3, changes.getScrollWindowStartLine());
+		assertEquals(3, changes.getScrollWindowSize());
+		assertEquals(-1, changes.getScrollWindowShift());
+		
+		assertChangedLines(changes,"0000011");
+		changes.convertScrollingIntoChanges();
+		assertChangedLines(changes,"0001111");
+
+	
+		changes=new SnapshotChanges(2,3);
+		// move the window
+		changes.setInterestWindow(6, 3);
+		// cannot scroll
+		assertEquals(0, changes.getScrollWindowStartLine());
+		assertEquals(0, changes.getScrollWindowSize());
+		assertEquals(0, changes.getScrollWindowShift());
+		assertChangedLines(changes,"000000111000");
+
+		changes=new SnapshotChanges(2,3);
+		// expand the window
+		changes.setInterestWindow(2, 5);
+		// cannot scroll
+		assertEquals(0, changes.getScrollWindowStartLine());
+		assertEquals(0, changes.getScrollWindowSize());
+		assertEquals(0, changes.getScrollWindowShift());
+		
+		assertChangedLines(changes,"0000011000");
+	}
+	public void testSetInterestWindowSize2() {
+		SnapshotChanges changes;
+		changes=new SnapshotChanges(2,3);
+		// move the window
+		changes.setInterestWindow(1, 3);
+		assertChangedLines(changes,"0111000");
+
+		changes=new SnapshotChanges(2,3);
+		// move the window
+		changes.setInterestWindow(1, 4);
+		assertChangedLines(changes,"01111000");
+
+	
+		changes=new SnapshotChanges(2,3);
+		// expand the window
+		changes.setInterestWindow(6, 3);
+		assertChangedLines(changes,"000000111000");
+
+		changes=new SnapshotChanges(2,3);
+		// expand the window
+		changes.setInterestWindow(1, 2);
+		assertChangedLines(changes,"0110000");
 	}
 
 }
