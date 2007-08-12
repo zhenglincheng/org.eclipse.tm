@@ -58,6 +58,12 @@ public class Style {
 	public Style setBackground(StyleColor background) {
 		return getStyle(fForground,background,fBold,fBlink,fUnderline,fReverse);
 	}
+	public Style setForground(String colorName) {
+		return getStyle(StyleColor.getStyleColor(colorName),fBackground,fBold,fBlink,fUnderline,fReverse);
+	}
+	public Style setBackground(String colorName) {
+		return getStyle(fForground,StyleColor.getStyleColor(colorName),fBold,fBlink,fUnderline,fReverse);
+	}
 	public Style setBold(boolean bold) {
 		return getStyle(fForground,fBackground,bold,fBlink,fUnderline,fReverse);
 	}
