@@ -576,6 +576,25 @@ public class SnapshotChangesTest extends TestCase {
 		changes.copyChangedLines(dest, source);
 		assertEquals("abcd4fghijk",TerminalTextTestHelper.toSimple(dest));
 	}
+	public void testCopyChangedLinesWithSmallSource() {
+		SnapshotChanges changes;
+		changes=new SnapshotChanges(2,3);
+		changes.markLineChanged(3);
+		ITerminalTextData source=new TerminalTextDataStore();
+		source.setDimensions(2, 2);
+		TerminalTextDataWindow dest=new TerminalTextDataWindow();
+		dest.setWindow(2, 2);
+		changes.copyChangedLines(dest, source);
+	}
+	public void testCopyChangedLinesWithSmallSource1() {
+		SnapshotChanges changes;
+		changes=new SnapshotChanges(2,3);
+		changes.markLineChanged(3);
+		ITerminalTextData source=new TerminalTextDataStore();
+		TerminalTextTestHelper.fillSimple(source, "01");
+		ITerminalTextData dest=new TerminalTextDataStore();
+		changes.copyChangedLines(dest, source);
+	}
 
 	public void testSetInterestWindowSize() {
 		SnapshotChanges changes;

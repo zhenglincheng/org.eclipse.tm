@@ -34,6 +34,14 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		this(new TerminalTextDataStore());
 	}
 	/**
+	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
+	 * This is useful for tests.
+	 * @return never -- throws an exception
+	 */
+	boolean throwArrayIndexOutOfBoundsException() {
+		throw new ArrayIndexOutOfBoundsException();
+	}
+	/**
 	 * @param line
 	 * @return true if the line is within the window
 	 */
@@ -120,6 +128,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 			fData.copyLine(source, sourceLine, destLine-fWindowStartLine);
 	}
 	public void scroll(int startLine, int size, int shift) {
+		assert (startLine>=0 && startLine+size<=fHeight) || throwArrayIndexOutOfBoundsException();
 		int n=size;
 		int start=startLine-fWindowStartLine;
 		// if start outside our range, cut the length to copy
@@ -127,7 +136,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 			n+=start;
 			start=0;
 		}
-		n=Math.min(n,fWindowSize);
+		n=Math.min(n,fWindowSize-start);
 		// do not exceed the window size
 		if(n>0)
 			fData.scroll(start, n, shift);
@@ -148,7 +157,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		fData.setChars(line-fWindowStartLine, column, chars, style);
 	}
 	public void setDimensions(int height, int width) {
-		assert height>=0;
+		assert height>=0 || throwArrayIndexOutOfBoundsException();
 		fData.setDimensions(fWindowSize, width);
 		fHeight=height;
 	}
@@ -156,6 +165,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		fMaxHeight=height;
 	}
 	public void setWindow(int startLine, int size) {
+//		assert startLine+size<=getHeight()||throwArrayIndexOutOfBoundsException();
 		fWindowStartLine=startLine;
 		fWindowSize=size;
 		fData.setDimensions(fWindowSize, getWidth());

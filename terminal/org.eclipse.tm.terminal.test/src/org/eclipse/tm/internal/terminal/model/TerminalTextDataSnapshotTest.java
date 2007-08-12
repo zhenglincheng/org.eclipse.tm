@@ -1164,5 +1164,22 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot.updateSnapshot(false);
 		assertFalse(snapshot.isOutOfDate());
 	}
-
+	public void testWindowOfInterest() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+		snapshot.setInterestWindow(7, 4);
+		snapshot.setInterestWindow(9, 4);
+		snapshot.updateSnapshot(false);
+	}
+	public void testWindowOfInterest2() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		snapshot.updateSnapshot(false);
+		term.scroll(7, 3,-1);
+		snapshot.setInterestWindow(9, 4);
+		snapshot.updateSnapshot(false);
+	}
 }

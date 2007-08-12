@@ -31,7 +31,9 @@ public class TerminalTextData implements ITerminalTextData {
 	public TerminalTextDataSnapshot[] fSnapshots=new TerminalTextDataSnapshot[0];
 
 	public TerminalTextData() {
-		this(new TerminalTextDataStore());
+		this(new TerminalTextDataFastScroll());
+
+//		this(new TerminalTextDataStore());
 	}
 	public TerminalTextData(ITerminalTextData data) {
 		fData=data;

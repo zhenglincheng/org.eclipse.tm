@@ -395,9 +395,6 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		scrollTest(5,1,-1,"  23  ","  23  ");
 		scrollTest(5,1,-1,"  23  ","  23  ");
 	}
-	public void testScrollFail() {
-		// do nothing
-	}
 	public void testScrollAll() {
 		scrollTest(0,6,1,  "  2345","   2  ");
 		scrollTest(0,6,-1, "  2345","  3   ");

@@ -284,8 +284,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#copyChangedLines(org.eclipse.tm.terminal.model.ITerminalTextData, org.eclipse.tm.terminal.model.ITerminalTextData)
 	 */
 	public void copyChangedLines(ITerminalTextData dest, ITerminalTextData source) {
-//		int n=Math.min(Math.min(source.getHeight(), dest.getHeight()),fLastChangedLine+1);
-		int n=fLastChangedLine+1;
+		int n=Math.min(fLastChangedLine+1,source.getHeight());
 		for (int i = fFirstChangedLine; i < n ; i++) {
 			if(hasLineChanged(i))
 				dest.copyLine(source,i,i);

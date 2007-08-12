@@ -60,6 +60,14 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fListenersNeedNotify=true;
 		fInterestWindowSize=-1;
 	}
+	/**
+	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
+	 * This is useful for tests.
+	 * @return never -- throws an exception
+	 */
+	boolean throwArrayIndexOutOfBoundsException() {
+		throw new ArrayIndexOutOfBoundsException();
+	}
 	
 	public void detach() {
 		fTerminal.removeSnapshot(this);
@@ -91,7 +99,9 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 				fCurrentChanges.setAllChanged(fTerminal.getHeight());
 			} else {
 				// first we do the scroll on the copy
-				fSnapshot.scroll(fCurrentChanges.getScrollWindowStartLine(), fCurrentChanges.getScrollWindowSize(), fCurrentChanges.getScrollWindowShift());
+				int start=fCurrentChanges.getScrollWindowStartLine();
+				int lines=Math.min(fCurrentChanges.getScrollWindowSize(), fSnapshot.getHeight()-start);
+				fSnapshot.scroll(start, lines, fCurrentChanges.getScrollWindowShift());
 				// and then create the snapshot of the changed lines
 				fCurrentChanges.copyChangedLines(fSnapshot, fTerminal);
 			}
