@@ -34,10 +34,14 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 		fMaxHeight=maxHeight;
 		fData=data;
 		fData.setDimensions(maxHeight, fData.getWidth());
-		assert shiftOffset(-2);
+		if(maxHeight>2)
+			assert shiftOffset(-2);
 	}
 	public TerminalTextDataFastScroll(int maxHeight) {
 		this(new TerminalTextDataStore(),maxHeight);
+	}
+	public TerminalTextDataFastScroll() {
+		this(new TerminalTextDataStore(),1);
 	}
 	/**
 	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
@@ -85,7 +89,6 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	}
 
 	public void copy(ITerminalTextData source) {
-		assert source.getHeight()<=fMaxHeight || throwArrayIndexOutOfBoundsException();
 		int n=source.getHeight();
 		setDimensions(source.getHeight(),source.getWidth());
 		for (int i = 0; i < n; i++) {
@@ -151,6 +154,10 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	}
 	public void scroll(int startLine, int size, int shift) {
 		assert (startLine>=0 && startLine+size<=fHeight) || throwArrayIndexOutOfBoundsException();
+		if(shift>=fMaxHeight || -shift>=fMaxHeight) {
+			cleanLines(0, fMaxHeight);
+			return;
+		}
 		if(size==fHeight) {
 			// This is the case this class is optimized for!
 			moveOffset(-shift);
@@ -197,14 +204,15 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	public void setDimensions(int height, int width) {
 		assert height>=0;
 		assert width>=0;
-//		if(height > fMaxHeight)
-//			setMaxHeight(height);
+		if(height > fMaxHeight)
+			setMaxHeight(height);
 		fHeight=height;
 		if(width!=fData.getWidth())
 			fData.setDimensions(fMaxHeight, width);
 	}
 
 	public void setMaxHeight(int maxHeight) {
+		assert maxHeight>=fHeight || throwArrayIndexOutOfBoundsException();
 		// move everything to offset0
 		int start=getPositionOfLine(0);
 		if(start!=0) {
@@ -222,10 +230,9 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 			fData.copy(buffer);
 			shiftOffset(-start);
 		} else {
-			fData.setMaxHeight(maxHeight);
+			fData.setDimensions(maxHeight, fData.getWidth());
 		}
 		fMaxHeight=maxHeight;
-		fHeight=Math.min(fHeight, fMaxHeight);
 	}
 
 }

@@ -450,5 +450,13 @@ public class TerminalTextDataWindowTest extends AbstractITerminalTextDataTest {
 		assertEqualsTerm(s, toMultiLineText(term));
 		assertEqualsTerm(sCopy, toMultiLineText(dest));
 	}
-
+	public void testCopy() {
+		ITerminalTextData term=makeITerminalTextData();
+		term.setDimensions(3, 1);
+		ITerminalTextData data=new TerminalTextData();
+		fillSimple(data,"abcd");
+		term.copy(data);
+		
+		
+	}
 }
