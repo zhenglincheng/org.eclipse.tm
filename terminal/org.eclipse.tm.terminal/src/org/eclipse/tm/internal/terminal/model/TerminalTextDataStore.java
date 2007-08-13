@@ -35,12 +35,12 @@ public class TerminalTextDataStore implements ITerminalTextData {
 		fWidth=0;
 	}
 	/**
-	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
+	 * This is used in asserts to throw an {@link RuntimeException}.
 	 * This is useful for tests.
 	 * @return never -- throws an exception
 	 */
-	private boolean throwArrayIndexOutOfBoundsException() {
-		throw new ArrayIndexOutOfBoundsException();
+	private boolean throwRuntimeException() {
+		throw new RuntimeException();
 	}
 	
 
@@ -60,8 +60,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#setDimensions(int, int)
 	 */
 	public void setDimensions(int height, int width) {
-		assert height>=0 || throwArrayIndexOutOfBoundsException();
-		assert width>=0  || throwArrayIndexOutOfBoundsException();
+		assert height>=0 || throwRuntimeException();
+		assert width>=0  || throwRuntimeException();
 		// just extend the region
 		if(height>fChars.length) {
 			int h=4*height/3;
@@ -142,7 +142,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getChar(int, int)
 	 */
 	public char getChar(int line, int column) {
-		assert column<fWidth || throwArrayIndexOutOfBoundsException();
+		assert column<fWidth || throwRuntimeException();
 		if(fChars[line]==null||column>=fChars[line].length)
 			return 0;
 		return fChars[line][column];
@@ -151,7 +151,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#getStyle(int, int)
 	 */
 	public Style getStyle(int line, int column) {
-		assert column<fWidth || throwArrayIndexOutOfBoundsException();
+		assert column<fWidth || throwRuntimeException();
 		if(fStyle[line]==null || column>=fStyle[line].length)
 			return null;
 		return fStyle[line][column];
@@ -159,7 +159,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	
 	void ensureLineLength(int iLine, int length) {
 		if(length>fWidth)
-			throw new ArrayIndexOutOfBoundsException();
+			throw new RuntimeException();
 		if(fChars[iLine]==null) {
 			fChars[iLine]=new char[length];
 		} else if(fChars[iLine].length<length) {

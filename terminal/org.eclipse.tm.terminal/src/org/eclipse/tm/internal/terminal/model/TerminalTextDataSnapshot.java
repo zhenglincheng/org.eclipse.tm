@@ -61,12 +61,12 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fInterestWindowSize=-1;
 	}
 	/**
-	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
+	 * This is used in asserts to throw an {@link RuntimeException}.
 	 * This is useful for tests.
 	 * @return never -- throws an exception
 	 */
-	private boolean throwArrayIndexOutOfBoundsException() {
-		throw new ArrayIndexOutOfBoundsException();
+	private boolean throwRuntimeException() {
+		throw new RuntimeException();
 	}
 	
 	public void detach() {
@@ -242,8 +242,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	}
 
 	public void setInterestWindow(int startLine, int size) {
-		assert startLine>=0 || throwArrayIndexOutOfBoundsException();
-		assert size>=0 || throwArrayIndexOutOfBoundsException();
+		assert startLine>=0 || throwRuntimeException();
+		assert size>=0 || throwRuntimeException();
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 		fSnapshot.setWindow(startLine, size);

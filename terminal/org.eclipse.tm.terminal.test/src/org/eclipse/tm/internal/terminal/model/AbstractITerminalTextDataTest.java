@@ -364,19 +364,16 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		try {
 			term.getChar(0,-1);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {
 		} catch (RuntimeException e) {
 		}
 		try {
 			term.getChar(-1,-1);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {
 		} catch (RuntimeException e) {
 		}
 		try {
 			term.getChar(-1,0);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {
 		} catch (RuntimeException e) {
 		}
 		try {
@@ -477,7 +474,7 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			// check if we cannot exceed the range
 			term.setChars(4, 1, new char[]{'1','2','3','4','5'}, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 	
 	}
 	public void testSetCharsLen() {
@@ -523,24 +520,24 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		try {
 			term.setChars(1, 0, chars, 7, 10, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		fill(term, s);
 		try {
 			term.setChars(1, -1, chars, 0, 2, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			term.setChars(-1, 1, chars, 0, 2, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			term.setChars(1, 10, chars, 0, 2, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			term.setChars(10, 1, chars, 0, 2, null);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 //		assertEquals(s, toSimpleText(term));
 	}
 	public void testSetCopyInto() {
@@ -613,22 +610,22 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 			fillSimple(termCopy, sCopy);
 			termCopy.copyRange(term,1,1,5);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			fillSimple(termCopy, sCopy);
 			termCopy.copyRange(term,0,0,6);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			fillSimple(termCopy, sCopy);
 			termCopy.copyRange(term,7,0,1);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 		try {
 			fillSimple(termCopy, sCopy);
 			termCopy.copyRange(term,0,7,1);
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {}
+		} catch (RuntimeException e) {}
 	}
 	public void testCopyLine() {
 		ITerminalTextData term=makeITerminalTextData();
@@ -779,12 +776,12 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		try {
 			scrollTest(5,2,-1,"012345","012345");
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (RuntimeException e) {
 		}
 		try {
 			scrollTest(0,7,1,"012345","      ");
 			fail(); // make sure you run this code with assertions enabled (vmargs: -ea)
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (RuntimeException e) {
 		}
 	}
 	/**
