@@ -52,6 +52,7 @@ public class TerminalTextUITest {
 	static volatile int fWidth;
 	static DataReader fDataReader;
 	static List fDataReaders=new ArrayList();
+	private static Text heightText;
 	static class Status implements IStatus {
 		public void setStatus(final String s) {
 			if(!fStatusLabel.isDisposed())
@@ -90,6 +91,7 @@ public class TerminalTextUITest {
 					if(fTerminalModel.getHeight()>height) {
 						fTerminalModel.scroll(0, fTerminalModel.getHeight(), height-fTerminalModel.getHeight());
 						fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
+						heightText.setText(height+"");
 					}
 					fTerminalModel.setMaxHeight(height);
 				}
@@ -97,7 +99,7 @@ public class TerminalTextUITest {
 		});
 		
 		addLabel(composite,"heigth:");
-		final Text heightText=new Text(composite,SWT.BORDER);
+		heightText=new Text(composite,SWT.BORDER);
 		setLayoutData(heightText,30);
 		heightText.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {

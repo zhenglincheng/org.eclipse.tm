@@ -11,26 +11,13 @@
 package org.eclipse.tm.internal.terminal.test.ui;
 
 import org.eclipse.tm.terminal.model.Style;
-import org.eclipse.tm.terminal.model.StyleColor;
 
 final class FastDataSource extends AbstractLineOrientedDataSource {
 	char lines[][]=new char[][]{
-			"this is line 123456789 123456789 123456789 123456789 123456789 123456789 ".toCharArray(),
-			"this is line 2".toCharArray()
+			"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 ".toCharArray(),
+			"abcdefghi abcdefghi abcdefghi abcdefghi abcdefghi abcdefghi abcdefghi abcdefghi ".toCharArray(),
 	};
 
-	Style styleNormal=Style.getStyle(StyleColor.getStyleColor("black"),StyleColor.getStyleColor("cyan"));
-
-	Style styles[]=new Style[] {
-			styleNormal,
-			styleNormal.setBold(true),
-			styleNormal.setForground("red"),
-			styleNormal.setForground("yellow"),
-			styleNormal.setBold(true).setUnderline(true),
-			styleNormal.setReverse(true),
-			styleNormal.setReverse(true).setBold(true),
-			styleNormal.setReverse(true).setUnderline(true)
-	};
 
 	int pos;
 
@@ -39,7 +26,7 @@ final class FastDataSource extends AbstractLineOrientedDataSource {
 	}
 
 	public Style getStyle() {
-		return styles[pos%styles.length];
+		return null;
 	}
 
 	public void next() {
