@@ -48,6 +48,14 @@ public class SnapshotChanges implements ISnapshotChanges {
 
 	}
 	/**
+	 * This is used in asserts to throw an {@link ArrayIndexOutOfBoundsException}.
+	 * This is useful for tests.
+	 * @return never -- throws an exception
+	 */
+	private boolean throwArrayIndexOutOfBoundsException() {
+		throw new ArrayIndexOutOfBoundsException();
+	}
+	/**
 	 * @param line
 	 * @param size
 	 * @return true if the range overlaps with the interest window
@@ -219,7 +227,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @param shift must be negative!
 	 */
 	private void scrollChangesLinesWithNegativeShift(int line, int n, int shift) {
-		assert shift <0;
+		assert shift <0 || throwArrayIndexOutOfBoundsException();
 		// scroll the region
 		// don't run out of bounds!
 		int m=Math.min(line+n+shift,getChangedLineLength()+shift);

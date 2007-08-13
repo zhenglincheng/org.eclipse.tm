@@ -35,7 +35,7 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 		fData=data;
 		fData.setDimensions(maxHeight, fData.getWidth());
 		if(maxHeight>2)
-			assert shiftOffset(-2);
+			assert shiftOffset(-2) || throwArrayIndexOutOfBoundsException();
 	}
 	public TerminalTextDataFastScroll(int maxHeight) {
 		this(new TerminalTextDataStore(),maxHeight);
@@ -48,7 +48,7 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	 * This is useful for tests.
 	 * @return never -- throws an exception
 	 */
-	boolean throwArrayIndexOutOfBoundsException() {
+	private boolean throwArrayIndexOutOfBoundsException() {
 		throw new ArrayIndexOutOfBoundsException();
 	}
 	/**
@@ -64,7 +64,7 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	 * @param delta
 	 */
 	void moveOffset(int delta) {
-		assert Math.abs(delta)<fMaxHeight;
+		assert Math.abs(delta)<fMaxHeight || throwArrayIndexOutOfBoundsException();
 		fOffset=(fMaxHeight+fOffset+delta)%fMaxHeight;
 		
 	}
@@ -202,8 +202,8 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	}
 
 	public void setDimensions(int height, int width) {
-		assert height>=0;
-		assert width>=0;
+		assert height>=0 || throwArrayIndexOutOfBoundsException();
+		assert width>=0 || throwArrayIndexOutOfBoundsException();
 		if(height > fMaxHeight)
 			setMaxHeight(height);
 		fHeight=height;

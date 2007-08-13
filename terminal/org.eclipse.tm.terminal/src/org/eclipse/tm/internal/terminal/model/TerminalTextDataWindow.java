@@ -38,7 +38,7 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 	 * This is useful for tests.
 	 * @return never -- throws an exception
 	 */
-	boolean throwArrayIndexOutOfBoundsException() {
+	private boolean throwArrayIndexOutOfBoundsException() {
 		throw new ArrayIndexOutOfBoundsException();
 	}
 	/**

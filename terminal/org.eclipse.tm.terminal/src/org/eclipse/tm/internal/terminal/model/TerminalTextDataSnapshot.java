@@ -65,7 +65,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 * This is useful for tests.
 	 * @return never -- throws an exception
 	 */
-	boolean throwArrayIndexOutOfBoundsException() {
+	private boolean throwArrayIndexOutOfBoundsException() {
 		throw new ArrayIndexOutOfBoundsException();
 	}
 	
@@ -242,6 +242,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	}
 
 	public void setInterestWindow(int startLine, int size) {
+		assert startLine>=0 || throwArrayIndexOutOfBoundsException();
+		assert size>=0 || throwArrayIndexOutOfBoundsException();
 		fInterestWindowStartLine=startLine;
 		fInterestWindowSize=size;
 		fSnapshot.setWindow(startLine, size);
