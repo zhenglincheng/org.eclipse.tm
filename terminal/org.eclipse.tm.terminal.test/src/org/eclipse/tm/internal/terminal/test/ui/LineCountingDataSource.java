@@ -13,7 +13,7 @@ package org.eclipse.tm.internal.terminal.test.ui;
 import org.eclipse.tm.terminal.model.Style;
 import org.eclipse.tm.terminal.model.StyleColor;
 
-final class LineCountingDataSource implements IDataSource {
+final class LineCountingDataSource extends AbstractLineOrientedDataSource {
 	Style styleNormal=Style.getStyle(StyleColor.getStyleColor("black"),StyleColor.getStyleColor("red"));
 
 	Style styles[]=new Style[] {

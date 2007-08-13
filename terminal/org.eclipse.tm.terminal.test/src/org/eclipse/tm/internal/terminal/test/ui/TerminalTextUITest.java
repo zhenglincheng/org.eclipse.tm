@@ -22,8 +22,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -68,77 +71,68 @@ public class TerminalTextUITest {
 		Shell shell = new Shell(display);
 		shell.setLayout(new GridLayout());
 		Composite composite=new Composite(shell, SWT.NONE);
-		composite.setLayout(new GridLayout(20,false));
+		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		RowLayout layout = new RowLayout(SWT.HORIZONTAL);
+		layout.wrap = true;
+		layout.fill = false;
+
+		composite.setLayout(layout);
 		
 		addLabel(composite, "maxHeight:");
 		final Text maxHeightText=new Text(composite,SWT.BORDER);
-		maxHeightText.setLayoutData(new GridData(30,maxHeightText.getLineHeight()));
+		setLayoutData(maxHeightText,30);
 		maxHeightText.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {
-				try {
-					synchronized (fTerminalModel) {
-						int height=Integer.valueOf(maxHeightText.getText()).intValue();
-						if(height<1)
-							return;
-						if(fTerminalModel.getHeight()>height) {
-							fTerminalModel.scroll(0, fTerminalModel.getHeight(), height-fTerminalModel.getHeight());
-							fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
-						}
-						fTerminalModel.setMaxHeight(height);
+				synchronized (fTerminalModel) {
+					int height=textToInt(maxHeightText);
+					if(height<1)
+						return;
+					if(fTerminalModel.getHeight()>height) {
+						fTerminalModel.scroll(0, fTerminalModel.getHeight(), height-fTerminalModel.getHeight());
+						fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
 					}
-				} catch (Exception ex) {
-					return;
+					fTerminalModel.setMaxHeight(height);
 				}
 			}
 		});
 		
 		addLabel(composite,"heigth:");
 		final Text heightText=new Text(composite,SWT.BORDER);
-		heightText.setLayoutData(new GridData(30,heightText.getLineHeight()));
+		setLayoutData(heightText,30);
 		heightText.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {
-				try {
-					synchronized (fTerminalModel) {
-						int height=Integer.valueOf(heightText.getText()).intValue();
-						if(height<1)
-							return;
-						fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
-					}
-				} catch (Exception ex) {
-					return;
+				synchronized (fTerminalModel) {
+					int height=textToInt(heightText);
+					if(height<1)
+						return;
+					fTerminalModel.setMaxHeight(height);
+					maxHeightText.setText(""+height);
+					fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
 				}
 			}
 		});
 		
 		addLabel(composite,"width:");
 		final Text widthText=new Text(composite,SWT.BORDER);
-		widthText.setLayoutData(new GridData(30,widthText.getLineHeight()));
+		setLayoutData(widthText,30);
 		widthText.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {
-				try {
-					synchronized (fTerminalModel) {
-						int width=Integer.valueOf(widthText.getText()).intValue();
-						if(width>1)
-							fTerminalModel.setDimensions(fTerminalModel.getHeight(), width);
-					}
-				} catch (Exception ex) {
-					return;
+				synchronized (fTerminalModel) {
+					int width=textToInt(widthText);
+					if(width>1)
+						fTerminalModel.setDimensions(fTerminalModel.getHeight(), width);
 				}
 			}
 		});
 		
 		addLabel(composite,"throttle:");
-		final Text throttleButton=new Text(composite,SWT.BORDER);
-		throttleButton.setLayoutData(new GridData(30,15));
-		throttleButton.addModifyListener(new ModifyListener(){
+		final Text throttleText=new Text(composite,SWT.BORDER);
+		setLayoutData(throttleText,30);
+		throttleText.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {
-				try {
-					synchronized (fTerminalModel) {
-						int throttle=Integer.valueOf(throttleButton.getText()).intValue();
-						setThrottleForAll(throttle);
-					}
-				} catch (Exception ex) {
-					return;
+				synchronized (fTerminalModel) {
+					int throttle=textToInt(throttleText);
+					setThrottleForAll(throttle);
 				}
 			}});
 		fHeight=24;
@@ -155,6 +149,8 @@ public class TerminalTextUITest {
 		DataReader reader=new DataReader("Line Count",fTerminalModel,new LineCountingDataSource(),status);
 		addDataReader(composite, reader);
 		reader=new DataReader("Fast",fTerminalModel,new FastDataSource(),status);
+		addDataReader(composite, reader);
+		reader=new DataReader("Random",fTerminalModel,new RandomDataSource(),status);
 		addDataReader(composite, reader);
 		for (int i = 0; i < args.length; i++) {
 			File file=new File(args[i]);
@@ -180,7 +176,7 @@ public class TerminalTextUITest {
 
 		fStatusLabel=new Label(shell,SWT.NONE);
 		fStatusLabel.setLayoutData(new GridData(250,15));
-		throttleButton.setText("100");
+		throttleText.setText("100");
 		setThrottleForAll(100);
 
 		if(args.length==0)
@@ -214,6 +210,16 @@ public class TerminalTextUITest {
 		for (Iterator iterator = fDataReaders.iterator(); iterator.hasNext();) {
 			DataReader reader = (DataReader) iterator.next();
 			reader.setThrottleTime(throttle);
+		}
+	}
+	static void setLayoutData(Control c,int width) {
+		c.setLayoutData(new RowData(width,-1));
+	}
+	static int textToInt(Text text) {
+		try {
+			return Integer.valueOf(text.getText()).intValue();
+		} catch (Exception ex) {
+			return 0;
 		}
 	}
 }

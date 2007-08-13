@@ -11,7 +11,6 @@
 package org.eclipse.tm.internal.terminal.test.ui;
 
 import org.eclipse.tm.terminal.model.ITerminalTextData;
-import org.eclipse.tm.terminal.model.Style;
 
 class DataReader implements Runnable {
 	final Thread fThread;
@@ -39,20 +38,12 @@ class DataReader implements Runnable {
 			while(!fStart || fStop) {
 				sleep(1);
 			}
-			fDataSource.next();
 			if(fThrottleTime>0)
 				sleep(fThrottleTime);
 			// synchronize because we have to be sure the size does not change while
 			// we add lines
-			char[] chars=fDataSource.dataSource();
-			Style style= fDataSource.getStyle();
-			int len;
+			int len=fDataSource.step(fTerminal);
 			// keep the synchronized block short!
-			synchronized (fTerminal) {
-				fTerminal.addLine();
-				len=Math.min(fTerminal.getWidth(),chars.length);
-				fTerminal.setChars(fTerminal.getHeight()-1, 0, chars, 0, len, style);
-			}
 			c+=len;
 			lines++;
 			if((fThrottleTime>0 || (lines%100==0))&&(System.currentTimeMillis()-t0)>1000) {

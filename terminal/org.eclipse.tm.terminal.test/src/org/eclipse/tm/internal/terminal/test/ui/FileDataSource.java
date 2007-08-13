@@ -22,7 +22,7 @@ import org.eclipse.tm.terminal.model.StyleColor;
  * Makes lines containing 'x' bold.
  *
  */
-final class FileDataSource implements IDataSource {
+final class FileDataSource extends AbstractLineOrientedDataSource {
 	private final String fFile;
 
 	BufferedReader reader;

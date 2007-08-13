@@ -11,11 +11,29 @@
 package org.eclipse.tm.internal.terminal.test.ui;
 
 import org.eclipse.tm.terminal.model.ITerminalTextData;
+import org.eclipse.tm.terminal.model.Style;
 
-interface IDataSource {
-	/**
-	 * @param terminal
-	 * @return number of characters changed
-	 */
-	int step(ITerminalTextData terminal);
+/**
+ * Adds line by line
+ *
+ */
+abstract class AbstractLineOrientedDataSource implements IDataSource {
+	abstract public char[] dataSource();
+	abstract public Style getStyle();
+
+	abstract public void next();
+
+	public int step(ITerminalTextData terminal) {
+		next();
+		char[] chars=dataSource();
+		Style style= getStyle();
+		int len;
+		// keep the synchronized block short!
+		synchronized (terminal) {
+			terminal.addLine();
+			len=Math.min(terminal.getWidth(),chars.length);
+			terminal.setChars(terminal.getHeight()-1, 0, chars, 0, len, style);
+		}
+		return len;
+	}
 }
