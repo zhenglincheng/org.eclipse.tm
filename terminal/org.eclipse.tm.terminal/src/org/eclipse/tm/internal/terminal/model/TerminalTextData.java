@@ -51,14 +51,17 @@ public class TerminalTextData implements ITerminalTextData {
 		if(w==width && h==height)
 			return;
 		fData.setDimensions(height, width);
+		sendDimensionsChanged(h, w, height, width);
+	}
+	private void sendDimensionsChanged(int oldHeight, int oldWidth, int newHeight, int newWidth) {
 		// determine what has changed
-		if(w==width) {
-			if(h<height)
-				sendLinesChangedToSnapshot(h, height-h);
+		if(oldWidth==newWidth) {
+			if(oldHeight<newHeight)
+				sendLinesChangedToSnapshot(oldHeight, newHeight-oldHeight);
 			else
-				sendLinesChangedToSnapshot(height,h-height);
+				sendLinesChangedToSnapshot(newHeight,oldHeight-newHeight);
 		} else {
-			sendLinesChangedToSnapshot(0, h);
+			sendLinesChangedToSnapshot(0, oldHeight);
 		}
 	}
 	synchronized public LineSegment[] getLineSegments(int line, int column, int len) {
@@ -141,15 +144,19 @@ public class TerminalTextData implements ITerminalTextData {
 		return snapshot;
 	}
 	synchronized public void addLine() {
-		int h=getHeight();
+		int oldHeight=getHeight();
 		fData.addLine();
 		// was is an append or a scroll?
-		if(getHeight()>h) {
+		int newHeight=getHeight();
+		if(newHeight>oldHeight) {
 			//the line was appended 
-			sendLinesChangedToSnapshot(h, 1);
+			sendLinesChangedToSnapshot(oldHeight, 1);
+			int width=getWidth();
+			sendDimensionsChanged(oldHeight, width, newHeight, width);
+
 		} else {
 			// the line was scrolled
-			sendScrolledToSnapshots(0, h, -1);
+			sendScrolledToSnapshots(0, oldHeight, -1);
 		}
 			
 	}
