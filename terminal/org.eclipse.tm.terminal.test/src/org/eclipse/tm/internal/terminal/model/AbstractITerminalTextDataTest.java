@@ -755,6 +755,12 @@ abstract public class AbstractITerminalTextDataTest extends TestCase {
 		scrollTest(5,1,-1,"  23  ","  23  ");
 		scrollTest(5,1,-1,"  23  ","  23  ");
 	}
+	public void testScrollNegative3() {
+		scrollTest(1,5,-7,"012345","0     ");
+	}
+	public void testScrollPositive2() {
+		scrollTest(2,8,20, "0123456789", "01        ");
+	}
 	public void testScrollPositive() {
 		scrollTest(0,2,1, "012345",     " 02345");
 		scrollTest(0,2,2, "012345",     "  2345");

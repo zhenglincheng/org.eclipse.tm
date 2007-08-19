@@ -155,7 +155,7 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 	public void scroll(int startLine, int size, int shift) {
 		assert (startLine>=0 && startLine+size<=fHeight) || throwRuntimeException();
 		if(shift>=fMaxHeight || -shift>=fMaxHeight) {
-			cleanLines(0, fMaxHeight);
+			cleanLines(startLine, fMaxHeight-startLine);
 			return;
 		}
 		if(size==fHeight) {
@@ -163,7 +163,7 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 			moveOffset(-shift);
 			// we only have to clean the lines that appear by the move 
 			if(shift<0) {
-				cleanLines(Math.max(0, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
+				cleanLines(Math.max(startLine, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
 			} else {
 				cleanLines(startLine, Math.min(shift, getHeight()-startLine));
 			}
@@ -233,6 +233,18 @@ public class TerminalTextDataFastScroll implements ITerminalTextData {
 			fData.setDimensions(maxHeight, fData.getWidth());
 		}
 		fMaxHeight=maxHeight;
+	}
+	public int getCursorColumn() {
+		throw new UnsupportedOperationException();
+	}
+	public int getCursorLine() {
+		throw new UnsupportedOperationException();
+	}
+	public void setCursorColumn(int column) {
+		throw new UnsupportedOperationException();
+	}
+	public void setCursorLine(int line) {
+		throw new UnsupportedOperationException();
 	}
 
 }

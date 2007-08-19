@@ -14,14 +14,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
+
 abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 
 	protected List fListeners = new ArrayList();
+	private int fCursorLine;
+	private int fCursorColumn;
+	private boolean fShowCursor;
+	private long fCursorTime;
 
 	public AbstractTextCanvasModel() {
 		super();
 	}
-
+	protected abstract ITerminalTextDataSnapshot getSnapshot();
 	public void addCellCanvasModelListener(ITextCanvasModelListener listener) {
 		fListeners.add(listener);
 	}
@@ -35,7 +41,6 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
 			listener.rangeChanged(x, y, width, height);
 		}
-		
 	}
 	protected void fireDimensionsChanges() {
 		for (Iterator iter = fListeners.iterator(); iter.hasNext();) {
@@ -48,5 +53,49 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	abstract public int getHeight();
 
 	abstract public int getWidth();
+
+	abstract public void update();
+
+
+	public int getCursorColumn() {
+		// TODO Auto-generated method stub
+		return fCursorColumn;
+	}
+
+	public int getCursorLine() {
+		// TODO Auto-generated method stub
+		return fCursorLine;
+	}
+
+	public boolean isCursorOn() {
+		return fShowCursor;
+	}
+	protected void updateCursor() {
+		int cursorLine=getSnapshot().getCursorLine();
+		int cursorColumn=getSnapshot().getCursorColumn();
+		// if cursor at the end put it to the end of the
+		// last line...
+		if(cursorLine>=getSnapshot().getHeight()) {
+			cursorLine=getSnapshot().getHeight()-1;
+			cursorColumn=getSnapshot().getWidth()-1;
+		}
+		long t=System.currentTimeMillis();
+		// clean the previous cursor
+		if(fCursorLine!=cursorLine || fCursorColumn!=cursorColumn) {
+			// hide the old cursor!
+			fShowCursor=false;
+			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+			fShowCursor=true;
+			fCursorTime=t;
+		}
+		if(t-fCursorTime>300) {
+			fShowCursor=!fShowCursor;
+			fCursorTime=t;
+		}
+		fCursorLine=cursorLine;
+		fCursorColumn=cursorColumn;
+		fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+	}
+
 
 }

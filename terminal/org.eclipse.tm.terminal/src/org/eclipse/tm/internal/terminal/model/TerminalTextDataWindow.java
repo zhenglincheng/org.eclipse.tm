@@ -183,4 +183,16 @@ public class TerminalTextDataWindow implements ITerminalTextData {
 		if(isInWindow(line))
 			fData.cleanLine(line-fWindowStartLine);
 	}
+	public int getCursorColumn() {
+		return fData.getCursorColumn();
+	}
+	public int getCursorLine() {
+		return fData.getCursorLine();
+	}
+	public void setCursorColumn(int column) {
+		fData.setCursorColumn(column);
+	}
+	public void setCursorLine(int line) {
+		fData.setCursorLine(line);
+	}
 }

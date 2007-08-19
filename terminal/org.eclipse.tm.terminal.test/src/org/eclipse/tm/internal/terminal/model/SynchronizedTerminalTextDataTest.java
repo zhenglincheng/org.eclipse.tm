@@ -8,24 +8,13 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.model;
 
-import org.eclipse.swt.graphics.GC;
+import org.eclipse.tm.terminal.model.ITerminalTextData;
 
-/**
- * @author Michael.Scharf@scharf-software.com
- *
- */
-public interface ILinelRenderer {
-	int getCellWidth();
-	int getCellHeight();
-	void drawLine(ITextCanvasModel model, GC gc, int line, int x, int y, int colFirst, int colLast);
-	/**
-	 * This is is 
-	 * @param startLine
-	 * @param startCol
-	 * @param height
-	 * @param width
-	 */
-	void setVisibleRectangle(int startLine, int startCol, int height, int width);
+public class SynchronizedTerminalTextDataTest extends AbstractITerminalTextDataTest {
+	protected ITerminalTextData makeITerminalTextData() {
+		return new SynchronizedTerminalTextData(new TerminalTextData());
+	}
+
 }

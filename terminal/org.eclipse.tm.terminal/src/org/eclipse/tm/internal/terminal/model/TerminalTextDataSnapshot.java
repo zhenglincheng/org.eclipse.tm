@@ -106,6 +106,8 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 				fCurrentChanges.copyChangedLines(fSnapshot, fTerminal);
 			}
 			fListenersNeedNotify=true;
+			fSnapshot.setCursorLine(fTerminal.getCursorLine());
+			fSnapshot.setCursorColumn(fTerminal.getCursorColumn());
 		}
 		if(!detectScrolling) {
 			// let's pretend there was no scrolling and
@@ -149,6 +151,9 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	public boolean hasLineChanged(int line) {
 		return fCurrentChanges.hasLineChanged(line);
 	}
+	public boolean hasDimensionsChanged() {
+		return fCurrentChanges.hasDimensionsChanged();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeY()
@@ -187,6 +192,12 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fFutureChanges.markLinesChanged(line,n);
 		notifyListers();
 	}
+	
+	public void markDimensionsChanged() {
+		fFutureChanges.markDimensionsChanged();
+		notifyListers();
+	}
+	
 	/**
 	 * @param startLine
 	 * @param size
@@ -259,6 +270,12 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 
 	public Style[] getStyles(int line) {
 		return fSnapshot.getStyles(line);
+	}
+	public int getCursorColumn() {
+		return fSnapshot.getCursorColumn();
+	}
+	public int getCursorLine() {
+		return fSnapshot.getCursorLine();
 	}
 }
 

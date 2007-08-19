@@ -31,16 +31,14 @@ public class PollingTextCanvasModel extends AbstractTextCanvasModel {
 				Display.getDefault().timerExec(fPollInterval,this);
 			}});
 	}
-	void setUpdateTime(int t) {
+	void setUpdateInterval(int t) {
 		fPollInterval=t;
 	}
 	public void update() {
 		// do the poll....
 		if(fSnapshot.isOutOfDate()) {
-			int w=fSnapshot.getWidth();
-			int h=fSnapshot.getHeight();
 			fSnapshot.updateSnapshot(false);
-			if(w!=fSnapshot.getWidth()|| h!=fSnapshot.getHeight())
+			if(fSnapshot.hasDimensionsChanged())
 				fireDimensionsChanges();
 
 			int y=fSnapshot.getFirstChangedLine();
@@ -50,11 +48,15 @@ public class PollingTextCanvasModel extends AbstractTextCanvasModel {
 				fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
 			}
 		}
+		updateCursor();
 	}
 	public int getHeight() {
 		return fSnapshot.getHeight();
 	}
 	public int getWidth() {
 		return fSnapshot.getWidth();
+	}
+	protected ITerminalTextDataSnapshot getSnapshot() {
+		return fSnapshot;
 	}
 }

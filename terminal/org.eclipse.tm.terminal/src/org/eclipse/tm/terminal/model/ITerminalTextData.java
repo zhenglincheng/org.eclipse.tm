@@ -142,4 +142,7 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 * @param length
 	 */
 	void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine,int length);
+	
+	void setCursorLine(int line);
+	void setCursorColumn(int column);
 }

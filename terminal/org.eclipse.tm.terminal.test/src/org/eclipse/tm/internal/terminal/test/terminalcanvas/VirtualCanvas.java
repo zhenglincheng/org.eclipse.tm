@@ -8,7 +8,7 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.test.terminalcanvas;
 
 
 import org.eclipse.swt.SWT;
@@ -171,8 +171,7 @@ public abstract class VirtualCanvas extends Canvas {
 	 */
 	abstract protected void paint(GC gc);
 	protected Color getBackgroundColor() {
-//		return getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-		return getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+		return getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 	}
 	protected void paintUnoccupiedSpace(GC gc, Rectangle clipping) {
 		int width=fVirtualBounds.width;
@@ -213,8 +212,7 @@ public abstract class VirtualCanvas extends Canvas {
 	 * of the visible screen. (x,y>=0)
 	 */
 	protected Rectangle getScreenRectInVirtualSpace() {
-		Rectangle r= new Rectangle(fClientArea.x-fVirtualBounds.x,fClientArea.y-fVirtualBounds.y,fClientArea.width,fClientArea.height);
-		return r;
+		return new Rectangle(fClientArea.x-fVirtualBounds.x,fClientArea.y-fVirtualBounds.y,fClientArea.width,fClientArea.height);
 	}
 	/**
 	 * @return the rect in virtual space (starting with (0,0))

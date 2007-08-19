@@ -110,8 +110,8 @@ public class TextCanvas extends GridCanvas {
 	private void calculateGrid() {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		// scroll to end
-		setVirtualOrigin(0,getRows()*getCellHeight());
 //		setVirtualOrigin(0,0);
+		setVirtualOrigin(0,getRows()*getCellHeight());
 		// make sure the scroll area is correct:
 		scrollY(getVerticalBar());
 		scrollX(getHorizontalBar());
@@ -126,7 +126,7 @@ public class TextCanvas extends GridCanvas {
 		repaint(r);
 	}
 	protected void drawLine(GC gc, int line, int x, int y, int colFirst, int colLast) {
-		fCellRenderer.drawLine(gc, line,x,y,colFirst,colLast);
+		fCellRenderer.drawLine(fCellCanvasModel, gc,line,x,y,colFirst, colLast);
 		
 	}
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {

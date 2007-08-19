@@ -39,6 +39,15 @@ public class StyleMap {
 		fColorMap.put(StyleColor.getStyleColor("cyan"), new Color(display,0,255,255));
 		fColorMap.put(StyleColor.getStyleColor("magenta"), new Color(display,255,255,0));
 		fColorMap.put(StyleColor.getStyleColor("gray"), new Color(display,128,128,128));
+		fColorMap.put(StyleColor.getStyleColor("WHITE"), new Color(display,255,255,255));
+		fColorMap.put(StyleColor.getStyleColor("BLACK"), new Color(display,0,0,0));
+		fColorMap.put(StyleColor.getStyleColor("RED"), new Color(display,255,128,128));
+		fColorMap.put(StyleColor.getStyleColor("GREEN"), new Color(display,128,255,128));
+		fColorMap.put(StyleColor.getStyleColor("BLUE"), new Color(display,128,128,255));
+		fColorMap.put(StyleColor.getStyleColor("YELLOW"), new Color(display,255,255,0));
+		fColorMap.put(StyleColor.getStyleColor("CYAN"), new Color(display,0,255,255));
+		fColorMap.put(StyleColor.getStyleColor("MAGENTA"), new Color(display,255,255,0));
+		fColorMap.put(StyleColor.getStyleColor("GRAY"), new Color(display,128,128,128));
 		fDefaultStyle=Style.getStyle(StyleColor.getStyleColor("black"),StyleColor.getStyleColor("white"));
 		GC gc = new GC (display);
 		gc.setFont(getFont());

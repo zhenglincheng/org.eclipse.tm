@@ -29,6 +29,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	private int fWidth;
 	private int fHeight;
 	private int fMaxHeight;
+	private int fCursorColumn;
+	private int fCursorLine;
 	public TerminalTextDataStore() {
 		fChars=new char[0][];
 		fStyle=new Style[0][];
@@ -200,6 +202,7 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	 * @see org.eclipse.tm.internal.terminal.text.ITerminalTextData#scroll(int, int, int)
 	 */
 	public void scroll(int startLine, int size, int shift) {
+		assert startLine+size <= getHeight() || throwRuntimeException();
 		if(shift<0) {
 			// move the region up
 			// shift is negative!!
@@ -208,7 +211,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 				fStyle[i]=fStyle[i-shift];
 			}
 			// then clean the opened lines
-			cleanLines(Math.max(0, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
+			cleanLines(Math.max(startLine, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
+//			cleanLines(Math.max(0, startLine+size+shift),Math.min(-shift, getHeight()-startLine));
 		} else {
 			for (int i = startLine+size-1; i >=startLine && i-shift>=0; i--) {
 				fChars[i]=fChars[i-shift];
@@ -270,6 +274,8 @@ public class TerminalTextDataStore implements ITerminalTextData {
 			fStyle[i]=source.getStyles(i);
 		}
 		fHeight=n;
+		fCursorLine=source.getCursorLine();
+		fCursorColumn=source.getCursorColumn();
 	}
 	public void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine,int length) {
 		for (int i = 0; i < length; i++) {
@@ -311,5 +317,17 @@ public class TerminalTextDataStore implements ITerminalTextData {
 	public void cleanLine(int line) {
 		fChars[line]=null;
 		fStyle[line]=null;
+	}
+	public int getCursorColumn() {
+		return fCursorColumn;
+	}
+	public int getCursorLine() {
+		return fCursorLine;
+	}
+	public void setCursorColumn(int column) {
+		fCursorColumn=column;
+	}
+	public void setCursorLine(int line) {
+		fCursorLine=line;
 	}
 }

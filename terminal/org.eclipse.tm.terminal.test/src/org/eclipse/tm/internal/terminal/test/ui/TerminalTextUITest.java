@@ -40,7 +40,7 @@ import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 import org.eclipse.tm.terminal.model.TerminalTextDataFactory;
 
 /**
- * adjust columns when table gets resized...
+ * adjust columns when table gets resized....
  * 
  */
 public class TerminalTextUITest {
@@ -107,9 +107,9 @@ public class TerminalTextUITest {
 					int height=textToInt(heightText);
 					if(height<1)
 						return;
-					fTerminalModel.setMaxHeight(height);
 					maxHeightText.setText(""+height);
 					fTerminalModel.setDimensions(height,fTerminalModel.getWidth());
+					fTerminalModel.setMaxHeight(height);
 				}
 			}
 		});
@@ -156,7 +156,7 @@ public class TerminalTextUITest {
 		addDataReader(composite, reader);
 		for (int i = 0; i < args.length; i++) {
 			File file=new File(args[i]);
-			reader=new DataReader(file.getName(),fTerminalModel,new FileDataSource(args[i]),status);
+			reader=new DataReader(file.getName(),fTerminalModel,new VT100DataSource(args[i]),status);
 			addDataReader(composite, reader);
 		}
 		final Button stopAllButton=new Button(composite,SWT.CHECK);

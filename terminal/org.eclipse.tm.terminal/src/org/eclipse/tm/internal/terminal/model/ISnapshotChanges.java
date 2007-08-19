@@ -53,6 +53,9 @@ public interface ISnapshotChanges {
 
 	boolean hasLineChanged(int line);
 
+	void markDimensionsChanged();
+	boolean hasDimensionsChanged();
+
 	void copyChangedLines(ITerminalTextData dest, ITerminalTextData source);
 
 	/**

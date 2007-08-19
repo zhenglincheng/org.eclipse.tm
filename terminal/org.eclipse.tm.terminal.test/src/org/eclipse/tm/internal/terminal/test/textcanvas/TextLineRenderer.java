@@ -60,37 +60,57 @@ public class TextLineRenderer implements ILinelRenderer {
 		return new Font(Display.getCurrent(), data.getName(), data.getHeight(), data.getStyle()|SWT.BOLD);
 	}
 
-	public void drawLine(GC gc, int row, int x, int y, int colFirst, int colLast) {
-		if(row>=fSnapshot.getHeight() || colFirst>=fSnapshot.getWidth() || colFirst-colLast==0)
+	public void drawLine(ITextCanvasModel model, GC gc, int row, int x, int y, int colFirst, int colLast) {
+		if(row<0 || row>=fSnapshot.getHeight() || colFirst>=fSnapshot.getWidth() || colFirst-colLast==0)
 			return;
 		colLast=Math.min(colLast, fSnapshot.getWidth());
 		LineSegment[] segments=fSnapshot.getLineSegments(row, colFirst, colLast-colFirst);
-		Font font=gc.getFont();
-		Color bg=gc.getBackground();
-		Color fg=gc.getForeground();
 		for (int i = 0; i < segments.length; i++) {
 			LineSegment segment=segments[i];
 			Style style=segment.getStyle();
-			Color c=fStyleMap.getForegrondColor(style);
-			if(c!=fg) {
-				fg=c;
-				gc.setForeground(fg);
-			}
-			c=fStyleMap.getBackgroundColor(style);
-			if(c!=bg) {
-				bg=c;
-				gc.setBackground(bg);
-			}
-			Font f=fStyleMap.getFont(style);
-			if(f!=font) {
-				font=f;
-				gc.setFont(font);
-			}
-
+			setupGC(gc, style);
 			String text=segment.getText();
-			int offset=(segment.getColumn()-colFirst)*getCellWidth();
-			text=text.replace('\000', ' ');
-			gc.drawString(text,x+offset,y,false);
+			drawText(gc, x, y, colFirst, segment.getColumn(), text);
+			drawCursor(model, gc, row, x, y, colFirst);
+		}
+		
+	}
+	private void drawCursor(ITextCanvasModel model, GC gc, int row, int x, int y, int colFirst) {
+		if(!model.isCursorOn())
+			return;
+		int cursorLine=model.getCursorLine();
+			
+		if(row==cursorLine) {
+			int cursorColumn=model.getCursorColumn();
+			if(cursorColumn<fSnapshot.getWidth()) {
+				Style style=fSnapshot.getStyle(row, cursorColumn);
+				if(style==null) {
+					style=Style.getStyle("BLACK", "WHITE");
+				}
+				style=style.setReverse(!style.isReverse());
+				setupGC(gc,style);
+				String text=(""+fSnapshot.getChar(row, cursorColumn)).replace('\000', ' ');
+				drawText(gc, x, y, colFirst, cursorColumn, text);
+			}
+		}
+	}
+	private void drawText(GC gc, int x, int y, int colFirst, int col, String text) {
+		int offset=(col-colFirst)*getCellWidth();
+		text=text.replace('\000', ' ');
+		gc.drawString(text,x+offset,y,false);
+	}
+	private void setupGC(GC gc, Style style) {
+		Color c=fStyleMap.getForegrondColor(style);
+		if(c!=gc.getForeground()) {
+			gc.setForeground(c);
+		}
+		c=fStyleMap.getBackgroundColor(style);
+		if(c!=gc.getBackground()) {
+			gc.setBackground(c);
+		}
+		Font f=fStyleMap.getFont(style);
+		if(f!=gc.getFont()) {
+			gc.setFont(f);
 		}
 	}
 	public void setVisibleRectangle(int startLine, int startCol, int height, int width) {

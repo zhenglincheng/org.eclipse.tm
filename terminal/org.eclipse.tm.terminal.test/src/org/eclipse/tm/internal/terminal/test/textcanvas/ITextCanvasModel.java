@@ -19,4 +19,8 @@ public interface ITextCanvasModel {
 	 * must be called from the UI thread
 	 */
 	void update();
+	
+	boolean isCursorOn();
+	int getCursorLine();
+	int getCursorColumn();
 }

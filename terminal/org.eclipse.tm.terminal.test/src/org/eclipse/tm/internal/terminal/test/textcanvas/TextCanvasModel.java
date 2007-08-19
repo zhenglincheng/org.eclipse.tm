@@ -74,4 +74,7 @@ public class TextCanvasModel extends AbstractTextCanvasModel {
 		else
 			Display.getDefault().asyncExec(runnable);
 	}
+	protected ITerminalTextDataSnapshot getSnapshot() {
+		return fSnapshot;
+	}
 }

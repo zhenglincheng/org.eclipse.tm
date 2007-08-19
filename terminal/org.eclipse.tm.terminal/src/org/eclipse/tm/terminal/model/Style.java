@@ -49,6 +49,9 @@ public class Style {
 		}
 		return cached;
 	}
+	public static Style getStyle(String forground, String background) {
+		return getStyle(StyleColor.getStyleColor(forground), StyleColor.getStyleColor(background),false,false,false,false);
+	}
 	public static Style getStyle(StyleColor forground, StyleColor background) {
 		return getStyle(forground, background,false,false,false,false);
 	}

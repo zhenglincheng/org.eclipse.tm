@@ -63,6 +63,8 @@ abstract public class GridCanvas extends VirtualCanvas {
 		int xOffset=clientArea.x;
 		int yOffset=clientArea.y;
 		int colFirst=virtualXToCell(xOffset+clipping.x);
+		if(colFirst>getCols())
+			colFirst=getCols();
 		int rowFirst=virtualYToCell(yOffset+clipping.y);
 		// End coordinates
 		int colLast=virtualXToCell(xOffset+clipping.x+clipping.width+fCellWidth);

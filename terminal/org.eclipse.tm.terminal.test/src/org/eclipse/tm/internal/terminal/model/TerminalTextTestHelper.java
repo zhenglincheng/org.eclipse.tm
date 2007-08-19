@@ -68,6 +68,7 @@ public class TerminalTextTestHelper {
 				len++;
 			}
 		}
+		width=Math.max(width,len);
 		term.setDimensions(height, width);
 		fill(term,0,0,s);
 	}

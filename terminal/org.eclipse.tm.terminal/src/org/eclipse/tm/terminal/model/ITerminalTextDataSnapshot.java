@@ -172,6 +172,7 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 */
 	boolean hasLineChanged(int line);
 	
+	boolean hasDimensionsChanged();
 	/**
 	 * If {@link #updateSnapshot(boolean)} was called with <code>true</code>, then this method
 	 * returns the top of the scroll region.

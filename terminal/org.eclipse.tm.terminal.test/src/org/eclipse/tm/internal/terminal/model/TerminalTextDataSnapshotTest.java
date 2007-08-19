@@ -1182,4 +1182,82 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		snapshot.setInterestWindow(9, 4);
 		snapshot.updateSnapshot(false);
 	}
+	public void testAddLine() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		term.setMaxHeight(20);
+		snapshot.updateSnapshot(false);
+		assertEquals(10,term.getHeight());
+		assertEquals(20,term.getMaxHeight());
+		assertFalse(snapshot.isOutOfDate());
+		term.addLine();
+		assertTrue(snapshot.isOutOfDate());
+		assertEquals(11,term.getHeight());
+		assertEquals(10,snapshot.getHeight());
+		snapshot.updateSnapshot(false);
+		assertEquals(11,term.getHeight());
+		assertEquals(11,snapshot.getHeight());
+		assertEquals(20,term.getMaxHeight());
+		
+		term.addLine();
+		term.addLine();
+		assertEquals(11,snapshot.getHeight());
+		assertEquals(13,term.getHeight());
+		assertTrue(snapshot.isOutOfDate());
+		snapshot.updateSnapshot(false);
+		assertEquals(13,snapshot.getHeight());
+		assertEquals(13,term.getHeight());
+		assertEquals(20,term.getMaxHeight());
+	}
+	public void testHasDimensionsChanged() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		term.setMaxHeight(20);
+		snapshot.setInterestWindow(3, 4);
+		snapshot.updateSnapshot(false);
+		assertEquals(10,term.getHeight());
+		assertEquals(20,term.getMaxHeight());
+		assertFalse(snapshot.isOutOfDate());
+		term.addLine();
+		assertTrue(snapshot.isOutOfDate());
+		assertEquals(11,term.getHeight());
+		assertEquals(10,snapshot.getHeight());
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasDimensionsChanged());
+		assertEquals(11,term.getHeight());
+		assertEquals(11,snapshot.getHeight());
+		assertEquals(20,term.getMaxHeight());
+		
+		term.addLine();
+		term.addLine();
+		assertEquals(11,snapshot.getHeight());
+		assertEquals(13,term.getHeight());
+		assertTrue(snapshot.isOutOfDate());
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasDimensionsChanged());
+		assertEquals(13,snapshot.getHeight());
+		assertEquals(13,term.getHeight());
+		assertEquals(20,term.getMaxHeight());
+	}
+	public void testCursor() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		term.setMaxHeight(20);
+		snapshot.setInterestWindow(3, 4);
+		snapshot.updateSnapshot(false);
+		term.setCursorLine(2);
+		term.setCursorColumn(1);
+		snapshot.updateSnapshot(false);
+		assertEquals(2, snapshot.getCursorLine());
+		assertEquals(1, snapshot.getCursorColumn());
+		term.setCursorLine(3);
+		term.setCursorColumn(2);
+		snapshot.updateSnapshot(false);
+		assertEquals(3, snapshot.getCursorLine());
+		assertEquals(2, snapshot.getCursorColumn());
+	}
+
 }
