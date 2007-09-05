@@ -46,7 +46,7 @@ import org.eclipse.tm.terminal.model.Style;
  * @author Fran Litterio <francis.litterio@windriver.com>
  * @author Chris Thew <chris.thew@windriver.com>
  */
-public class VT100lEmulator implements ControlListener {
+public class VT100Emulator implements ControlListener {
 	/** This is a character processing state: Initial state. */
 	private static final int ANSISTATE_INITIAL = 0;
 
@@ -136,7 +136,7 @@ public class VT100lEmulator implements ControlListener {
 	/**
 	 * The constructor.
 	 */
-	public VT100lEmulator(ITerminalTextData data,ITerminalControlForText terminal,InputStream input) {
+	public VT100Emulator(ITerminalTextData data,ITerminalControlForText terminal,InputStream input) {
 		super();
 
 		Logger.log("entered"); //$NON-NLS-1$
@@ -167,7 +167,7 @@ public class VT100lEmulator implements ControlListener {
 	}
 
 	/**
-	 * This method performs clean up when this VT100lEmulator object is no longer
+	 * This method performs clean up when this VT100Emulator object is no longer
 	 * needed. After calling this method, no other method on this object should
 	 * be called.
 	 */
