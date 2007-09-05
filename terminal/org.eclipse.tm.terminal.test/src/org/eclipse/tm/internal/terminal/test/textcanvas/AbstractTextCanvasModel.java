@@ -88,7 +88,8 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			fShowCursor=true;
 			fCursorTime=t;
 		}
-		if(t-fCursorTime>300) {
+		// TODO make the cursor blink time customisable
+		if(t-fCursorTime>500) {
 			fShowCursor=!fShowCursor;
 			fCursorTime=t;
 		}

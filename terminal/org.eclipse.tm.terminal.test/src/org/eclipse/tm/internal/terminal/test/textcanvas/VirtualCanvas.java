@@ -73,14 +73,6 @@ public abstract class VirtualCanvas extends Canvas {
 			
 		});
 	}
-	public void setAutoSelect(boolean on) {
-	}
-	public boolean hasAutoSelect() {
-		return false;
-	}
-	public void doAutoSelect() {
-	}
-	
 	/** HACK: run an event loop if the scrollbar is dragged...*/
 	private void postScrollEventHandling(Event e) {
 		if(true&&e.detail==SWT.DRAG) {
@@ -296,7 +288,6 @@ public abstract class VirtualCanvas extends Canvas {
 	 * @param height
 	 */
 	protected void viewRectangleChanged(int x, int y, int width, int height) {
-//		System.out.println(x+" "+y+" "+width+" "+height);
 	}
 	/**
 	 * @private
