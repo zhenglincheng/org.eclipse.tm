@@ -65,7 +65,6 @@ public class TextCanvas extends GridCanvas {
 				calculateGrid();
 			}
 		});
-
 		addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 //				switch(e.keyCode) {
@@ -131,12 +130,8 @@ public class TextCanvas extends GridCanvas {
 	}
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {
 		fCellRenderer.setVisibleRectangle(y,x,height,width);
-		// do an immediate update when the visible rectangle has changed
-		// TODO: investigate why has it to be done in a separate runnable???
-		Display.getCurrent().asyncExec(new Runnable(){
-			public void run() {
-				fCellCanvasModel.update();
-			}});
+		fCellCanvasModel.update();
+		update();
 	}
 }
 
