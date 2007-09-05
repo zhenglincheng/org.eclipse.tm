@@ -33,6 +33,8 @@ abstract class AbstractLineOrientedDataSource implements IDataSource {
 			terminal.addLine();
 			len=Math.min(terminal.getWidth(),chars.length);
 			terminal.setChars(terminal.getHeight()-1, 0, chars, 0, len, style);
+			terminal.setCursorLine(terminal.getHeight()-1);
+			terminal.setCursorColumn(len-1);
 		}
 		return len;
 	}
