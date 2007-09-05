@@ -12,6 +12,8 @@ package org.eclipse.tm.internal.terminal.test.textcanvas;
 
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -20,7 +22,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -65,6 +66,14 @@ public class TextCanvas extends GridCanvas {
 				calculateGrid();
 			}
 		});
+		addFocusListener(new FocusListener(){
+
+			public void focusGained(FocusEvent e) {
+				fCellRenderer.setFocus(true);
+			}
+			public void focusLost(FocusEvent e) {
+				fCellRenderer.setFocus(false);
+			}});
 		addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 //				switch(e.keyCode) {
@@ -109,8 +118,8 @@ public class TextCanvas extends GridCanvas {
 	private void calculateGrid() {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		// scroll to end
-//		setVirtualOrigin(0,0);
-		setVirtualOrigin(0,getRows()*getCellHeight());
+		setVirtualOrigin(0,0);
+//		setVirtualOrigin(0,getRows()*getCellHeight());
 		// make sure the scroll area is correct:
 		scrollY(getVerticalBar());
 		scrollX(getHorizontalBar());

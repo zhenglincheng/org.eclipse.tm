@@ -31,14 +31,17 @@ public class TextLineRenderer implements ILinelRenderer {
 	// TODO use the selection colors
 	Color fSelectionBackgroundColor;
 	Color fSelectionForegooundColor;
+	Color fBackgroundColor;
 	public TextLineRenderer(TextCanvas c, ITerminalTextDataSnapshot snapshot) {
 		fCanvas=c;
 		fSnapshot=snapshot;
 		fSelectionBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-		fSelectionForegooundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+//		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 
 	}
 	int fN=0;
+	private boolean fHasFocus;
 	String getLabel(int index) {
 		return ""+(index%10);
 	}
@@ -61,22 +64,35 @@ public class TextLineRenderer implements ILinelRenderer {
 	}
 
 	public void drawLine(ITextCanvasModel model, GC gc, int row, int x, int y, int colFirst, int colLast) {
-		if(row<0 || row>=fSnapshot.getHeight() || colFirst>=fSnapshot.getWidth() || colFirst-colLast==0)
-			return;
-		colLast=Math.min(colLast, fSnapshot.getWidth());
-		LineSegment[] segments=fSnapshot.getLineSegments(row, colFirst, colLast-colFirst);
-		for (int i = 0; i < segments.length; i++) {
-			LineSegment segment=segments[i];
-			Style style=segment.getStyle();
-			setupGC(gc, style);
-			String text=segment.getText();
-			drawText(gc, x, y, colFirst, segment.getColumn(), text);
-			drawCursor(model, gc, row, x, y, colFirst);
+		if(row<0 || row>=fSnapshot.getHeight() || colFirst>=fSnapshot.getWidth() || colFirst-colLast==0) {
+			fillBackground(gc, x, y, getCellWidth()*(colFirst-colLast), getCellHeight());
+		} else {
+			colLast=Math.min(colLast, fSnapshot.getWidth());
+			LineSegment[] segments=fSnapshot.getLineSegments(row, colFirst, colLast-colFirst);
+			for (int i = 0; i < segments.length; i++) {
+				LineSegment segment=segments[i];
+				Style style=segment.getStyle();
+				setupGC(gc, style);
+				String text=segment.getText();
+				drawText(gc, x, y, colFirst, segment.getColumn(), text);
+				drawCursor(model, gc, row, x, y, colFirst);
+			}
 		}
+	}
+	
+	protected void fillBackground(GC gc, int x, int y, int width, int height) {
+		Color bg=gc.getBackground();
+		gc.setBackground(getBackgroundColor());
+		gc.fillRectangle (x,y,width,height);
+		gc.setBackground(bg);
 		
 	}
+
+	private Color getBackgroundColor() {
+		return fBackgroundColor;
+	}
 	private void drawCursor(ITextCanvasModel model, GC gc, int row, int x, int y, int colFirst) {
-		if(!model.isCursorOn())
+		if(!model.isCursorOn() || !hasFocus())
 			return;
 		int cursorLine=model.getCursorLine();
 			
@@ -89,7 +105,7 @@ public class TextLineRenderer implements ILinelRenderer {
 				}
 				style=style.setReverse(!style.isReverse());
 				setupGC(gc,style);
-				String text=(""+fSnapshot.getChar(row, cursorColumn)).replace('\000', ' ');
+				String text=""+fSnapshot.getChar(row, cursorColumn);
 				drawText(gc, x, y, colFirst, cursorColumn, text);
 			}
 		}
@@ -115,6 +131,13 @@ public class TextLineRenderer implements ILinelRenderer {
 	}
 	public void setVisibleRectangle(int startLine, int startCol, int height, int width) {
 		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,Math.min(fSnapshot.getHeight(),height)));
+		
+	}
+	public boolean hasFocus() {
+		return fHasFocus;
+	}
+	public void setFocus(boolean focus) {
+		fHasFocus=focus;
 		
 	}
 }
