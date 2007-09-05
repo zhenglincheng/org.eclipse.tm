@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.eclipse.tm.internal.terminal.control.impl.ITerminalControlForText;
-import org.eclipse.tm.internal.terminal.emulator.VT100lEmulator;
+import org.eclipse.tm.internal.terminal.emulator.VT100Emulator;
 import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnectorInfo;
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
 import org.eclipse.tm.terminal.model.ITerminalTextData;
@@ -29,7 +29,7 @@ import org.eclipse.tm.terminal.model.ITerminalTextData;
  *
  */
 final class VT100DataSource implements IDataSource {
-	VT100lEmulator fEmulator;
+	VT100Emulator fEmulator;
 	volatile int fAvailable;
 	volatile int fRead;
 	private final String fFile;
@@ -74,7 +74,7 @@ final class VT100DataSource implements IDataSource {
 		
 	}
 	void init(ITerminalTextData terminal) {
-		fEmulator=new VT100lEmulator(terminal,new ITerminalControlForText() {
+		fEmulator=new VT100Emulator(terminal,new ITerminalControlForText() {
 
 			public void disconnectTerminal() {
 				// TODO Auto-generated method stub
