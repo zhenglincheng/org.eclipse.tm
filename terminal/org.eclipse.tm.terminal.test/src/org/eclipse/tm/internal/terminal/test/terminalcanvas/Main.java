@@ -11,12 +11,9 @@
 package org.eclipse.tm.internal.terminal.test.terminalcanvas;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.tm.internal.terminal.test.textcanvas.TextCanvas;
 
 public class Main {
 
