@@ -23,6 +23,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	private int fCursorColumn;
 	private boolean fShowCursor;
 	private long fCursorTime;
+	private boolean fCursorIsEnabled;
 
 	public AbstractTextCanvasModel() {
 		super();
@@ -58,18 +59,20 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 
 
 	public int getCursorColumn() {
-		// TODO Auto-generated method stub
 		return fCursorColumn;
 	}
 
 	public int getCursorLine() {
-		// TODO Auto-generated method stub
 		return fCursorLine;
 	}
 
 	public boolean isCursorOn() {
-		return fShowCursor;
+		return fShowCursor && fCursorIsEnabled;
 	}
+	/**
+	 * should be called regularly to draw an update of the
+	 * blinking cursor
+	 */
 	protected void updateCursor() {
 		int cursorLine=getSnapshot().getCursorLine();
 		int cursorColumn=getSnapshot().getCursorColumn();
@@ -89,7 +92,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			fCursorTime=t;
 		}
 		// TODO make the cursor blink time customisable
-		if(t-fCursorTime>500) {
+		if(t-fCursorTime>1000) {
 			fShowCursor=!fShowCursor;
 			fCursorTime=t;
 		}
@@ -97,6 +100,15 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		fCursorColumn=cursorColumn;
 		fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 	}
-
-
+	protected void showCursor(boolean show) {
+		fShowCursor=true;
+	}
+	public void setCursorEnabled(boolean visible) {
+		fCursorTime=System.currentTimeMillis();
+		fShowCursor=visible;
+		fCursorIsEnabled=visible;
+	}
+	public boolean isCursorEnabled() {
+		return fCursorIsEnabled;
+	}
 }

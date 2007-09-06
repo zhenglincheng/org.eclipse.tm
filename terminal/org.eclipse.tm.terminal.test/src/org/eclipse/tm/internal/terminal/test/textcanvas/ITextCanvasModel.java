@@ -20,7 +20,21 @@ public interface ITextCanvasModel {
 	 */
 	void update();
 	
+	/**
+	 * @return true when the cursor is shown (used for blinking cursors)
+	 */
 	boolean isCursorOn();
+	/**
+	 * Show/Hide the cursor.
+	 * @param visible
+	 */
+	void setCursorEnabled(boolean visible);
+	
+	/**
+	 * @return true if the cursor is shown.
+	 */
+	boolean isCursorEnabled();
+	
 	int getCursorLine();
 	int getCursorColumn();
 }

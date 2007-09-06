@@ -69,10 +69,10 @@ public class TextCanvas extends GridCanvas {
 		addFocusListener(new FocusListener(){
 
 			public void focusGained(FocusEvent e) {
-				fCellRenderer.setFocus(true);
+				fCellCanvasModel.setCursorEnabled(true);
 			}
 			public void focusLost(FocusEvent e) {
-				fCellRenderer.setFocus(false);
+				fCellCanvasModel.setCursorEnabled(false);
 			}});
 		addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {

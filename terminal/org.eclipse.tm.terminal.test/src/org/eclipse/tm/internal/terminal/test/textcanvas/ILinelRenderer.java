@@ -28,6 +28,4 @@ public interface ILinelRenderer {
 	 * @param width
 	 */
 	void setVisibleRectangle(int startLine, int startCol, int height, int width);
-	void setFocus(boolean focus);
-	boolean hasFocus();
 }
