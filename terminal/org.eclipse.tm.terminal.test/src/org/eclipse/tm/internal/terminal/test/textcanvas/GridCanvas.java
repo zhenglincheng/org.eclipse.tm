@@ -28,10 +28,10 @@ abstract public class GridCanvas extends VirtualCanvas {
 	private int fCellWidth;
 	/** height of a cell */
 	private int fCellHeight;
-	/** number of rows */
-	private int fRows;
-	/** number of columns */
-	private int fCols;
+//	/** number of rows */
+//	private int fRows;
+//	/** number of columns */
+//	private int fCols;
 
 	public GridCanvas(Composite parent, int style) {
 		super(parent, style);
@@ -47,10 +47,10 @@ abstract public class GridCanvas extends VirtualCanvas {
 
 	}
 
-	protected void setCells(int cols, int rows) {
-		setCols(cols);
-		setRows(rows);
-	}
+//	protected void setCells(int cols, int rows) {
+//		setCols(cols);
+//		setRows(rows);
+//	}
 	/** template method paint.
 	 * iterates over all cells in the clipping rectangle and paints them.
 	 */
@@ -73,6 +73,7 @@ abstract public class GridCanvas extends VirtualCanvas {
 		int rowLast=virtualYToCell(yOffset+clipping.y+clipping.height+fCellHeight);
 		if(rowLast>getRows())
 			rowLast=getRows();
+		// System.out.println(rowFirst+"->"+rowLast+" "+System.currentTimeMillis());
 		// draw the cells
 		for(int row=rowFirst;row<=rowLast;row++) {
 			int cx=colFirst*fCellWidth-xOffset;
@@ -91,22 +92,8 @@ abstract public class GridCanvas extends VirtualCanvas {
 	 */
 	abstract void drawLine(GC gc, int row, int x, int y, int colFirst, int colLast);
 
-	
-	protected void setRows(int rows) {
-		fRows = rows;
-	}
-
-	public int getRows() {
-		return fRows;
-	}
-
-	protected void setCols(int cols) {
-		fCols = cols;
-	}
-
-	public int getCols() {
-		return fCols;
-	}
+	abstract protected int getRows();
+	abstract protected int getCols();
 
 	protected void setCellWidth(int cellWidth) {
 		fCellWidth = cellWidth;

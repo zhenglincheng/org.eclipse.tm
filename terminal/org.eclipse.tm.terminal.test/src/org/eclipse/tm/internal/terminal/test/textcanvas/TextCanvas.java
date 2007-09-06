@@ -54,11 +54,7 @@ public class TextCanvas extends GridCanvas {
 				
 			}
 			public void dimesnionsChanged(int cols, int rows) {
-				if(getCols()!=cols ||getRows()!=rows) {
-					setCols(cols);
-					setRows(rows);
-					calculateGrid();
-				}
+				calculateGrid();
 			}
 		});
 		addListener(SWT.Resize, new Listener() {
@@ -141,6 +137,12 @@ public class TextCanvas extends GridCanvas {
 		fCellRenderer.setVisibleRectangle(y,x,height,width);
 		fCellCanvasModel.update();
 		update();
+	}
+	protected int getCols() {
+		return fCellCanvasModel.getWidth();
+	}
+	protected int getRows() {
+		return fCellCanvasModel.getHeight();
 	}
 }
 
