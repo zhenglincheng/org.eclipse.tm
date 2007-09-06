@@ -34,6 +34,7 @@ public class TextCanvas extends GridCanvas {
 	protected final ITextCanvasModel fCellCanvasModel;
 	/** Renders the cells */
 	private ILinelRenderer fCellRenderer;
+	private boolean fAutoRevealCursor;
 	/**
 	 * Create a new CellCanvas with the given SWT stylebits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automtically added).
@@ -114,8 +115,8 @@ public class TextCanvas extends GridCanvas {
 	private void calculateGrid() {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		// scroll to end
-		setVirtualOrigin(0,0);
-//		setVirtualOrigin(0,getRows()*getCellHeight());
+		if(fAutoRevealCursor)
+			setVirtualOrigin(0,getRows()*getCellHeight());
 		// make sure the scroll area is correct:
 		scrollY(getVerticalBar());
 		scrollX(getHorizontalBar());
@@ -123,6 +124,20 @@ public class TextCanvas extends GridCanvas {
 		updateViewRectangle();
 		getParent().layout();
 		redraw();
+	}
+	/**
+	 * 
+	 * @return true if the cursor should be shown on output....
+	 */
+	public boolean isAutoRevealCursor() {
+		return fAutoRevealCursor;
+	}
+	/**
+	 * If set then if the size changes  
+	 * @param autoRevealCursor 
+	 */
+	public void setAutoRevealCursor(boolean autoRevealCursor) {
+		fAutoRevealCursor=autoRevealCursor;
 	}
 	protected void repaintRange(int col, int line, int width, int height) {
 		Point origin=cellToOriginOnScreen(col,line);
