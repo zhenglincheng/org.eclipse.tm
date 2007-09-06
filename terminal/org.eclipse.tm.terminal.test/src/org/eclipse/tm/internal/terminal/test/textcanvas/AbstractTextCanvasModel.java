@@ -46,7 +46,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	protected void fireDimensionsChanges() {
 		for (Iterator iter = fListeners.iterator(); iter.hasNext();) {
 			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
-			listener.dimesnionsChanged(getWidth(),getHeight());
+			listener.dimensionsChanged(getWidth(),getHeight());
 		}
 		
 	}

@@ -54,7 +54,7 @@ public class TextCanvas extends GridCanvas {
 				repaintRange(col,line,width,height);
 				
 			}
-			public void dimesnionsChanged(int cols, int rows) {
+			public void dimensionsChanged(int cols, int rows) {
 				calculateGrid();
 			}
 		});

@@ -17,5 +17,5 @@ package org.eclipse.tm.internal.terminal.test.textcanvas;
 public interface ITextCanvasModelListener {
 	void cellSizeChanged();
 	void rangeChanged(int col, int line, int width, int height);
-	void dimesnionsChanged(int cols, int rows);
+	void dimensionsChanged(int cols, int rows);
 }
