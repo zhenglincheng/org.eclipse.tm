@@ -84,23 +84,27 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			cursorLine=getSnapshot().getHeight()-1;
 			cursorColumn=getSnapshot().getWidth()-1;
 		}
-		long t=System.currentTimeMillis();
-		// clean the previous cursor
+		// has the cursor moved?
 		if(fCursorLine!=cursorLine || fCursorColumn!=cursorColumn) {
 			// hide the old cursor!
 			fShowCursor=false;
+			// clean the previous cursor
 			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+			// the cursor is shown when it moves!
 			fShowCursor=true;
-			fCursorTime=t;
+			fCursorTime=System.currentTimeMillis();
 			fCursorLine=cursorLine;
 			fCursorColumn=cursorColumn;
+			// and draw the new cursor
 			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
-		}
-		// TODO make the cursor blink time customisable
-		if(t-fCursorTime>1000) {
-			fShowCursor=!fShowCursor;
-			fCursorTime=t;
-			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+		} else {
+			long t=System.currentTimeMillis();
+			// TODO make the cursor blink time customisable
+			if(t-fCursorTime>1000) {
+				fShowCursor=!fShowCursor;
+				fCursorTime=t;
+				fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+			}
 		}
 	}
 	protected void showCursor(boolean show) {
