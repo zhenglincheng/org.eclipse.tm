@@ -74,6 +74,8 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	 * blinking cursor
 	 */
 	protected void updateCursor() {
+		if(!fCursorIsEnabled)
+			return;
 		int cursorLine=getSnapshot().getCursorLine();
 		int cursorColumn=getSnapshot().getCursorColumn();
 		// if cursor at the end put it to the end of the
@@ -90,15 +92,16 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 			fShowCursor=true;
 			fCursorTime=t;
+			fCursorLine=cursorLine;
+			fCursorColumn=cursorColumn;
+			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 		}
 		// TODO make the cursor blink time customisable
 		if(t-fCursorTime>1000) {
 			fShowCursor=!fShowCursor;
 			fCursorTime=t;
+			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 		}
-		fCursorLine=cursorLine;
-		fCursorColumn=cursorColumn;
-		fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 	}
 	protected void showCursor(boolean show) {
 		fShowCursor=true;
@@ -107,6 +110,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		fCursorTime=System.currentTimeMillis();
 		fShowCursor=visible;
 		fCursorIsEnabled=visible;
+		fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
 	}
 	public boolean isCursorEnabled() {
 		return fCursorIsEnabled;
