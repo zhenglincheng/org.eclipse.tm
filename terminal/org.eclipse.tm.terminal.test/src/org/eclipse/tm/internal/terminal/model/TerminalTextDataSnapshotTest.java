@@ -1259,5 +1259,68 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(3, snapshot.getCursorLine());
 		assertEquals(2, snapshot.getCursorColumn());
 	}
+	public void testHasTerminalChanged() {
+		ITerminalTextData term=makeITerminalTextData();
+		String s="12345\n" +
+				 "abcde\n" +
+				 "ABCDE\n" +
+				 "vwxzy\n" +
+				 "VWXYZ";
+		TerminalTextTestHelper.fill(term,s);
+		
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		assertTrue(snapshot.hasTerminalChanged());
+		snapshot.updateSnapshot(false);
 
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// make a change and expect it to be changed
+		term.setChar(0, 0, '?', null);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// make a change and expect it to be changed
+		term.setChars(1, 1, new char[]{'?','!','.'},null);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// scroll
+		term.scroll(1, 2, -1);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// scroll
+		term.scroll(1, 2, 1);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+
+		// scroll
+		term.scroll(1, 2, -1);
+		snapshot.updateSnapshot(true);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// scroll
+		term.scroll(1, 2, 1);
+		snapshot.updateSnapshot(true);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// setDimensions
+		term.setDimensions(2, 2);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+		
+		// setDimensions
+		term.setDimensions(20, 20);
+		snapshot.updateSnapshot(false);
+		assertTrue(snapshot.hasTerminalChanged());
+
+		snapshot.updateSnapshot(false);
+		assertFalse(snapshot.hasTerminalChanged());
+
+		// window of interest changes should NOT set hasTerminalChanged
+		snapshot.updateSnapshot(false);
+		snapshot.setInterestWindow(7, 4);
+
+		assertFalse(snapshot.hasTerminalChanged());
+	}
 }

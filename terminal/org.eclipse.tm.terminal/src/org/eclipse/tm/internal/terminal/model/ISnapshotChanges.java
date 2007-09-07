@@ -55,6 +55,15 @@ public interface ISnapshotChanges {
 
 	void markDimensionsChanged();
 	boolean hasDimensionsChanged();
+	/**
+	 * @return true if the terminal data has changed
+	 */
+	boolean hasTerminalChanged();
+	/**
+	 * mark the terminal as changed
+	 */
+	void setTerminalChanged();
+
 
 	void copyChangedLines(ITerminalTextData dest, ITerminalTextData source);
 
@@ -65,5 +74,6 @@ public interface ISnapshotChanges {
 	void setInterestWindow(int startLine, int size);
 	int getInterestWindowStartLine();
 	int getInterestWindowSize();
+
 
 }

@@ -55,6 +55,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		fSnapshot = new TerminalTextDataWindow();
 		fTerminal = terminal;
 		fCurrentChanges = new SnapshotChanges(fTerminal.getHeight());
+		fCurrentChanges.setTerminalChanged();
 		fFutureChanges = new SnapshotChanges(fTerminal.getHeight());
 		fFutureChanges.markLinesChanged(0, fTerminal.getHeight());
 		fListenersNeedNotify=true;
@@ -154,6 +155,9 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	public boolean hasDimensionsChanged() {
 		return fCurrentChanges.hasDimensionsChanged();
 	}
+	public boolean hasTerminalChanged() {
+		return fCurrentChanges.hasTerminalChanged();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ITerminalTextDataSnapshot#getScrollChangeY()
@@ -181,6 +185,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	void markLineChanged(int line) {
 		// threading
 		fFutureChanges.markLineChanged(line);
+		fFutureChanges.setTerminalChanged();
 		notifyListers();
 	}
 	/**
@@ -190,11 +195,13 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 */
 	void markLinesChanged(int line,int n) {
 		fFutureChanges.markLinesChanged(line,n);
+		fFutureChanges.setTerminalChanged();
 		notifyListers();
 	}
 	
 	public void markDimensionsChanged() {
 		fFutureChanges.markDimensionsChanged();
+		fFutureChanges.setTerminalChanged();
 		notifyListers();
 	}
 	
@@ -205,6 +212,7 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	 */
 	void scroll(int startLine, int size, int shift) {
 		fFutureChanges.scroll(startLine,size,shift);
+		fFutureChanges.setTerminalChanged();
 		notifyListers();
 	}
 	/**

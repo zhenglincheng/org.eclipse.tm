@@ -33,7 +33,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	private int fInterestWindowSize;
 	private int fInterestWindowStartLine;
 	private boolean fDimensionsChanged;
-
+	private boolean fTerminalHasChanged;
 	
 	public SnapshotChanges(int nLines) {
 		setChangedLinesLength(nLines);
@@ -170,6 +170,12 @@ public class SnapshotChanges implements ISnapshotChanges {
 	}
 	public boolean hasDimensionsChanged() {
 		return fDimensionsChanged;
+	}
+	public boolean hasTerminalChanged() {
+		return fTerminalHasChanged;
+	}
+	public void setTerminalChanged() {
+		fTerminalHasChanged=true;
 	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#scroll(int, int, int)
