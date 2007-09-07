@@ -121,6 +121,9 @@ public abstract class VirtualCanvas extends Canvas {
 		scroll (deltaX, deltaY, 0, 0, rect.width, rect.height, false);
 	}
 
+	/**
+	 * @param rect in virtual space
+	 */
 	protected void revealRect(Rectangle rect) {
 		Rectangle visibleRect=getScreenRectInVirtualSpace();
 		// scroll the X part
@@ -238,11 +241,13 @@ public abstract class VirtualCanvas extends Canvas {
 	protected void setVirtualOrigin(int x, int y) {
 		fVirtualBounds.x=x;
 		fVirtualBounds.y=y;
-		getHorizontalBar().setSelection(x);
-		getVerticalBar().setSelection(y);
+		getHorizontalBar().setSelection(-x);
+		getVerticalBar().setSelection(-y);
 		updateViewRectangle();
 	}
-
+	protected Rectangle getVirtualBounds() {
+		return cloneRectangle(fVirtualBounds);
+	}
 	/**
 	 * @param x
 	 * @return the virtual coordinate in scree space
@@ -276,7 +281,10 @@ public abstract class VirtualCanvas extends Canvas {
 		viewRectangleChanged(fViewRectangle.x,fViewRectangle.y,fViewRectangle.width,fViewRectangle.height);
 	}
 	protected Rectangle getViewRectangle() {
-		return fViewRectangle;
+		return cloneRectangle(fViewRectangle);
+	}
+	private Rectangle cloneRectangle(Rectangle r) {
+		return new Rectangle(r.x,r.y,r.width,r.height);
 	}
 	/**
 	 * Called when the viewed part has changed.

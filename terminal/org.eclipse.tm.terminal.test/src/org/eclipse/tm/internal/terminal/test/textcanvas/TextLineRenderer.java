@@ -35,7 +35,6 @@ public class TextLineRenderer implements ILinelRenderer {
 		fSelectionBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
 //		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
-		fSnapshot.updateSnapshot(false);
 	}
 	/* (non-Javadoc)
 	 * @see com.imagicus.thumbs.view.ICellRenderer#getCellWidth()

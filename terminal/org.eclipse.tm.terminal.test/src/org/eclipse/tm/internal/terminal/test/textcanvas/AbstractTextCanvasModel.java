@@ -43,10 +43,17 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			listener.rangeChanged(x, y, width, height);
 		}
 	}
-	protected void fireDimensionsChanges() {
+	protected void fireDimensionsChanged() {
 		for (Iterator iter = fListeners.iterator(); iter.hasNext();) {
 			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
 			listener.dimensionsChanged(getWidth(),getHeight());
+		}
+		
+	}
+	protected void fireTerminalDataChanged() {
+		for (Iterator iter = fListeners.iterator(); iter.hasNext();) {
+			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
+			listener.terminalDataChanged();
 		}
 		
 	}

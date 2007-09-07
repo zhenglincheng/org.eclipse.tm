@@ -36,8 +36,8 @@ public class TextCanvas extends GridCanvas {
 	private ILinelRenderer fCellRenderer;
 	private boolean fAutoRevealCursor;
 	/**
-	 * Create a new CellCanvas with the given SWT stylebits.
-	 * (SWT.H_SCROLL and SWT.V_SCROLL are automtically added).
+	 * Create a new CellCanvas with the given SWT style bits.
+	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
 	 */
 	public TextCanvas(Composite parent, ITextCanvasModel model, int style) {
 		super(parent, style | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -52,10 +52,14 @@ public class TextCanvas extends GridCanvas {
 			}
 			public void rangeChanged(int col, int line, int width, int height) {
 				repaintRange(col,line,width,height);
-				
 			}
 			public void dimensionsChanged(int cols, int rows) {
 				calculateGrid();
+			}
+			public void terminalDataChanged() {
+				if(isDisposed())
+					return;
+				scrollToEnd();
 			}
 		});
 		addListener(SWT.Resize, new Listener() {
@@ -115,8 +119,7 @@ public class TextCanvas extends GridCanvas {
 	private void calculateGrid() {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		// scroll to end
-		if(fAutoRevealCursor)
-			setVirtualOrigin(0,getRows()*getCellHeight());
+		scrollToEnd();
 		// make sure the scroll area is correct:
 		scrollY(getVerticalBar());
 		scrollX(getHorizontalBar());
@@ -124,6 +127,15 @@ public class TextCanvas extends GridCanvas {
 		updateViewRectangle();
 		getParent().layout();
 		redraw();
+	}
+	void scrollToEnd() {
+		if(fAutoRevealCursor) {
+			int y=-(getRows()*getCellHeight()-getClientArea().height);
+			Rectangle v=getViewRectangle();
+			if(v.y!=y) {
+				setVirtualOrigin(0,y);
+			}
+		}
 	}
 	/**
 	 * 
@@ -151,6 +163,7 @@ public class TextCanvas extends GridCanvas {
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {
 		fCellRenderer.setVisibleRectangle(y,x,height,width);
 		fCellCanvasModel.update();
+		// reset the auto reveal
 		update();
 	}
 	protected int getCols() {

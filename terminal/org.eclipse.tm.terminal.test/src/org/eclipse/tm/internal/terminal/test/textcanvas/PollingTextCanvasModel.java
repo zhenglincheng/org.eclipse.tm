@@ -38,8 +38,10 @@ public class PollingTextCanvasModel extends AbstractTextCanvasModel {
 		// do the poll....
 		if(fSnapshot.isOutOfDate()) {
 			fSnapshot.updateSnapshot(false);
+			if(fSnapshot.hasTerminalChanged())
+				fireTerminalDataChanged();
 			if(fSnapshot.hasDimensionsChanged())
-				fireDimensionsChanges();
+				fireDimensionsChanged();
 
 			int y=fSnapshot.getFirstChangedLine();
 			// has any line changed?

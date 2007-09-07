@@ -44,7 +44,7 @@ import org.eclipse.tm.terminal.model.TerminalTextDataFactory;
  * 
  */
 public class TerminalTextUITest {
-	static TextCanvas tn;
+	static TextCanvas fgTextCanvas;
 	static ITextCanvasModel fgModel;
 	static ITerminalTextData fTerminalModel;
 	static Label fStatusLabel;
@@ -65,9 +65,6 @@ public class TerminalTextUITest {
 		
 	}
 	public static void main(String[] args) {
-		fTerminalModel=TerminalTextDataFactory.makeTerminalTextData();
-		
-		
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		shell.setLayout(new GridLayout());
@@ -76,9 +73,57 @@ public class TerminalTextUITest {
 		RowLayout layout = new RowLayout(SWT.HORIZONTAL);
 		layout.wrap = true;
 		layout.fill = false;
+		fTerminalModel=TerminalTextDataFactory.makeTerminalTextData();
+		fHeight=24;
+		fWidth=80;
+		fTerminalModel.setDimensions(fHeight, fWidth);
+		fTerminalModel.setMaxHeight(fHeight);
+		ITerminalTextDataSnapshot snapshot=fTerminalModel.makeSnapshot();
+		// TODO how to get the initial size correctly!
+		snapshot.updateSnapshot(false);
+		fgModel=new PollingTextCanvasModel(snapshot);
+		fgTextCanvas=new TextCanvas(shell,fgModel, SWT.NONE);
+		fgTextCanvas.setCellRenderer(new TextLineRenderer(fgTextCanvas,snapshot));
+		fgTextCanvas.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
 
 		composite.setLayout(layout);
+		addAutorevealCursorButton(composite);
+		Text maxHeightText = addMaxHeightInput(composite);
+		addHeightInput(composite, maxHeightText);
+		addWidthText(composite);
+		Text throttleText = addThrottleText(composite);
 		
+		IStatus status=new Status();
+		DataReader reader=new DataReader("Line Count",fTerminalModel,new LineCountingDataSource(),status);
+		addDataReader(composite, reader);
+		reader=new DataReader("Fast",fTerminalModel,new FastDataSource(),status);
+		addDataReader(composite, reader);
+		reader=new DataReader("Random",fTerminalModel,new RandomDataSource(),status);
+		addDataReader(composite, reader);
+		for (int i = 0; i < args.length; i++) {
+			File file=new File(args[i]);
+			reader=new DataReader(file.getName(),fTerminalModel,new VT100DataSource(args[i]),status);
+			addDataReader(composite, reader);
+		}
+		addStopAllButton(composite, reader);
+		
+		fStatusLabel=new Label(shell,SWT.NONE);
+		fStatusLabel.setLayoutData(new GridData(250,15));
+		throttleText.setText("100");
+		setThrottleForAll(100);
+
+		if(args.length==0)
+			addLabel(composite, "[Files can be added via commandline]");
+		shell.setSize(600,300);
+		shell.open();
+		while (!shell.isDisposed()) {
+			if (!display.readAndDispatch())
+				display.sleep();
+		}
+		display.dispose();
+	}
+	private static Text addMaxHeightInput(Composite composite) {
 		addLabel(composite, "maxHeight:");
 		final Text maxHeightText=new Text(composite,SWT.BORDER);
 		setLayoutData(maxHeightText,30);
@@ -97,7 +142,10 @@ public class TerminalTextUITest {
 				}
 			}
 		});
-		
+		maxHeightText.setText(fHeight+"");
+		return maxHeightText;
+	}
+	private static void addHeightInput(Composite composite, final Text maxHeightText) {
 		addLabel(composite,"heigth:");
 		heightText=new Text(composite,SWT.BORDER);
 		setLayoutData(heightText,30);
@@ -113,7 +161,9 @@ public class TerminalTextUITest {
 				}
 			}
 		});
-		
+		heightText.setText(fHeight+"");
+	}
+	private static Text addWidthText(Composite composite) {
 		addLabel(composite,"width:");
 		final Text widthText=new Text(composite,SWT.BORDER);
 		setLayoutData(widthText,30);
@@ -126,7 +176,10 @@ public class TerminalTextUITest {
 				}
 			}
 		});
-		
+		widthText.setText(fWidth+"");
+		return widthText;
+	}
+	private static Text addThrottleText(Composite composite) {
 		addLabel(composite,"throttle:");
 		final Text throttleText=new Text(composite,SWT.BORDER);
 		setLayoutData(throttleText,30);
@@ -137,28 +190,9 @@ public class TerminalTextUITest {
 					setThrottleForAll(throttle);
 				}
 			}});
-		fHeight=24;
-		fWidth=80;
-		widthText.setText(fWidth+"");
-		maxHeightText.setText(fHeight+"");
-		heightText.setText(fHeight+"");
-		fTerminalModel.setDimensions(fHeight, fWidth);
-		fTerminalModel.setMaxHeight(fHeight);
-		ITerminalTextDataSnapshot snapshot=fTerminalModel.makeSnapshot();
-//		fgModel=new TextCanvasModel(snapshot);
-		fgModel=new PollingTextCanvasModel(snapshot);
-		IStatus status=new Status();
-		DataReader reader=new DataReader("Line Count",fTerminalModel,new LineCountingDataSource(),status);
-		addDataReader(composite, reader);
-		reader=new DataReader("Fast",fTerminalModel,new FastDataSource(),status);
-		addDataReader(composite, reader);
-		reader=new DataReader("Random",fTerminalModel,new RandomDataSource(),status);
-		addDataReader(composite, reader);
-		for (int i = 0; i < args.length; i++) {
-			File file=new File(args[i]);
-			reader=new DataReader(file.getName(),fTerminalModel,new VT100DataSource(args[i]),status);
-			addDataReader(composite, reader);
-		}
+		return throttleText;
+	}
+	private static void addStopAllButton(Composite composite, DataReader reader) {
 		final Button stopAllButton=new Button(composite,SWT.CHECK);
 		stopAllButton.setText("Stop ALL");
 		stopAllButton.addSelectionListener(new SelectionAdapter(){
@@ -171,25 +205,17 @@ public class TerminalTextUITest {
 
 			}}});
 		stopAllButton.setSelection(reader.isStart());
-		
-		tn=new TextCanvas(shell,fgModel, SWT.NONE);
-		tn.setCellRenderer(new TextLineRenderer(tn,snapshot));
-		tn.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-		fStatusLabel=new Label(shell,SWT.NONE);
-		fStatusLabel.setLayoutData(new GridData(250,15));
-		throttleText.setText("100");
-		setThrottleForAll(100);
-
-		if(args.length==0)
-			addLabel(composite, "[Files can be added via commandline]");
-		shell.setSize(600,300);
-		shell.open();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
-		}
-		display.dispose();
+	}
+	private static void addAutorevealCursorButton(Composite composite) {
+		final Button button=new Button(composite,SWT.CHECK);
+		button.setText("AutoReveal");
+		button.addSelectionListener(new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent e) {
+				boolean stop=button.getSelection();
+				fgTextCanvas.setAutoRevealCursor(stop);
+			}
+		});
+		button.setSelection(fgTextCanvas.isAutoRevealCursor());
 	}
 	private static void addLabel(Composite composite,String message) {
 		Label label;
