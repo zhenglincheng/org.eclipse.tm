@@ -13,7 +13,13 @@ package org.eclipse.tm.internal.terminal.test.textcanvas;
 public interface ITextCanvasModel {
 	void addCellCanvasModelListener(ITextCanvasModelListener listener);
 	void removeCellCanvasModelListener(ITextCanvasModelListener listener);
+	/**
+	 * @return the number of columns the terminal has
+	 */
 	int getWidth();
+	/**
+	 * @return the number of lines the terminal has
+	 */
 	int getHeight();
 	/**
 	 * must be called from the UI thread
@@ -35,6 +41,12 @@ public interface ITextCanvasModel {
 	 */
 	boolean isCursorEnabled();
 	
+	/**
+	 * @return the line of the cursor 
+	 */
 	int getCursorLine();
+	/**
+	 * @return the column of the cursor
+	 */
 	int getCursorColumn();
 }

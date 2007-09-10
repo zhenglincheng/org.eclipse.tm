@@ -107,7 +107,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		} else {
 			long t=System.currentTimeMillis();
 			// TODO make the cursor blink time customisable
-			if(t-fCursorTime>1000) {
+			if(t-fCursorTime>500) {
 				fShowCursor=!fShowCursor;
 				fCursorTime=t;
 				fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
