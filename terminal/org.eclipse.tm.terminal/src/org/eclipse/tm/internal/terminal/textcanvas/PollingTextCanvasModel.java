@@ -8,7 +8,7 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;

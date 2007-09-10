@@ -8,12 +8,11 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 import org.eclipse.swt.graphics.GC;
 
 /**
- * @author Michael.Scharf@scharf-software.com
  *
  */
 public interface ILinelRenderer {

@@ -8,7 +8,7 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 
 import org.eclipse.swt.SWT;
@@ -28,10 +28,6 @@ abstract public class GridCanvas extends VirtualCanvas {
 	private int fCellWidth;
 	/** height of a cell */
 	private int fCellHeight;
-//	/** number of rows */
-//	private int fRows;
-//	/** number of columns */
-//	private int fCols;
 
 	public GridCanvas(Composite parent, int style) {
 		super(parent, style);
@@ -47,10 +43,6 @@ abstract public class GridCanvas extends VirtualCanvas {
 
 	}
 
-//	protected void setCells(int cols, int rows) {
-//		setCols(cols);
-//		setRows(rows);
-//	}
 	/** template method paint.
 	 * iterates over all cells in the clipping rectangle and paints them.
 	 */
@@ -183,8 +175,6 @@ abstract public class GridCanvas extends VirtualCanvas {
 	 * @param height
 	 */
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {
-		//System.out.println("     x="+x+" y="+y+" w="+width+" h="+height);
-		
 	}
 	
 }

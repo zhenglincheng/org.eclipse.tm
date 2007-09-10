@@ -8,7 +8,7 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -19,7 +19,6 @@ import org.eclipse.tm.terminal.model.LineSegment;
 import org.eclipse.tm.terminal.model.Style;
 
 /**
- * @author Michael.Scharf@scharf-software.com
  *
  */
 public class TextLineRenderer implements ILinelRenderer {
@@ -33,8 +32,7 @@ public class TextLineRenderer implements ILinelRenderer {
 		fCanvas=c;
 		fSnapshot=snapshot;
 		fSelectionBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-//		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 	}
 	/* (non-Javadoc)
 	 * @see com.imagicus.thumbs.view.ICellRenderer#getCellWidth()
@@ -86,11 +84,12 @@ public class TextLineRenderer implements ILinelRenderer {
 			if(cursorColumn<fSnapshot.getWidth()) {
 				Style style=fSnapshot.getStyle(row, cursorColumn);
 				if(style==null) {
-					style=Style.getStyle("BLACK", "WHITE");
+					// TODO make the cursor color customizable
+					style=Style.getStyle("BLACK", "WHITE");  //$NON-NLS-1$//$NON-NLS-2$
 				}
 				style=style.setReverse(!style.isReverse());
 				setupGC(gc,style);
-				String text=""+fSnapshot.getChar(row, cursorColumn);
+				String text=String.valueOf(fSnapshot.getChar(row, cursorColumn));
 				drawText(gc, x, y, colFirst, cursorColumn, text);
 			}
 		}

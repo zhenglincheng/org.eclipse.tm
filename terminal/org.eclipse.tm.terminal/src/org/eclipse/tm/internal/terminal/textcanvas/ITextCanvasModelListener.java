@@ -8,11 +8,9 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 /**
- * @author Michael.Scharf@scharf-software.com
- *
  */
 public interface ITextCanvasModelListener {
 	void cellSizeChanged();

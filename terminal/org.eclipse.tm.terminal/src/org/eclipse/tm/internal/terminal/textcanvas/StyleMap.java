@@ -8,7 +8,7 @@
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.tm.internal.terminal.test.textcanvas;
+package org.eclipse.tm.internal.terminal.textcanvas;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,28 +30,28 @@ public class StyleMap {
 	private Style fDefaultStyle;
 	StyleMap() {
 		Display display=Display.getCurrent();
-		fColorMap.put(StyleColor.getStyleColor("white"), new Color(display,255,255,255));
-		fColorMap.put(StyleColor.getStyleColor("black"), new Color(display,0,0,0));
-		fColorMap.put(StyleColor.getStyleColor("red"), new Color(display,255,128,128));
-		fColorMap.put(StyleColor.getStyleColor("green"), new Color(display,128,255,128));
-		fColorMap.put(StyleColor.getStyleColor("blue"), new Color(display,128,128,255));
-		fColorMap.put(StyleColor.getStyleColor("yellow"), new Color(display,255,255,0));
-		fColorMap.put(StyleColor.getStyleColor("cyan"), new Color(display,0,255,255));
-		fColorMap.put(StyleColor.getStyleColor("magenta"), new Color(display,255,255,0));
-		fColorMap.put(StyleColor.getStyleColor("gray"), new Color(display,128,128,128));
-		fColorMap.put(StyleColor.getStyleColor("WHITE"), new Color(display,255,255,255));
-		fColorMap.put(StyleColor.getStyleColor("BLACK"), new Color(display,0,0,0));
-		fColorMap.put(StyleColor.getStyleColor("RED"), new Color(display,255,128,128));
-		fColorMap.put(StyleColor.getStyleColor("GREEN"), new Color(display,128,255,128));
-		fColorMap.put(StyleColor.getStyleColor("BLUE"), new Color(display,128,128,255));
-		fColorMap.put(StyleColor.getStyleColor("YELLOW"), new Color(display,255,255,0));
-		fColorMap.put(StyleColor.getStyleColor("CYAN"), new Color(display,0,255,255));
-		fColorMap.put(StyleColor.getStyleColor("MAGENTA"), new Color(display,255,255,0));
-		fColorMap.put(StyleColor.getStyleColor("GRAY"), new Color(display,128,128,128));
-		fDefaultStyle=Style.getStyle(StyleColor.getStyleColor("black"),StyleColor.getStyleColor("white"));
+		fColorMap.put(StyleColor.getStyleColor("white"), new Color(display,255,255,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("black"), new Color(display,0,0,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("red"), new Color(display,255,128,128)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("green"), new Color(display,128,255,128)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("blue"), new Color(display,128,128,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("yellow"), new Color(display,255,255,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("cyan"), new Color(display,0,255,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("magenta"), new Color(display,255,255,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("gray"), new Color(display,128,128,128)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("WHITE"), new Color(display,255,255,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("BLACK"), new Color(display,0,0,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("RED"), new Color(display,255,128,128)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("GREEN"), new Color(display,128,255,128)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("BLUE"), new Color(display,128,128,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("YELLOW"), new Color(display,255,255,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("CYAN"), new Color(display,0,255,255)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("MAGENTA"), new Color(display,255,255,0)); //$NON-NLS-1$
+		fColorMap.put(StyleColor.getStyleColor("GRAY"), new Color(display,128,128,128)); //$NON-NLS-1$
+		fDefaultStyle=Style.getStyle(StyleColor.getStyleColor("black"),StyleColor.getStyleColor("white")); //$NON-NLS-1$ //$NON-NLS-2$
 		GC gc = new GC (display);
 		gc.setFont(getFont());
-		fCharSize = gc.textExtent ("W");
+		fCharSize = gc.textExtent ("W"); //$NON-NLS-1$
 		gc.dispose ();
 
 	}
