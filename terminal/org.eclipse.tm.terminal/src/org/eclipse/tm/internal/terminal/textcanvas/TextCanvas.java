@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Listener;
 
 /**
  * A cell oriented Canvas. Maintains a list of "cells".
- * It can either be vartically or horizontally scrolled.
+ * It can either be vertically or horizontally scrolled.
  * The CellRenderer is responsible for painting the cell.
  */
 public class TextCanvas extends GridCanvas {
@@ -68,35 +68,12 @@ public class TextCanvas extends GridCanvas {
 			}
 		});
 		addFocusListener(new FocusListener(){
-
 			public void focusGained(FocusEvent e) {
 				fCellCanvasModel.setCursorEnabled(true);
 			}
 			public void focusLost(FocusEvent e) {
 				fCellCanvasModel.setCursorEnabled(false);
 			}});
-		addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-//				switch(e.keyCode) {
-//					case SWT.ARROW_DOWN:
-//						selectValidIndex(getFocusCell()+getCols());
-//						break;
-//					case SWT.ARROW_UP:
-//						selectValidIndex(getFocusCell()-getCols());
-//						break;
-//					case SWT.ARROW_LEFT:
-//						selectValidIndex(getFocusCell()-1);
-//						break;
-//					case SWT.ARROW_RIGHT:
-//						selectValidIndex(getFocusCell()+1);
-//						break;
-//					default:
-//						break;
-//				}
-			}
-			public void keyReleased(KeyEvent e) {
-			}
-		});
 		addMouseListener(new MouseListener(){
 			public void mouseDoubleClick(MouseEvent e) {
 			}
@@ -171,6 +148,22 @@ public class TextCanvas extends GridCanvas {
 	}
 	protected int getRows() {
 		return fCellCanvasModel.getHeight();
+	}
+	public String getSelectionText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void copy() {
+		// TODO Auto-generated method stub
+		
+	}
+	public void selectAll() {
+		// TODO Auto-generated method stub
+		
+	}
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
 
