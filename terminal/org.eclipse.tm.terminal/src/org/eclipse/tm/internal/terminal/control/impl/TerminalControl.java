@@ -409,6 +409,9 @@ public class TerminalControl implements ITerminalControlForText, ITerminalContro
 	public Font getFont() {
 		return getCtlText().getFont();
 	}
+	public Control getControl() {
+		return fCtlText;
+	}
 	protected void setupControls(Composite parent) {
 		// The Terminal view now aims to be an ANSI-conforming terminal emulator, so it
 		// can't have a horizontal scroll bar (but a vertical one is ok).  Also, do
@@ -858,4 +861,5 @@ public class TerminalControl implements ITerminalControlForText, ITerminalContro
 		getTerminalText().setBufferLineLimit(bufferLineLimit);
 		
 	}
+
 }
