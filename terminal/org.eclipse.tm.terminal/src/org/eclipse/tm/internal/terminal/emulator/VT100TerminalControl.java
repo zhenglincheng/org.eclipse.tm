@@ -308,7 +308,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	
 		getCtlText().setFocus();
 		// TODO
-		Job job=new Job("VT100 reader") {
+		Job job=new Job("VT100 reader") { //$NON-NLS-1$
 
 			protected IStatus run(IProgressMonitor monitor) {
 				while(!monitor.isCanceled()) {
@@ -326,6 +326,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 			}
 			
 		};
+		job.setSystem(true);
 		job.schedule();
 	}
 
