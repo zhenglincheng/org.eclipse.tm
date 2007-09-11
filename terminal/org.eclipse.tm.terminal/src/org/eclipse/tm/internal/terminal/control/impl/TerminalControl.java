@@ -406,7 +406,9 @@ public class TerminalControl implements ITerminalControlForText, ITerminalContro
 
 		getTerminalText().fontChanged();
 	}
-
+	public Font getFont() {
+		return getCtlText().getFont();
+	}
 	protected void setupControls(Composite parent) {
 		// The Terminal view now aims to be an ANSI-conforming terminal emulator, so it
 		// can't have a horizontal scroll bar (but a vertical one is ok).  Also, do
@@ -515,7 +517,7 @@ public class TerminalControl implements ITerminalControlForText, ITerminalContro
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.provisional.api.ITerminalControl#getCtlText()
 	 */
-	public StyledText getCtlText() {
+	protected StyledText getCtlText() {
 		return fCtlText;
 	}
 

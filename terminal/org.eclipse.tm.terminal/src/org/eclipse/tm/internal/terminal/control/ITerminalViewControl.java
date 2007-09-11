@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.control;
 
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnectorInfo;
@@ -24,7 +23,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
 public interface ITerminalViewControl {
     boolean isEmpty();
 	void setFont(Font font);
-    StyledText getCtlText();
+	Font getFont();
     boolean isDisposed();
     void selectAll();
     void clearTerminal();
