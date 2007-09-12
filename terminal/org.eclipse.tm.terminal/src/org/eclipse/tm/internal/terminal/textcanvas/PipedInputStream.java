@@ -8,6 +8,7 @@
  * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
  * Douglas Lea (Addison Wesley) - [cq:1552] BoundedBufferWithStateTracking adapted to BoundedByteBuffer 
+ * Martin Oberhuber (Wind River) - the waitForAvailable method
  *******************************************************************************/
 
 package org.eclipse.tm.internal.terminal.textcanvas;
@@ -218,6 +219,17 @@ public class PipedInputStream extends InputStream {
 	public OutputStream getOutputStream() {
 		return fOutputStream;
 	}
+	/**
+	 * Waits until data is available for reading.
+	 * @param millis see {@link Object#wait(long)}
+	 * @throws InterruptedException
+	 */
+	public void waitForAvailable(long millis) throws InterruptedException {
+		synchronized(fQueue) {
+			if(fQueue.available()==0) 
+				fQueue.wait(millis);
+		}
+	} 
 	/**
 	 * Must be called in the Display Thread!
 	 * @return true if a character is available for the terminal to show.

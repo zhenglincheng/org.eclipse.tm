@@ -321,7 +321,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 					while(true) {
 						while(fInputStream.available()==0 && !monitor.isCanceled()) {
 							try {
-								Thread.sleep(1);
+								fInputStream.waitForAvailable(500);
 							} catch (InterruptedException e) {
 								Thread.currentThread().interrupt();
 							}
