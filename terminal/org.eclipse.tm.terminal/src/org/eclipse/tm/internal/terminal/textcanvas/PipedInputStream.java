@@ -267,7 +267,8 @@ public class PipedInputStream extends InputStream {
 					cbuf[off] = (byte) c;
 					n++;
 				}
-				if (n < len) {
+				// is there more data available?
+				if (n < len && fQueue.available() > 0) {
 					// read at most available()
 					int nn = Math.min(fQueue.available(), len - n);
 					// are we at the end of the stream?
