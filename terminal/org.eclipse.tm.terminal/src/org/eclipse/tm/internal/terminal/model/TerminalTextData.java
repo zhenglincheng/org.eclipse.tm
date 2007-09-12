@@ -40,14 +40,14 @@ public class TerminalTextData implements ITerminalTextData {
 	public TerminalTextData(ITerminalTextData data) {
 		fData=data;
 	}
-	/*synchronized*/ public int getWidth() {
+	public int getWidth() {
 		return fData.getWidth();
 	}
-	/*synchronized*/ public int getHeight() {
+	public int getHeight() {
 		// no need for an extra variable
 		return fData.getHeight();
 	}
-	/*synchronized*/ public void setDimensions(int height, int width) {
+	public void setDimensions(int height, int width) {
 		int h=getHeight();
 		int w=getWidth();
 		if(w==width && h==height)
@@ -67,32 +67,32 @@ public class TerminalTextData implements ITerminalTextData {
 		}
 		sendDimensionsChanged();
 	}
-	/*synchronized*/ public LineSegment[] getLineSegments(int line, int column, int len) {
+	public LineSegment[] getLineSegments(int line, int column, int len) {
 		return fData.getLineSegments(line, column, len);
 	}
-	/*synchronized*/ public char getChar(int line, int column) {
+	public char getChar(int line, int column) {
 		return fData.getChar(line, column);
 	}
-	/*synchronized*/ public Style getStyle(int line, int column) {
+	public Style getStyle(int line, int column) {
 		return fData.getStyle(line, column);
 	}
-	/*synchronized*/ public void setChar(int line, int column, char c, Style style) {
+	public void setChar(int line, int column, char c, Style style) {
 		fData.setChar(line, column, c, style);
 		sendLineChangedToSnapshots(line);
 	}
-	/*synchronized*/ public void setChars(int line, int column, char[] chars, Style style) {
+	public void setChars(int line, int column, char[] chars, Style style) {
 		fData.setChars(line, column, chars, style);
 		sendLineChangedToSnapshots(line);
 	}
-	/*synchronized*/ public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
+	public void setChars(int line, int column, char[] chars, int start, int len, Style style) {
 		fData.setChars(line, column, chars, start, len, style);
 		sendLineChangedToSnapshots(line);
 	}
-	/*synchronized*/ public void scroll(int startLine, int size, int shift) {
+	public void scroll(int startLine, int size, int shift) {
 		fData.scroll(startLine, size, shift);
 		sendScrolledToSnapshots(startLine, size, shift);
 	}
-	/*synchronized*/ public String toString() {
+	public String toString() {
 		return fData.toString();
 	}
 	private void sendDimensionsChanged() {
@@ -142,7 +142,7 @@ public class TerminalTextData implements ITerminalTextData {
 		fSnapshots=(TerminalTextDataSnapshot[]) list.toArray(new TerminalTextDataSnapshot[list.size()]);
 	}
 
-	/*synchronized*/ public ITerminalTextDataSnapshot makeSnapshot() {
+	public ITerminalTextDataSnapshot makeSnapshot() {
 		// poor mans approach to modify the array
 		TerminalTextDataSnapshot snapshot=new TerminalTextDataSnapshot(this);
 		snapshot.markDimensionsChanged();
@@ -152,7 +152,7 @@ public class TerminalTextData implements ITerminalTextData {
 		fSnapshots=(TerminalTextDataSnapshot[]) list.toArray(new TerminalTextDataSnapshot[list.size()]);
 		return snapshot;
 	}
-	/*synchronized*/ public void addLine() {
+	public void addLine() {
 		int oldHeight=getHeight();
 		fData.addLine();
 		// was is an append or a scroll?
@@ -170,44 +170,44 @@ public class TerminalTextData implements ITerminalTextData {
 			
 	}
 
-	/*synchronized*/ public void copy(ITerminalTextData source) {
+	public void copy(ITerminalTextData source) {
 		fData.copy(source);
 		fCursorLine=source.getCursorLine();
 		fCursorColumn=source.getCursorColumn();
 	}
 
-	/*synchronized*/ public void copyLine(ITerminalTextData source, int sourceLine, int destLine) {
+	public void copyLine(ITerminalTextData source, int sourceLine, int destLine) {
 		fData.copyLine(source, sourceLine, destLine);
 	}
-	/*synchronized*/ public void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine, int length) {
+	public void copyRange(ITerminalTextData source, int sourceStartLine, int destStartLine, int length) {
 		fData.copyRange(source, sourceStartLine, destStartLine, length);
 	}
-	/*synchronized*/ public char[] getChars(int line) {
+	public char[] getChars(int line) {
 		return fData.getChars(line);
 	}
-	/*synchronized*/ public Style[] getStyles(int line) {
+	public Style[] getStyles(int line) {
 		return fData.getStyles(line);
 	}
-	/*synchronized*/ public int getMaxHeight() {
+	public int getMaxHeight() {
 		return fData.getMaxHeight();
 	}
-	/*synchronized*/ public void setMaxHeight(int height) {
+	public void setMaxHeight(int height) {
 		fData.setMaxHeight(height);
 	}
-	/*synchronized*/ public void cleanLine(int line) {
+	public void cleanLine(int line) {
 		fData.cleanLine(line);
 		sendLineChangedToSnapshots(line);
 	}
-	/*synchronized*/ public int getCursorColumn() {
+	public int getCursorColumn() {
 		return fCursorColumn;
 	}
-	/*synchronized*/ public int getCursorLine() {
+	public int getCursorLine() {
 		return fCursorLine;
 	}
-	/*synchronized*/ public void setCursorColumn(int column) {
+	public void setCursorColumn(int column) {
 		fCursorColumn=column;
 	}
-	/*synchronized*/ public void setCursorLine(int line) {
+	public void setCursorLine(int line) {
 		fCursorLine=line;
 	}
 }
