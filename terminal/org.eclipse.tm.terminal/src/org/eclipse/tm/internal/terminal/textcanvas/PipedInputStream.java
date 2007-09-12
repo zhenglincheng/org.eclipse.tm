@@ -33,16 +33,6 @@ public class PipedInputStream extends InputStream {
 	private final BoundedByteBuffer fQueue;
 	
 	/**
-	 * The maximum amount of data read and written in one shot.
-	 * The timer cannot interrupt reading this amount of data.
-	 * {@link #available()} and {@link #read(byte[], int, int)}
-	 * This is used as optimization, because reading single characters
-	 * can be very inefficient, because each call is synchronized.
-	 */
-	// block size must be smaller than the Queue capacity!
-	final int BLOCK_SIZE=64;
-	
-	/**
 	 * A byte bounded buffer used to synchronize the input and the output stream.
 	 * <p>
 	 * Adapted from BoundedBufferWithStateTracking 
@@ -68,10 +58,9 @@ public class PipedInputStream extends InputStream {
 		protected int fPutPos = 0; // circular indices
 		protected int fTakePos = 0;
 		protected int fUsedSlots = 0; // the count
+		private boolean fClosed;
 		public BoundedByteBuffer(int capacity) throws IllegalArgumentException {
 			// make sure we don't deadlock on too small capacity
-			if(capacity<BLOCK_SIZE)
-				capacity=2*BLOCK_SIZE;
 			if (capacity <= 0)
 				throw new IllegalArgumentException();
 			fBuffer = new byte[capacity];
@@ -80,7 +69,7 @@ public class PipedInputStream extends InputStream {
 		 * @return the bytes available for {@link #read()}
 		 * Must be called with a lock on this!
 		 */
-		public int size() {
+		public int available() {
 			return fUsedSlots;
 		}
 		/**
@@ -100,22 +89,69 @@ public class PipedInputStream extends InputStream {
 			if (fUsedSlots++ == 0) // signal if was empty
 				notifyAll();
 		}
+		public int getFreeSlots() {
+			return fBuffer.length - fUsedSlots;
+		}
+		public void write(byte[] b, int off, int len) throws InterruptedException {
+			assert len<=getFreeSlots();
+			while (fUsedSlots == fBuffer.length)
+				// wait until not full
+				wait();
+			for (int i = 0; i < len; i++) {
+				fBuffer[(fPutPos + i) % fBuffer.length] = b[i + off];
+			}
+
+			fPutPos = (fPutPos + len) % fBuffer.length; // cyclically increment
+			boolean wasEmpty = fUsedSlots == 0;
+			fUsedSlots += len;
+			if (wasEmpty) // signal if was empty
+				notifyAll();
+		}
 		/**
 		 * Read a single byte. Blocks until a byte is available.
 		 * @return a byte from the buffer
 		 * @throws InterruptedException
 		 * Must be called with a lock on this!
 		 */
-		public byte read() throws InterruptedException {
-			while (fUsedSlots == 0)
+		public int read() throws InterruptedException {
+			while (fUsedSlots == 0) {
+				if(fClosed)
+					return -1;
 				// wait until not empty
 				wait();
+			}
 			byte b = fBuffer[fTakePos];
 			fTakePos = (fTakePos + 1) % fBuffer.length;
 
 			if (fUsedSlots-- == fBuffer.length) // signal if was full
 				notifyAll();
 			return b;
+		}
+		public int read(byte[] cbuf, int off, int len) throws InterruptedException {
+			assert len<=available();
+			while (fUsedSlots == 0) {
+				if(fClosed)
+					return 0;
+				// wait until not empty
+				wait();
+			}
+			for (int i = 0; i < len; i++) {
+				cbuf[i + off] = fBuffer[(i + fTakePos) % fBuffer.length];
+			}
+			fTakePos = (fTakePos + len) % fBuffer.length;
+			boolean wasFull = fUsedSlots == fBuffer.length;
+			fUsedSlots -= len;
+			if(wasFull)
+				notifyAll();
+				
+			return len;
+		}
+		public void close() {
+			fClosed=true;
+			notifyAll();
+		}
+		public boolean isClosed() {
+			return fClosed;
 		}
 	}
 
@@ -128,23 +164,24 @@ public class PipedInputStream extends InputStream {
 	class PipedOutputStream extends OutputStream {
 		public void write(byte[] b, int off, int len) throws IOException {
 			try {
-				// optimization to avoid many synchronized
-				// sections: put the data in junks into the
-				// queue. 
-				int noff=off;
-				int end=off+len;
-				while(noff<end) {
-					int n=noff+BLOCK_SIZE;
-					if(n>end)
-						n=end;
-					// now block the queue for the time we need to
-					// add some characters
-					synchronized(fQueue) {
-						for(int i=noff;i<n;i++) {
-							fQueue.write(b[i]);
+				synchronized (fQueue) {
+					if(fQueue.isClosed())
+						throw new IOException("Stream is closed!"); //$NON-NLS-1$
+					int written=0;
+					while(written<len) {
+						if(fQueue.getFreeSlots()==0) {
+							// if no slots available, write one byte and block
+							// until free slots are available
+							fQueue.write(b[off + written]);
+							written++;
+						} else {
+							// if slots are available, write as much as 
+							// we can in one junk
+							int n=Math.min(fQueue.getFreeSlots(), len-written);
+							fQueue.write(b, off + written, n);
+							written+=n;
 						}
 					}
-					noff+=BLOCK_SIZE;
 				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -153,13 +190,18 @@ public class PipedInputStream extends InputStream {
 
 		public void write(int b) throws IOException {
 			try {
-				// a kind of optimization, because
-				// both calls use the fQueue lock...
 				synchronized(fQueue) {
+					if(fQueue.isClosed())
+						throw new IOException("Stream is closed!"); //$NON-NLS-1$
 					fQueue.write((byte)b);
 				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+			}
+		}
+		public void close() throws IOException {
+			synchronized(fQueue) {
+				fQueue.close();
 			}
 		}
 	}
@@ -181,16 +223,9 @@ public class PipedInputStream extends InputStream {
 	 * @return true if a character is available for the terminal to show.
 	 */
 	public int available() {
-		int available;
 		synchronized(fQueue) {
-			available=fQueue.size();
+			return fQueue.available();
 		}
-		// Limit the available amount of data.
-		// else our trick of limiting the time spend
-		// reading might not work.
-		if(available>BLOCK_SIZE)
-			available=BLOCK_SIZE;
-		return available;
 	}
 	/**
 	 * @return the next available byte. Check with {@link #available}
@@ -217,17 +252,39 @@ public class PipedInputStream extends InputStream {
 
 	public int read(byte[] cbuf, int off, int len) throws IOException {
 		int n=0;
+		if(len==0)
+			return 0;
 		// read as much as we can using a single synchronized statement
-		synchronized (fQueue) {
-			try {
-				// Make sure that not more than BLOCK_SIZE is read in one call
-				while(fQueue.size()>0 && n<len && n<BLOCK_SIZE) {
-					cbuf[off+n]=fQueue.read();
+		try {
+			synchronized (fQueue) {		
+				// if nothing available, block and read one byte
+				if (fQueue.available() == 0) {
+					// block now until at least one byte is available
+					int c = fQueue.read();
+					// are we at the end of stream
+					if (c == -1)
+						return -1;
+					cbuf[off] = (byte) c;
 					n++;
-				} 
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+				}
+				if (n < len) {
+					// read at most available()
+					int nn = Math.min(fQueue.available(), len - n);
+					// are we at the end of the stream?
+					if (nn == 0 && fQueue.isClosed()) {
+						// if no byte was read, return -1 to indicate end of stream
+						// else return the bytes we read up to now
+						if (n == 0)
+							n = -1;
+						return n;
+					}
+					fQueue.read(cbuf, off + n, nn);
+					n += nn;
+				}
+				
 			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 		return n;
 	}
