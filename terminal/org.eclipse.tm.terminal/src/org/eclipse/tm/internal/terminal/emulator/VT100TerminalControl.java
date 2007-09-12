@@ -105,6 +105,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	private ITerminalTextData fTerminalModel;
 
+	volatile private Job fJob;
+
 	public VT100TerminalControl(ITerminalListener target, Composite wndParent, ITerminalConnectorInfo[] connectors) {
 		fConnectors=connectors;
 		fTerminalListener=target;
@@ -307,27 +309,47 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		}
 	
 		getCtlText().setFocus();
-		// TODO
-		Job job=new Job("VT100 reader") { //$NON-NLS-1$
+		startReaderJob();
 
-			protected IStatus run(IProgressMonitor monitor) {
-				while(!monitor.isCanceled()) {
-					while(fInputStream.available()==0)
-						try {
-							Thread.sleep(1);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
+	}
+
+	private void startReaderJob() {
+		if(fJob==null) {
+			fJob=new Job("Terminal data reader") { //$NON-NLS-1$
+				protected IStatus run(IProgressMonitor monitor) {
+					IStatus status=Status.OK_STATUS;
+					while(true) {
+						while(fInputStream.available()==0 && !monitor.isCanceled()) {
+							try {
+								Thread.sleep(1);
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+							}
 						}
-					fTerminalText.processText();
+						if(monitor.isCanceled()) {
+							disconnectTerminal();
+							status=Status.CANCEL_STATUS;
+							break;
+						}
+						try {
+							// TODO: should block when no text is available!
+							fTerminalText.processText();
+							
+						} catch (Exception e) {
+							disconnectTerminal();
+							status=new Status(IStatus.ERROR,TerminalPlugin.PLUGIN_ID,e.getLocalizedMessage(),e);
+							break;
+						}
+					}
+					// clean the job: start a new one when the connection getst restarted
+					fJob=null;
+					return status;
 				}
-				if(monitor.isCanceled())
-					return Status.CANCEL_STATUS;
-				return Status.OK_STATUS;
-			}
-			
-		};
-		job.setSystem(true);
-		job.schedule();
+
+			};
+			fJob.setSystem(true);
+			fJob.schedule();
+		}
 	}
 
 	private void showErrorMessage(String message) {
@@ -861,6 +883,10 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	}
 
 	public void setBufferLineLimit(int bufferLineLimit) {
-		fTerminalModel.setMaxHeight(bufferLineLimit);
+		synchronized (fTerminalModel) {
+			if(fTerminalModel.getHeight()>bufferLineLimit)
+				fTerminalModel.setDimensions(bufferLineLimit, fTerminalModel.getWidth());
+			fTerminalModel.setMaxHeight(bufferLineLimit);
+		}
 	}
 }
