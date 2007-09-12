@@ -34,6 +34,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	private int fInterestWindowStartLine;
 	private boolean fDimensionsChanged;
 	private boolean fTerminalHasChanged;
+	private boolean fCursorHasChanged;
 	
 	public SnapshotChanges(int nLines) {
 		setChangedLinesLength(nLines);
@@ -148,6 +149,9 @@ public class SnapshotChanges implements ISnapshotChanges {
 		// this sets fLastChangedLine as well
 		markLineChanged(line+n-1);
 	}
+	public void markCursorChanged() {
+		fCursorHasChanged=true;
+	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#convertScrollingIntoChanges()
 	 */
@@ -161,7 +165,7 @@ public class SnapshotChanges implements ISnapshotChanges {
 	 * @see org.eclipse.tm.internal.terminal.model.ISnapshotChanges#hasChanged()
 	 */
 	public boolean hasChanged() {
-		if(fFirstChangedLine!=Integer.MAX_VALUE || fLastChangedLine>0 || fScrollWindowShift!=0 ||fDimensionsChanged)
+		if(fFirstChangedLine!=Integer.MAX_VALUE || fLastChangedLine>0 || fScrollWindowShift!=0 ||fDimensionsChanged || fCursorHasChanged)
 			return true;
 		return false;
 	}

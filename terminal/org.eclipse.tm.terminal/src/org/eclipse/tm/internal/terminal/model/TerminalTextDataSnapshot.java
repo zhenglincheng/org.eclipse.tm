@@ -199,12 +199,17 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 		notifyListers();
 	}
 	
-	public void markDimensionsChanged() {
+	void markDimensionsChanged() {
 		fFutureChanges.markDimensionsChanged();
 		fFutureChanges.setTerminalChanged();
 		notifyListers();
 	}
-	
+	void markCursorChanged() {
+		fFutureChanges.markCursorChanged();
+		fFutureChanges.setTerminalChanged();
+		notifyListers();
+	}
+
 	/**
 	 * @param startLine
 	 * @param size

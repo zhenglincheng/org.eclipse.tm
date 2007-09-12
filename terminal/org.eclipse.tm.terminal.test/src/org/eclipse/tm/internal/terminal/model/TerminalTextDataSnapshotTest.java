@@ -1259,6 +1259,19 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 		assertEquals(3, snapshot.getCursorLine());
 		assertEquals(2, snapshot.getCursorColumn());
 	}
+	public void testCursor2() {
+		ITerminalTextData term=makeITerminalTextData();
+		TerminalTextTestHelper.fillSimple(term,"0123456789");
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		term.setMaxHeight(20);
+		snapshot.setInterestWindow(3, 4);
+		snapshot.updateSnapshot(false);
+		term.setCursorLine(2);
+		assertTrue(snapshot.isOutOfDate());
+		snapshot.updateSnapshot(false);
+		term.setCursorColumn(1);
+		assertTrue(snapshot.isOutOfDate());
+	}
 	public void testHasTerminalChanged() {
 		ITerminalTextData term=makeITerminalTextData();
 		String s="12345\n" +

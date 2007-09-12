@@ -63,14 +63,10 @@ public interface ITerminalTextDataReadOnly {
 
 	/**
 	 * @return the line in which the cursor is at the moment
-	 * <p><b>Note:</b> Associated {@link ITerminalTextDataSnapshot} instances are <b>not</b> notified when the
-	 * cursor changes!
 	 */
 	int getCursorLine();
 	/**
 	 * @return the column at which the cursor is at the moment
-	 * <p><b>Note:</b> Associated {@link ITerminalTextDataSnapshot} instances are <b>not</b> notified when the
-	 * cursor changes!
 	 */
 	int getCursorColumn();
 }

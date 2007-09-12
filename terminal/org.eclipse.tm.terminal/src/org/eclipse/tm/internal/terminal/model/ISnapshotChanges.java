@@ -55,6 +55,8 @@ public interface ISnapshotChanges {
 
 	void markDimensionsChanged();
 	boolean hasDimensionsChanged();
+	void markCursorChanged();
+
 	/**
 	 * @return true if the terminal data has changed
 	 */
@@ -74,6 +76,5 @@ public interface ISnapshotChanges {
 	void setInterestWindow(int startLine, int size);
 	int getInterestWindowStartLine();
 	int getInterestWindowSize();
-
 
 }

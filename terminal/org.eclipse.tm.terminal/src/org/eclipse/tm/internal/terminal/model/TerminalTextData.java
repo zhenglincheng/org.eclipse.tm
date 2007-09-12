@@ -130,6 +130,11 @@ public class TerminalTextData implements ITerminalTextData {
 			fSnapshots[i].scroll(startLine, size, shift);
 		}
 	}
+	protected void sendCursorChanged() {
+		for (int i = 0; i < fSnapshots.length; i++) {
+			fSnapshots[i].markCursorChanged();
+		}
+	}
 	/**
 	 * Removes the snapshot from the @observer@ list
 	 * @param snapshot
@@ -206,8 +211,10 @@ public class TerminalTextData implements ITerminalTextData {
 	}
 	public void setCursorColumn(int column) {
 		fCursorColumn=column;
+		sendCursorChanged();
 	}
 	public void setCursorLine(int line) {
 		fCursorLine=line;
+		sendCursorChanged();
 	}
 }
