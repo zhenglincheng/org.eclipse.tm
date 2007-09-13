@@ -37,12 +37,14 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.tm.internal.terminal.control.ICommandInputField;
 import org.eclipse.tm.internal.terminal.control.ITerminalListener;
@@ -307,7 +309,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 			disconnectTerminal();
 			return;
 		}
-	
 		getCtlText().setFocus();
 		startReaderJob();
 
@@ -486,12 +487,20 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		ITerminalTextDataSnapshot snapshot=fTerminalModel.makeSnapshot();
 		// TODO how to get the initial size correctly!
 		snapshot.updateSnapshot(false);
-		fCtlText=new TextCanvas(fWndParent,new PollingTextCanvasModel(snapshot), SWT.NONE);
+		fCtlText=new TextCanvas(fWndParent,new PollingTextCanvasModel(snapshot),SWT.NONE);
 		fCtlText.setCellRenderer(new TextLineRenderer(fCtlText,snapshot));
 
 		fCtlText.setLayoutData(new GridData(GridData.FILL_BOTH));
 		fCtlText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
+		fCtlText.addListener(SWT.Resize, new Listener() {
+			public void handleEvent(Event e) {
+				Rectangle bonds=fCtlText.getClientArea();
+				int lines=bonds.height/fCtlText.getCellHeight();
+				int columns=bonds.width/fCtlText.getCellWidth();
+				fTerminalText.setDimensions(lines, columns);
+			}
+		});
+
 
 		fDisplay = getCtlText().getDisplay();
 		fClipboard = new Clipboard(fDisplay);
@@ -505,6 +514,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 		getCtlText().addKeyListener(fKeyHandler);
 		getCtlText().addFocusListener(fFocusListener);
+
 	}
 
 	/**

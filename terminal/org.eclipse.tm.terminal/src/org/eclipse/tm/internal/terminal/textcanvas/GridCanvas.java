@@ -92,7 +92,7 @@ abstract public class GridCanvas extends VirtualCanvas {
 		getHorizontalBar().setIncrement(fCellWidth);
 	}
 
-	protected int getCellWidth() {
+	public int getCellWidth() {
 		return fCellWidth;
 	}
 
@@ -101,7 +101,7 @@ abstract public class GridCanvas extends VirtualCanvas {
 		getVerticalBar().setIncrement(fCellHeight);
 	}
 
-	protected int getCellHeight() {
+	public int getCellHeight() {
 		return fCellHeight;
 	}
 

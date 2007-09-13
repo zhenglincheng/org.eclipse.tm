@@ -86,19 +86,6 @@ public class VT100Emulator implements ControlListener {
 	 */
 	final private VT100EmulatorBackend text;
 	/**
-	 * This field holds the width of the terminal screen in columns.
-	 */
-	private int widthInColumns = 0;
-
-	/**
-	 * This field holds the height of the terminal screen in visible lines. The
-	 * StyledText widget can contain more lines than are visible.
-	 */
-	private int heightInLines = 0;
-
-
-
-	/**
 	 * This field hold the saved absolute line number of the cursor when
 	 * processing the "ESC 7" and "ESC 8" command sequences.
 	 */
@@ -162,8 +149,15 @@ public class VT100Emulator implements ControlListener {
 		text.setStyle(style);
 	}
 	public void setDimensions(int lines,int cols) {
+		// TODO allow to set the dimension in the UI and or prefs
+		lines=Math.max(3, lines);
+		cols=Math.max(10, cols);
 		text.setDimensions(lines, cols);
-		
+		ITerminalConnector telnetConnection = getConnector();
+		if (telnetConnection != null) {
+			telnetConnection.setTerminalSize(text.getColumns(), text.getLines());
+		}
+
 	}
 
 	/**
@@ -418,9 +412,6 @@ public class VT100Emulator implements ControlListener {
 		// column or less), don't even try to process the escape sequence. This avoids
 		// throwing an exception (SPR 107450). The display will be messed up, but what
 		// did you user expect by making the terminal so small?
-
-//		if (heightInLines <= 1 || widthInColumns <= 1)
-//			return;
 
 		switch (ansiCommandCharacter) {
 		case '@':
@@ -1034,12 +1025,12 @@ public class VT100Emulator implements ControlListener {
 		// communicate it to the TELNET server. If we are in a serial connection,
 		// there is nothing we can do to tell the remote host about the size of the
 		// terminal.
-
 		ITerminalConnector telnetConnection = getConnector();
 		// TODO MSA: send only if dimensions have really changed!
-		if (telnetConnection != null && widthInColumns != 0 && heightInLines != 0) {
-			telnetConnection.setTerminalSize(widthInColumns, heightInLines);
+		if (telnetConnection != null) {
+			telnetConnection.setTerminalSize(text.getColumns(), text.getLines());
 		}
+
 	}
 
 	private ITerminalConnector getConnector() {
