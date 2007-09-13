@@ -59,12 +59,14 @@ public class VT100EmulatorBackend {
 	 * This method erases all text from the Terminal view. Including the history
 	 */
 	public void clearAll() {
-		fTerminal.setDimensions(fLines, fTerminal.getWidth());
-		int startLine=toAbsoluteLine(0);
-		for (int line = startLine;  line < startLine+fLines; line++) {
-			fTerminal.cleanLine(line);
+		synchronized (fTerminal) {
+			fTerminal.setDimensions(fLines, fTerminal.getWidth());
+			int startLine=toAbsoluteLine(0);
+			for (int line = startLine;  line < startLine+fLines; line++) {
+				fTerminal.cleanLine(line);
+			}
+			setStyle(getDefaultStyle());
 		}
-		setStyle(getDefaultStyle());
 	}
 	/**
 	 * Sets the Dimensions of the addressable scroll space of the screen....
@@ -73,17 +75,19 @@ public class VT100EmulatorBackend {
 	 * @param cols
 	 */
 	public void setDimensions(int lines, int cols) {
-		
-		fLines=lines;
-		fColumns=cols;
-		// make the terminal at least as high as we need lines
-		fTerminal.setDimensions(Math.max(fLines,fTerminal.getHeight()), fColumns);
-		eraseAll();
-		setCursor(0, 0);
+		synchronized (fTerminal) {
+			fLines=lines;
+			fColumns=cols;
+			// make the terminal at least as high as we need lines
+			fTerminal.setDimensions(Math.max(fLines,fTerminal.getHeight()), fColumns);			
+			setCursor(0, 0);
+		}
 	}
 	
 	int toAbsoluteLine(int line) {
-		return fTerminal.getHeight()-fLines+line;
+		synchronized (fTerminal) {
+			return fTerminal.getHeight()-fLines+line;
+		}
 	}
 	/**
 	 * This method makes room for N characters on the current line at the cursor
@@ -93,16 +97,18 @@ public class VT100EmulatorBackend {
 	 * 0 123
 	 */
 	public void insertCharacters(int charactersToInsert) {
-		int line=toAbsoluteLine(fCursorLine);
-		int n=charactersToInsert;
-		for (int col = fColumns-1; col >=fCursorColumn+n; col--) {
-			char c=fTerminal.getChar(line, col-n);
-			Style style=fTerminal.getStyle(line, col-n);
-			fTerminal.setChar(line, col,c, style);
-		}
-		int last=Math.min(fCursorColumn+n, fColumns);
-		for (int col = fCursorColumn; col <last; col++) {
-			fTerminal.setChar(line, col,'\000', null);
+		synchronized (fTerminal) {
+			int line=toAbsoluteLine(fCursorLine);
+			int n=charactersToInsert;
+			for (int col = fColumns-1; col >=fCursorColumn+n; col--) {
+				char c=fTerminal.getChar(line, col-n);
+				Style style=fTerminal.getStyle(line, col-n);
+				fTerminal.setChar(line, col,c, style);
+			}
+			int last=Math.min(fCursorColumn+n, fColumns);
+			for (int col = fCursorColumn; col <last; col++) {
+				fTerminal.setChar(line, col,'\000', null);
+			}
 		}
 	}
 
@@ -110,9 +116,11 @@ public class VT100EmulatorBackend {
 	 * 	Erases from cursor to end of screen, including cursor position. Cursor does not move.
 	 */
 	public void eraseToEndOfScreen() {
-		eraseLineToEnd();
-		for (int line = toAbsoluteLine(fCursorLine+1); line < toAbsoluteLine(fLines); line++) {
-			fTerminal.cleanLine(line);
+		synchronized (fTerminal) {
+			eraseLineToEnd();
+			for (int line = toAbsoluteLine(fCursorLine+1); line < toAbsoluteLine(fLines); line++) {
+				fTerminal.cleanLine(line);
+			}
 		}
 		
 	}
@@ -120,41 +128,51 @@ public class VT100EmulatorBackend {
 	 * Erases from beginning of screen to cursor, including cursor position. Cursor does not move.
 	 */
 	public void eraseToCursor() {
-		for (int line = toAbsoluteLine(0); line < toAbsoluteLine(fCursorLine); line++) {
-			fTerminal.cleanLine(line);
+		synchronized (fTerminal) {
+			for (int line = toAbsoluteLine(0); line < toAbsoluteLine(fCursorLine); line++) {
+				fTerminal.cleanLine(line);
+			}
+			eraseLineToCursor();
 		}
-		eraseLineToCursor();
 	}
 	/**
 	 * Erases complete display. All lines are erased and changed to single-width. Cursor does not move.
 	 */
 	public void eraseAll() {
-		for (int line = toAbsoluteLine(0); line < toAbsoluteLine(fLines); line++) {
-			fTerminal.cleanLine(line);
+		synchronized (fTerminal) {
+			for (int line = toAbsoluteLine(0); line < toAbsoluteLine(fLines); line++) {
+				fTerminal.cleanLine(line);
+			}
 		}
 	}
 	/**
 	 * Erases complete line.
 	 */
 	public void eraseLine() {
-		fTerminal.cleanLine(toAbsoluteLine(fCursorLine));
+		synchronized (fTerminal) {
+			fTerminal.cleanLine(toAbsoluteLine(fCursorLine));
+		}
 	}
 	/**
 	 * Erases from cursor to end of line, including cursor position.
 	 */
 	public void eraseLineToEnd() {
-		int line=toAbsoluteLine(fCursorLine);
-		for (int col = fCursorColumn; col < fColumns; col++) {
-			fTerminal.setChar(line, col, '\000', null);
+		synchronized (fTerminal) {
+			int line=toAbsoluteLine(fCursorLine);
+			for (int col = fCursorColumn; col < fColumns; col++) {
+				fTerminal.setChar(line, col, '\000', null);
+			}
 		}
 	}	
 	/**
 	 * Erases from beginning of line to cursor, including cursor position.
 	 */
 	public void eraseLineToCursor() {
-		int line=toAbsoluteLine(fCursorLine);
-		for (int col = 0; col <= fCursorColumn; col++) {
-			fTerminal.setChar(line, col, '\000', null);
+		synchronized (fTerminal) {
+			int line=toAbsoluteLine(fCursorLine);
+			for (int col = 0; col <= fCursorColumn; col++) {
+				fTerminal.setChar(line, col, '\000', null);
+			}
 		}
 	}	
 
@@ -165,12 +183,14 @@ public class VT100EmulatorBackend {
 	 * @param n the number of lines to insert
 	 */
 	public void insertLines(int n) {
-		if(!isCusorInScrollingRegion())
-			return;
-		assert n>0;
-		int line=toAbsoluteLine(fCursorLine);
-		int nLines=fTerminal.getHeight()-line;
-		fTerminal.scroll(line, nLines, n);
+		synchronized (fTerminal) {
+			if(!isCusorInScrollingRegion())
+				return;
+			assert n>0;
+			int line=toAbsoluteLine(fCursorLine);
+			int nLines=fTerminal.getHeight()-line;
+			fTerminal.scroll(line, nLines, n);
+		}
 	}
 	/**
 	 * Deletes n characters, starting with the character at cursor position. 
@@ -182,15 +202,17 @@ public class VT100EmulatorBackend {
 	 * 0145xx
 	 */
 	public void deleteCharacters(int n) {
-		int line=toAbsoluteLine(fCursorLine);
-		for (int col = fCursorColumn+n; col < fColumns; col++) {
-			char c=fTerminal.getChar(line, col);
-			Style style=fTerminal.getStyle(line, col);
-			fTerminal.setChar(line, col-n,c, style);
-		}
-		int first=Math.max(fCursorColumn, fColumns-n);
-		for (int col = first; col <fColumns; col++) {
-			fTerminal.setChar(line, col,'\000', null);
+		synchronized (fTerminal) {
+			int line=toAbsoluteLine(fCursorLine);
+			for (int col = fCursorColumn+n; col < fColumns; col++) {
+				char c=fTerminal.getChar(line, col);
+				Style style=fTerminal.getStyle(line, col);
+				fTerminal.setChar(line, col-n,c, style);
+			}
+			int first=Math.max(fCursorColumn, fColumns-n);
+			for (int col = first; col <fColumns; col++) {
+				fTerminal.setChar(line, col,'\000', null);
+			}
 		}
 	}
 	/**
@@ -201,13 +223,14 @@ public class VT100EmulatorBackend {
 	 * @param n the number of lines to delete
 	 */
 	public void deleteLines(int n) {
-		if(!isCusorInScrollingRegion())
-			return;
-		assert n>0;
-		int line=toAbsoluteLine(fCursorLine);
-		int nLines=fTerminal.getHeight()-line;
-		fTerminal.scroll(line, nLines, -n);
-		
+		synchronized (fTerminal) {
+			if(!isCusorInScrollingRegion())
+				return;
+			assert n>0;
+			int line=toAbsoluteLine(fCursorLine);
+			int nLines=fTerminal.getHeight()-line;
+			fTerminal.scroll(line, nLines, -n);
+		}
 	}
 	private boolean isCusorInScrollingRegion() {
 		// TODO Auto-generated method stub
@@ -215,24 +238,32 @@ public class VT100EmulatorBackend {
 	}
 
 	public Style getDefaultStyle() {
-		return fDefaultStyle;
+		synchronized (fTerminal) {
+			return fDefaultStyle;
+		}
 	}
 
 	public void setDefaultStyle(Style defaultStyle) {
-		fDefaultStyle = defaultStyle;
+		synchronized (fTerminal) {
+			fDefaultStyle = defaultStyle;
+		}
 	}
 
 	public Style getStyle() {
-		if(fStyle==null)
-			return fDefaultStyle;
-		return fStyle;
+		synchronized (fTerminal) {
+			if(fStyle==null)
+				return fDefaultStyle;
+			return fStyle;
+		}
 	}
 	/**
 	 * Sets the style to be used from now on
 	 * @param style
 	 */
 	public void setStyle(Style style) {
-		fStyle=style;
+		synchronized (fTerminal) {
+			fStyle=style;
+		}
 	}
 	/**
 	 * This method displays a subset of the newly-received text in the Terminal
@@ -246,28 +277,29 @@ public class VT100EmulatorBackend {
 	 * <p>
 	 */
 	public void appendString(String buffer) {
-		char[] chars=buffer.toCharArray();
-		int line=toAbsoluteLine(fCursorLine);
-		int i=0;
-		while (i < chars.length) {
-			int n=Math.min(fColumns-fCursorColumn,chars.length-i);
-			fTerminal.setChars(line, fCursorColumn, chars, i, n, fStyle);
-			int col=fCursorColumn+n;
-			i+=n;
-			// wrap needed?
-			if(col>=fColumns) {
-				if(fCursorLine+1>=fLines) {
-					fTerminal.addLine();
+		synchronized (fTerminal) {
+			char[] chars=buffer.toCharArray();
+			int line=toAbsoluteLine(fCursorLine);
+			int i=0;
+			while (i < chars.length) {
+				int n=Math.min(fColumns-fCursorColumn,chars.length-i);
+				fTerminal.setChars(line, fCursorColumn, chars, i, n, fStyle);
+				int col=fCursorColumn+n;
+				i+=n;
+				// wrap needed?
+				if(col>=fColumns) {
+					if(fCursorLine+1>=fLines) {
+						fTerminal.addLine();
+					} else {
+						setCursorLine(fCursorLine+1);
+					}
+					line=toAbsoluteLine(fCursorLine);
+					setCursorColumn(0);
 				} else {
-					setCursorLine(fCursorLine+1);
+					setCursorColumn(col);
 				}
-				line=toAbsoluteLine(fCursorLine);
-				setCursorColumn(0);
-			} else {
-				setCursorColumn(col);
 			}
 		}
-		
 	}
 	/**
 	 * Process a newline (Control-J) character. A newline (NL) character just
@@ -290,10 +322,12 @@ public class VT100EmulatorBackend {
 	 * <p>
 	 */
 	public void processNewline() {
-		if(fCursorLine+1>=fLines) {
-			fTerminal.addLine();
-		} else {
-			setCursorLine(fCursorLine+1);
+		synchronized (fTerminal) {
+			if(fCursorLine+1>=fLines) {
+				fTerminal.addLine();
+			} else {
+				setCursorLine(fCursorLine+1);
+			}
 		}
 	}
 	/**
@@ -304,10 +338,14 @@ public class VT100EmulatorBackend {
 	 * @return The relative line number of the line containing the cursor.
 	 */
 	public int getCursorLine() {
-		return fCursorLine;
+		synchronized (fTerminal) {
+			return fCursorLine;
+		}
 	}
 	public int getCursorColumn() {
-		return fCursorColumn;
+		synchronized (fTerminal) {
+			return fCursorColumn;
+		}
 	}
 	/**
 	 * This method moves the cursor to the specified line and column. Parameter
@@ -317,39 +355,49 @@ public class VT100EmulatorBackend {
 	 * contain any text to move the cursor to any column in that line.
 	 */
 	public void setCursor(int targetLine, int targetColumn) {
-		setCursorLine(targetLine);
-		setCursorColumn(targetColumn);
+		synchronized (fTerminal) {
+			setCursorLine(targetLine);
+			setCursorColumn(targetColumn);
+		}
 	}
 
 	public void setCursorColumn(int targetColumn) {
-		if(targetColumn<0)
-			targetColumn=0;
-		else if(targetColumn>=fColumns)
-			targetColumn=fColumns-1;
-		fCursorColumn=targetColumn;
-		// We make the assumption that nobody is changing the
-		// terminal cursor except this class!
-		// This assumption gives a huge performance improvement
-		fTerminal.setCursorColumn(targetColumn);
+		synchronized (fTerminal) {
+			if(targetColumn<0)
+				targetColumn=0;
+			else if(targetColumn>=fColumns)
+				targetColumn=fColumns-1;
+			fCursorColumn=targetColumn;
+			// We make the assumption that nobody is changing the
+			// terminal cursor except this class!
+			// This assumption gives a huge performance improvement
+			fTerminal.setCursorColumn(targetColumn);
+		}
 	}
 
 	public void setCursorLine(int targetLine) {
-		if(targetLine<0)
-			targetLine=0;
-		else if(targetLine>=fLines)
-			targetLine=fLines-1;
-		fCursorLine=targetLine;
-		// We make the assumption that nobody is changing the
-		// terminal cursor except this class!
-		// This assumption gives a huge performance improvement
-		fTerminal.setCursorLine(toAbsoluteLine(targetLine));
+		synchronized (fTerminal) {
+			if(targetLine<0)
+				targetLine=0;
+			else if(targetLine>=fLines)
+				targetLine=fLines-1;
+			fCursorLine=targetLine;
+			// We make the assumption that nobody is changing the
+			// terminal cursor except this class!
+			// This assumption gives a huge performance improvement
+			fTerminal.setCursorLine(toAbsoluteLine(targetLine));
+		}
 	}
 
 	public int getLines() {
-		return fLines;
+		synchronized (fTerminal) {
+			return fLines;
+		}
 	}
 
 	public int getColumns() {
-		return fColumns;
+		synchronized (fTerminal) {
+			return fColumns;
+		}
 	}
 }
