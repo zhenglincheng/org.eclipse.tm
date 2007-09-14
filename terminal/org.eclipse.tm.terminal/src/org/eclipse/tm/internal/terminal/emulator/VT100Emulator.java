@@ -341,6 +341,12 @@ public class VT100Emulator implements ControlListener {
 					ansiState = ANSISTATE_INITIAL;
 					moveCursor(savedCursorLine, savedCursorColumn);
 					break;
+					
+				case 'c':
+					// Reset the terminal
+					ansiState = ANSISTATE_INITIAL;
+					resetTerminal();
+					break;
 
 				default:
 					Logger
@@ -384,6 +390,12 @@ public class VT100Emulator implements ControlListener {
 				break;
 			}
 		}
+	}
+	
+	private void resetTerminal() {
+		text.clearAll();
+		text.setCursor(0, 0);
+		text.setStyle(text.getDefaultStyle());
 	}
 	/**
 	 * This method is called when we have parsed an OS Command escape sequence.
