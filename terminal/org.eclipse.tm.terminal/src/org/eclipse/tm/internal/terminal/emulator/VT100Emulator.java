@@ -395,7 +395,7 @@ public class VT100Emulator implements ControlListener {
 		}
 	}
 	private void resetTerminal() {
-		text.clearAll();
+		text.eraseAll();
 		text.setCursor(0, 0);
 		text.setStyle(text.getDefaultStyle());
 	}
