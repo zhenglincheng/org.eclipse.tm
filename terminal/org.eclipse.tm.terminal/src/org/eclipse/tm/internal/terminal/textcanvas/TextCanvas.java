@@ -32,7 +32,7 @@ public class TextCanvas extends GridCanvas {
 	protected final ITextCanvasModel fCellCanvasModel;
 	/** Renders the cells */
 	private ILinelRenderer fCellRenderer;
-	private boolean fAutoRevealCursor;
+	private boolean fScrollLock;
 	/**
 	 * Create a new CellCanvas with the given SWT style bits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
@@ -104,7 +104,7 @@ public class TextCanvas extends GridCanvas {
 		redraw();
 	}
 	void scrollToEnd() {
-		if(fAutoRevealCursor) {
+		if(!fScrollLock) {
 			int y=-(getRows()*getCellHeight()-getClientArea().height);
 			Rectangle v=getViewRectangle();
 			if(v.y!=y) {
@@ -116,15 +116,15 @@ public class TextCanvas extends GridCanvas {
 	 * 
 	 * @return true if the cursor should be shown on output....
 	 */
-	public boolean isAutoRevealCursor() {
-		return fAutoRevealCursor;
+	public boolean isScrollLock() {
+		return fScrollLock;
 	}
 	/**
 	 * If set then if the size changes  
-	 * @param autoRevealCursor 
+	 * @param scrollLock 
 	 */
-	public void setAutoRevealCursor(boolean autoRevealCursor) {
-		fAutoRevealCursor=autoRevealCursor;
+	public void setScrollLock(boolean scrollLock) {
+		fScrollLock=scrollLock;
 	}
 	protected void repaintRange(int col, int line, int width, int height) {
 		Point origin=cellToOriginOnScreen(col,line);

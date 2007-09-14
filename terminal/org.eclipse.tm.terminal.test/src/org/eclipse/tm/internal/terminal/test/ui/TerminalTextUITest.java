@@ -208,14 +208,14 @@ public class TerminalTextUITest {
 	}
 	private static void addAutorevealCursorButton(Composite composite) {
 		final Button button=new Button(composite,SWT.CHECK);
-		button.setText("AutoReveal");
+		button.setText("ScrollLock");
 		button.addSelectionListener(new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
-				boolean stop=button.getSelection();
-				fgTextCanvas.setAutoRevealCursor(stop);
+				boolean scrollLock=button.getSelection();
+				fgTextCanvas.setScrollLock(scrollLock);
 			}
 		});
-		button.setSelection(fgTextCanvas.isAutoRevealCursor());
+		button.setSelection(fgTextCanvas.isScrollLock());
 	}
 	private static void addLabel(Composite composite,String message) {
 		Label label;
