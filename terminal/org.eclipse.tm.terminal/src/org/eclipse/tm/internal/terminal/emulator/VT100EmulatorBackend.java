@@ -60,6 +60,11 @@ public class VT100EmulatorBackend {
 	 */
 	public void clearAll() {
 		synchronized (fTerminal) {
+			// clear the history
+			int n=fTerminal.getHeight();
+			for (int i = 0; i < n; i++) {
+				fTerminal.cleanLine(i);
+			}
 			fTerminal.setDimensions(fLines, fTerminal.getWidth());
 			int startLine=toAbsoluteLine(0);
 			for (int line = startLine;  line < startLine+fLines; line++) {
