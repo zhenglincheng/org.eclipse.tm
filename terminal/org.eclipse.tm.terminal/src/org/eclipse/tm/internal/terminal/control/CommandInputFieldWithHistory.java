@@ -150,7 +150,7 @@ public class CommandInputFieldWithHistory implements ICommandInputField {
 	public void createControl(Composite parent,final ITerminalViewControl terminal) {
 		fInputField=new Text(parent, SWT.SINGLE|SWT.BORDER);
 		fInputField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		fInputField.setFont(terminal.getCtlText().getFont());
+		fInputField.setFont(terminal.getFont());
 		fInputField.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
 				if(e.keyCode=='\n' || e.keyCode=='\r') {
