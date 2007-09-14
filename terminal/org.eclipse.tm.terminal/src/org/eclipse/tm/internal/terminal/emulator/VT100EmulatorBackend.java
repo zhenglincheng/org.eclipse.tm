@@ -70,17 +70,23 @@ public class VT100EmulatorBackend {
 	}
 	/**
 	 * Sets the Dimensions of the addressable scroll space of the screen....
-	 * Cleans the screen!
+	 * Keeps the cursor position relative to the bottom of the screen!
 	 * @param lines
 	 * @param cols
 	 */
 	public void setDimensions(int lines, int cols) {
 		synchronized (fTerminal) {
+			if(lines==fLines && cols==fColumns)
+				return; // nothing to do
+			// cursor line from the bottom
+			int cl=fLines-getCursorLine();
+			int cc=getCursorColumn();
+			
 			fLines=lines;
 			fColumns=cols;
 			// make the terminal at least as high as we need lines
 			fTerminal.setDimensions(Math.max(fLines,fTerminal.getHeight()), fColumns);			
-			setCursor(0, 0);
+			setCursor(fLines-cl, cc);
 		}
 	}
 	
@@ -288,17 +294,27 @@ public class VT100EmulatorBackend {
 				i+=n;
 				// wrap needed?
 				if(col>=fColumns) {
-					if(fCursorLine+1>=fLines) {
-						fTerminal.addLine();
-					} else {
-						setCursorLine(fCursorLine+1);
-					}
+					doNewline();
 					line=toAbsoluteLine(fCursorLine);
 					setCursorColumn(0);
 				} else {
 					setCursorColumn(col);
 				}
 			}
+		}
+	}
+
+	/**
+	 * MUST be called from a synchronized block!
+	 */
+	private void doNewline() {
+		if(fCursorLine+1>=fLines) {
+			int h=fTerminal.getHeight();
+			fTerminal.addLine();
+			if(h!=fTerminal.getHeight())
+				setCursorLine(fCursorLine+1);
+		} else {
+			setCursorLine(fCursorLine+1);
 		}
 	}
 	/**
@@ -323,11 +339,7 @@ public class VT100EmulatorBackend {
 	 */
 	public void processNewline() {
 		synchronized (fTerminal) {
-			if(fCursorLine+1>=fLines) {
-				fTerminal.addLine();
-			} else {
-				setCursorLine(fCursorLine+1);
-			}
+			doNewline();
 		}
 	}
 	/**

@@ -84,35 +84,26 @@ public class VT100EmulatorBackendTest extends TestCase {
 				"5555";
 		fill(term, s);
 		vt100.setDimensions(3, 4);
-		assertEqualsTerm("0000\n" +
-				"1111\n" +
-				"2222\n" +
-				"    \n" +
-				"    \n" +
-				"    ",toMultiLineText(term));
+		assertEquals(3,vt100.getLines());
+		assertEquals(4,vt100.getColumns());
+		assertEqualsTerm(s,toMultiLineText(term));
 		
-		fill(term, s);
-		vt100.setDimensions(2, 5);
-		assertEqualsTerm("0000 \n" +
-				"1111 \n" +
-				"2222 \n" +
-				"3333 \n" +
-				"     \n" +
-				"     ",toMultiLineText(term));
-		
-		fill(term, s);
-		vt100.setDimensions(2, 3);
-		assertEqualsTerm("000\n" +
-				"111\n" +
-				"222\n" +
-				"333\n" +
-				"   \n" +
-				"   ",toMultiLineText(term));
-		
-		fill(term, "");
-		vt100.setDimensions(2, 3);
-		assertEqualsTerm("   \n" +
-				"   ",toMultiLineText(term));
+		vt100.setCursor(0, 2);
+		vt100.setDimensions(2, 4);
+		assertEquals(0, vt100.getCursorLine());
+		assertEquals(2, vt100.getCursorColumn());
+
+		vt100.setCursor(0, 2);
+		vt100.setDimensions(5, 4);
+		assertEquals(3, vt100.getCursorLine());
+		assertEquals(2, vt100.getCursorColumn());
+
+		assertEqualsTerm(s,toMultiLineText(term));
+	
+		vt100.setCursor(0, 3);
+		vt100.setDimensions(5, 2);
+		assertEquals(0, vt100.getCursorLine());
+		assertEquals(1, vt100.getCursorColumn());
 	}
 
 	public void testToAbsoluteLine() {
@@ -696,6 +687,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 				"5555";
 		vt100.setDimensions(3, 4);
 		fill(term, s);
+		vt100.setCursor(0, 0);
 		vt100.insertLines(1);
 		assertEqualsTerm(
 				"0000\n" +
@@ -885,6 +877,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 				"5555";
 		vt100.setDimensions(3, 4);
 		fill(term, s);
+		vt100.setCursor(0, 0);
 		vt100.deleteLines(1);
 		assertEqualsTerm(
 				"0000\n" +
@@ -1005,6 +998,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
+		vt100.setCursor(0, 0);
 		assertEqualsTerm(
 				"    \n" +
 				"    \n" +
@@ -1117,6 +1111,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 				"5555";
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
+		vt100.setCursor(0, 0);
 		fill(term,s);
 		assertEquals(0,vt100.getCursorLine());
 		assertEquals(0,vt100.getCursorColumn());
@@ -1159,7 +1154,8 @@ public class VT100EmulatorBackendTest extends TestCase {
 		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
-		assertEquals(0,vt100.getCursorLine());
+		// the cursor is now at the end....
+		assertEquals(2,vt100.getCursorLine());
 		assertEquals(0,vt100.getCursorColumn());
 		vt100.setCursor(0, 2);
 		vt100.setCursorLine(1);
@@ -1180,7 +1176,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
-		assertEquals(0,vt100.getCursorLine());
+		assertEquals(2,vt100.getCursorLine());
 		assertEquals(0,vt100.getCursorColumn());
 		vt100.setCursor(1, 0);
 		vt100.setCursorColumn(2);
@@ -1201,6 +1197,9 @@ public class VT100EmulatorBackendTest extends TestCase {
 		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
+		assertEquals(2,vt100.getCursorLine());
+		assertEquals(0,vt100.getCursorColumn());
+		vt100.setCursor(0, 0);
 		assertEquals(0,vt100.getCursorLine());
 		assertEquals(0,vt100.getCursorColumn());
 		vt100.setCursor(1, 2);
