@@ -34,6 +34,11 @@ public abstract class VirtualCanvas extends Canvas {
 	private Rectangle fVirtualBounds = new Rectangle(0,0,0,0);
 	private Rectangle fClientArea;
 	private GC fPaintGC=null;
+	/**
+	 * prevent infinite loop in {@link #updateScrollbars()}
+	 */
+	private boolean fInUpdateScrollbars;
+
 	public VirtualCanvas(Composite parent, int style) {
 		super(parent, style|SWT.NO_BACKGROUND|SWT.NO_REDRAW_RESIZE);
 		fPaintGC= new GC(this);
@@ -302,6 +307,17 @@ public abstract class VirtualCanvas extends Canvas {
 	 * @private
 	 */
 	private void updateScrollbars() {
+		// don't get into infinite loops....
+		if(!fInUpdateScrollbars) {
+			fInUpdateScrollbars=true;
+			try {
+				doUpdateScrollbar();
+			} finally {
+				fInUpdateScrollbars=false;
+			}
+		}
+	}
+	private void doUpdateScrollbar() {
 		Point size= getSize();
 		Rectangle clientArea= getClientArea();
 	
