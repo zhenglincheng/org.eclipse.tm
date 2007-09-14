@@ -143,6 +143,7 @@ public class VT100Emulator implements ControlListener {
 		}
 		fReader=reader;
 		text=new VT100EmulatorBackend(data);
+			
 		text.setDimensions(24, 80);
 		Style  style=Style.getStyle("BLACK", "WHITE"); //$NON-NLS-1$ //$NON-NLS-2$
 		text.setDefaultStyle(style);
@@ -844,7 +845,7 @@ public class VT100Emulator implements ControlListener {
 	 * right of the cursor column, no text is deleted.
 	 */
 	private void processAnsiCommand_P() {
-		text.deleteLines(getAnsiParameter(0));
+		text.deleteCharacters(getAnsiParameter(0));
 	}
 
 	/**
