@@ -16,7 +16,7 @@ import org.eclipse.tm.terminal.model.Style;
 /**
  *
  */
-public class VT100EmulatorBackend {
+public class VT100EmulatorBackend implements IVT100EmulatorBackend {
 
 	/**
 	 * This field holds the number of the column in which the cursor is
@@ -55,8 +55,8 @@ public class VT100EmulatorBackend {
 		fTerminal=terminal;
 	}
 	
-	/**
-	 * This method erases all text from the Terminal view. Including the history
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#clearAll()
 	 */
 	public void clearAll() {
 		synchronized (fTerminal) {
@@ -70,11 +70,8 @@ public class VT100EmulatorBackend {
 			setCursor(0, 0);
 		}
 	}
-	/**
-	 * Sets the Dimensions of the addressable scroll space of the screen....
-	 * Keeps the cursor position relative to the bottom of the screen!
-	 * @param lines
-	 * @param cols
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setDimensions(int, int)
 	 */
 	public void setDimensions(int lines, int cols) {
 		synchronized (fTerminal) {
@@ -97,12 +94,8 @@ public class VT100EmulatorBackend {
 			return fTerminal.getHeight()-fLines+line;
 		}
 	}
-	/**
-	 * This method makes room for N characters on the current line at the cursor
-	 * position. Text under the cursor moves right without wrapping at the end
-	 * of the line.
-	 * 01234
-	 * 0 123
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#insertCharacters(int)
 	 */
 	public void insertCharacters(int charactersToInsert) {
 		synchronized (fTerminal) {
@@ -120,8 +113,8 @@ public class VT100EmulatorBackend {
 		}
 	}
 
-	/**
-	 * 	Erases from cursor to end of screen, including cursor position. Cursor does not move.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseToEndOfScreen()
 	 */
 	public void eraseToEndOfScreen() {
 		synchronized (fTerminal) {
@@ -132,8 +125,8 @@ public class VT100EmulatorBackend {
 		}
 		
 	}
-	/**
-	 * Erases from beginning of screen to cursor, including cursor position. Cursor does not move.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseToCursor()
 	 */
 	public void eraseToCursor() {
 		synchronized (fTerminal) {
@@ -143,8 +136,8 @@ public class VT100EmulatorBackend {
 			eraseLineToCursor();
 		}
 	}
-	/**
-	 * Erases complete display. All lines are erased and changed to single-width. Cursor does not move.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseAll()
 	 */
 	public void eraseAll() {
 		synchronized (fTerminal) {
@@ -153,16 +146,16 @@ public class VT100EmulatorBackend {
 			}
 		}
 	}
-	/**
-	 * Erases complete line.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseLine()
 	 */
 	public void eraseLine() {
 		synchronized (fTerminal) {
 			fTerminal.cleanLine(toAbsoluteLine(fCursorLine));
 		}
 	}
-	/**
-	 * Erases from cursor to end of line, including cursor position.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseLineToEnd()
 	 */
 	public void eraseLineToEnd() {
 		synchronized (fTerminal) {
@@ -172,8 +165,8 @@ public class VT100EmulatorBackend {
 			}
 		}
 	}	
-	/**
-	 * Erases from beginning of line to cursor, including cursor position.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#eraseLineToCursor()
 	 */
 	public void eraseLineToCursor() {
 		synchronized (fTerminal) {
@@ -184,11 +177,8 @@ public class VT100EmulatorBackend {
 		}
 	}	
 
-	/**
-	 * Inserts n lines at line with cursor. Lines displayed below cursor move down. 
-	 * Lines moved past the bottom margin are lost. This sequence is ignored when 
-	 * cursor is outside scrolling region.
-	 * @param n the number of lines to insert
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#insertLines(int)
 	 */
 	public void insertLines(int n) {
 		synchronized (fTerminal) {
@@ -200,14 +190,8 @@ public class VT100EmulatorBackend {
 			fTerminal.scroll(line, nLines, n);
 		}
 	}
-	/**
-	 * Deletes n characters, starting with the character at cursor position. 
-	 * When a character is deleted, all characters to the right of cursor move 
-	 * left. This creates a space character at right margin. This character 
-	 * has same character attribute as the last character moved left.
-	 * @param n
-	 * 012345
-	 * 0145xx
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#deleteCharacters(int)
 	 */
 	public void deleteCharacters(int n) {
 		synchronized (fTerminal) {
@@ -223,12 +207,8 @@ public class VT100EmulatorBackend {
 			}
 		}
 	}
-	/**
-	 * Deletes n lines, starting at line with cursor. As lines are deleted, 
-	 * lines displayed below cursor move up. Lines added to bottom of screen 
-	 * have spaces with same character attributes as last line moved up. This 
-	 * sequence is ignored when cursor is outside scrolling region.
-	 * @param n the number of lines to delete
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#deleteLines(int)
 	 */
 	public void deleteLines(int n) {
 		synchronized (fTerminal) {
@@ -245,18 +225,27 @@ public class VT100EmulatorBackend {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getDefaultStyle()
+	 */
 	public Style getDefaultStyle() {
 		synchronized (fTerminal) {
 			return fDefaultStyle;
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setDefaultStyle(org.eclipse.tm.terminal.model.Style)
+	 */
 	public void setDefaultStyle(Style defaultStyle) {
 		synchronized (fTerminal) {
 			fDefaultStyle = defaultStyle;
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getStyle()
+	 */
 	public Style getStyle() {
 		synchronized (fTerminal) {
 			if(fStyle==null)
@@ -264,25 +253,16 @@ public class VT100EmulatorBackend {
 			return fStyle;
 		}
 	}
-	/**
-	 * Sets the style to be used from now on
-	 * @param style
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setStyle(org.eclipse.tm.terminal.model.Style)
 	 */
 	public void setStyle(Style style) {
 		synchronized (fTerminal) {
 			fStyle=style;
 		}
 	}
-	/**
-	 * This method displays a subset of the newly-received text in the Terminal
-	 * view, wrapping text at the right edge of the screen and overwriting text
-	 * when the cursor is not at the very end of the screen's text.
-	 * <p>
-	 * 
-	 * There are never any ANSI control characters or escape sequences in the
-	 * text being displayed by this method (this includes newlines, carriage
-	 * returns, and tabs).
-	 * <p>
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#appendString(java.lang.String)
 	 */
 	public void appendString(String buffer) {
 		synchronized (fTerminal) {
@@ -319,54 +299,32 @@ public class VT100EmulatorBackend {
 			setCursorLine(fCursorLine+1);
 		}
 	}
-	/**
-	 * Process a newline (Control-J) character. A newline (NL) character just
-	 * moves the cursor to the same column on the next line, creating new lines
-	 * when the cursor reaches the bottom edge of the terminal. This is
-	 * counter-intuitive, especially to UNIX programmers who are taught that
-	 * writing a single NL to a terminal is sufficient to move the cursor to the
-	 * first column of the next line, as if a carriage return (CR) and a NL were
-	 * written.
-	 * <p>
-	 * 
-	 * UNIX terminals typically display a NL character as a CR followed by a NL
-	 * because the terminal device typically has the ONLCR attribute bit set
-	 * (see the termios(4) man page for details), which causes the terminal
-	 * device driver to translate NL to CR + NL on output. The terminal itself
-	 * (i.e., a hardware terminal or a terminal emulator, like xterm or this
-	 * code) _always_ interprets a CR to mean "move the cursor to the beginning
-	 * of the current line" and a NL to mean "move the cursor to the same column
-	 * on the next line".
-	 * <p>
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#processNewline()
 	 */
 	public void processNewline() {
 		synchronized (fTerminal) {
 			doNewline();
 		}
 	}
-	/**
-	 * This method returns the relative line number of the line containing the
-	 * cursor. The returned line number is relative to the topmost visible line,
-	 * which has relative line number 0.
-	 * 
-	 * @return The relative line number of the line containing the cursor.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getCursorLine()
 	 */
 	public int getCursorLine() {
 		synchronized (fTerminal) {
 			return fCursorLine;
 		}
 	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getCursorColumn()
+	 */
 	public int getCursorColumn() {
 		synchronized (fTerminal) {
 			return fCursorColumn;
 		}
 	}
-	/**
-	 * This method moves the cursor to the specified line and column. Parameter
-	 * <i>targetLine</i> is the line number of a screen line, so it has a
-	 * minimum value of 0 (the topmost screen line) and a maximum value of
-	 * heightInLines - 1 (the bottommost screen line). A line does not have to
-	 * contain any text to move the cursor to any column in that line.
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setCursor(int, int)
 	 */
 	public void setCursor(int targetLine, int targetColumn) {
 		synchronized (fTerminal) {
@@ -375,6 +333,9 @@ public class VT100EmulatorBackend {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setCursorColumn(int)
+	 */
 	public void setCursorColumn(int targetColumn) {
 		synchronized (fTerminal) {
 			if(targetColumn<0)
@@ -389,6 +350,9 @@ public class VT100EmulatorBackend {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#setCursorLine(int)
+	 */
 	public void setCursorLine(int targetLine) {
 		synchronized (fTerminal) {
 			if(targetLine<0)
@@ -403,12 +367,18 @@ public class VT100EmulatorBackend {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getLines()
+	 */
 	public int getLines() {
 		synchronized (fTerminal) {
 			return fLines;
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.tm.internal.terminal.emulator.IVT100EmulatorBackend#getColumns()
+	 */
 	public int getColumns() {
 		synchronized (fTerminal) {
 			return fColumns;

@@ -84,7 +84,7 @@ public class VT100Emulator implements ControlListener {
 	 * This field holds a reference to the StyledText widget that is used to
 	 * display text to the user.
 	 */
-	final private VT100EmulatorBackend text;
+	final private IVT100EmulatorBackend text;
 	/**
 	 * This field hold the saved absolute line number of the cursor when
 	 * processing the "ESC 7" and "ESC 8" command sequences.
@@ -142,7 +142,10 @@ public class VT100Emulator implements ControlListener {
 			e.printStackTrace();
 		}
 		fReader=reader;
-		text=new VT100EmulatorBackend(data);
+		if(System.getProperty("org.eclipse.tm.internal.terminal.emulator.TRACING")!=null) //$NON-NLS-1$
+			text=new VT100BackendTraceDecorator(new VT100EmulatorBackend(data),System.out);
+		else
+			text=new VT100EmulatorBackend(data);
 			
 		text.setDimensions(24, 80);
 		Style  style=Style.getStyle("BLACK", "WHITE"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -391,7 +394,6 @@ public class VT100Emulator implements ControlListener {
 			}
 		}
 	}
-	
 	private void resetTerminal() {
 		text.clearAll();
 		text.setCursor(0, 0);
