@@ -120,6 +120,9 @@ public interface ITerminalTextData extends ITerminalTextDataReadOnly {
 	 */
 	void scroll(int startLine, int size, int shift);
 	
+	/**Adds a new line to the terminal. If maxHeigth is reached, the entire terminal
+	 * will be scrolled. Else a line will be added.
+	 */
 	void addLine();
 	/**
 	 * Copies the entire source into this and changes the size accordingly
