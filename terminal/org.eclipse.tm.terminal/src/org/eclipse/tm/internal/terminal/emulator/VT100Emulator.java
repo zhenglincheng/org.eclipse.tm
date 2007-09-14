@@ -192,7 +192,6 @@ public class VT100Emulator implements ControlListener {
 	public void clearTerminal() {
 		Logger.log("entered"); //$NON-NLS-1$
 		text.clearAll();
-		setCursorColumn(0);
 	}
 
 	/**
@@ -1144,13 +1143,6 @@ public class VT100Emulator implements ControlListener {
 		//assert fNextChar!=-1: "Already a character waiting:"+fNextChar; //$NON-NLS-1$
 		fNextChar=c;			
 	}
-
-
-	private void setCursorColumn(int cursorColumn) {
-		text.setCursor(text.getCursorLine(), cursorColumn);
-	}
-
-
 	private int getCursorColumn() {
 		return text.getCursorColumn();
 	}

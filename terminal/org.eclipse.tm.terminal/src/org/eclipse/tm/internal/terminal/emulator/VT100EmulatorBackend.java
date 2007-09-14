@@ -62,15 +62,12 @@ public class VT100EmulatorBackend {
 		synchronized (fTerminal) {
 			// clear the history
 			int n=fTerminal.getHeight();
-			for (int i = 0; i < n; i++) {
-				fTerminal.cleanLine(i);
-			}
-			fTerminal.setDimensions(fLines, fTerminal.getWidth());
-			int startLine=toAbsoluteLine(0);
-			for (int line = startLine;  line < startLine+fLines; line++) {
+			for (int line = 0; line < n; line++) {
 				fTerminal.cleanLine(line);
 			}
+			fTerminal.setDimensions(fLines, fTerminal.getWidth());
 			setStyle(getDefaultStyle());
+			setCursor(0, 0);
 		}
 	}
 	/**
