@@ -37,6 +37,7 @@ public abstract class VirtualCanvas extends Canvas {
 	public VirtualCanvas(Composite parent, int style) {
 		super(parent, style|SWT.NO_BACKGROUND|SWT.NO_REDRAW_RESIZE);
 		fPaintGC= new GC(this);
+		fClientArea=getClientArea();
 		addListener(SWT.Paint, new Listener() {
 			public void handleEvent(Event event) {
 				paint(event.gc);

@@ -893,6 +893,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	}
 
 	public void setBufferLineLimit(int bufferLineLimit) {
+		if(bufferLineLimit<=0)
+			return;
 		synchronized (fTerminalModel) {
 			if(fTerminalModel.getHeight()>bufferLineLimit)
 				fTerminalModel.setDimensions(bufferLineLimit, fTerminalModel.getWidth());
