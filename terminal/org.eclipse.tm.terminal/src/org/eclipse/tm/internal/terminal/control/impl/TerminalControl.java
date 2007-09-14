@@ -428,8 +428,8 @@ public class TerminalControl implements ITerminalControlForText, ITerminalContro
 		fWndParent.setLayout(layout);
 		setCtlText(new StyledText(fWndParent, SWT.V_SCROLL));
 		fCtlText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//fCtlText.setWordWrap(false);
 		
-
 		fDisplay = getCtlText().getDisplay();
 		fClipboard = new Clipboard(fDisplay);
 //		fViewer.setDocument(new TerminalDocument());
