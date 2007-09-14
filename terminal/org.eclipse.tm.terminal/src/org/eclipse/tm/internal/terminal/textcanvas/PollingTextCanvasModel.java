@@ -20,11 +20,13 @@ import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 public class PollingTextCanvasModel extends AbstractTextCanvasModel {
 	final ITerminalTextDataSnapshot fSnapshot;
 	int fPollInterval=50;
+	int fLines;
 	/**
 	 * 
 	 */
 	public PollingTextCanvasModel(ITerminalTextDataSnapshot snapshot) {
 		fSnapshot=snapshot;
+		fLines=fSnapshot.getHeight();
 		Display.getDefault().timerExec(fPollInterval,new Runnable(){
 			public void run() {
 				update();
@@ -40,9 +42,13 @@ public class PollingTextCanvasModel extends AbstractTextCanvasModel {
 			fSnapshot.updateSnapshot(false);
 			if(fSnapshot.hasTerminalChanged())
 				fireTerminalDataChanged();
-			if(fSnapshot.hasDimensionsChanged())
+			// TODO why does hasDimensionsChanged not work??????
+//			if(fSnapshot.hasDimensionsChanged())
+//				fireDimensionsChanged();
+			if(fLines!=fSnapshot.getHeight()) {
 				fireDimensionsChanged();
-
+				fLines=fSnapshot.getHeight();
+			}
 			int y=fSnapshot.getFirstChangedLine();
 			// has any line changed?
 			if(y<Integer.MAX_VALUE) {
