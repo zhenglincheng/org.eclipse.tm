@@ -19,6 +19,11 @@ import org.eclipse.tm.terminal.model.ITerminalTextDataReadOnly;
 import org.eclipse.tm.terminal.model.Style;
 
 public class VT100EmulatorBackendTest extends TestCase {
+
+	protected IVT100EmulatorBackend makeBakend(ITerminalTextData term) {
+		return new VT100EmulatorBackend(term);
+	}
+
 	protected ITerminalTextData makeITerminalTextData() {
 		return new TerminalTextDataStore();
 	}
@@ -58,7 +63,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 	}
 	public void testClearAll() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		fill(term, "0000\n" +
 				"1111\n" +
@@ -72,10 +77,9 @@ public class VT100EmulatorBackendTest extends TestCase {
 				"    \n" +
 				"    ",toMultiLineText(term));
 	}
-
 	public void testSetDimensions() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		String s = "0000\n" +
 				"1111\n" +
 				"2222\n" +
@@ -120,7 +124,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testInsertCharacters() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		String s = 
 				"aaaa\n" +
@@ -204,7 +208,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testEraseToEndOfScreen() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		String s = 
 				"aaaa\n" +
@@ -327,7 +331,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testEraseToCursor() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		String s = 
 				"aaaa\n" +
@@ -448,7 +452,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testEraseAll() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		fill(term, "0000\n" +
 				"1111\n" +
@@ -476,7 +480,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 			"EFGHI";
 
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 
 		vt100.setDimensions(3, 5);
 		fill(term, s);
@@ -519,7 +523,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 			"EFGHI";
 
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 
 		vt100.setDimensions(3, 5);
 		fill(term, s);
@@ -603,7 +607,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 			"EFGHI";
 
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 
 		vt100.setDimensions(3, 5);
 		fill(term, s);
@@ -678,7 +682,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testInsertLines() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		String s = "0000\n" +
 				"1111\n" +
 				"2222\n" +
@@ -783,7 +787,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testDeleteCharacters() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		vt100.setDimensions(3, 4);
 		String s = 
 				"aaaa\n" +
@@ -868,7 +872,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testDeleteLines() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		String s = "0000\n" +
 				"1111\n" +
 				"2222\n" +
@@ -973,7 +977,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testGetDefaultStyle() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		Style style=Style.getStyle("white", "black");
 		vt100.setDefaultStyle(style);
 		assertSame(style, vt100.getDefaultStyle());
@@ -984,7 +988,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testGetStyle() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		Style style=Style.getStyle("white", "black");
 		vt100.setStyle(style);
 		assertSame(style, vt100.getStyle());
@@ -995,7 +999,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testAppendString() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
 		vt100.setCursor(0, 0);
@@ -1102,7 +1106,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testProcessNewline() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		String s = "0000\n" +
 				"1111\n" +
 				"2222\n" +
@@ -1151,7 +1155,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testSetCursorLine() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
 		// the cursor is now at the end....
@@ -1173,7 +1177,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testSetCursorColumn() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
 		assertEquals(2,vt100.getCursorLine());
@@ -1194,7 +1198,7 @@ public class VT100EmulatorBackendTest extends TestCase {
 
 	public void testSetCursor() {
 		ITerminalTextData term=makeITerminalTextData();
-		VT100EmulatorBackend vt100=new VT100EmulatorBackend(term);
+		IVT100EmulatorBackend vt100=makeBakend(term);
 		term.setMaxHeight(6);
 		vt100.setDimensions(3, 4);
 		assertEquals(2,vt100.getCursorLine());
