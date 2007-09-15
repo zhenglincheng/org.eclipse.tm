@@ -98,10 +98,10 @@ public class PipedInputStream extends InputStream {
 			while (fUsedSlots == fBuffer.length)
 				// wait until not full
 				wait();
-			for (int i = 0; i < len; i++) {
-				fBuffer[(fPutPos + i) % fBuffer.length] = b[i + off];
-			}
-
+			int n = Math.min(len, fBuffer.length - fPutPos);
+			System.arraycopy(b, off, fBuffer, fPutPos, n);
+			if (fPutPos + len > n)
+				System.arraycopy(b, off + n, fBuffer, 0, len - n);
 			fPutPos = (fPutPos + len) % fBuffer.length; // cyclically increment
 			boolean wasEmpty = fUsedSlots == 0;
 			fUsedSlots += len;
@@ -136,9 +136,10 @@ public class PipedInputStream extends InputStream {
 				// wait until not empty
 				wait();
 			}
-			for (int i = 0; i < len; i++) {
-				cbuf[i + off] = fBuffer[(i + fTakePos) % fBuffer.length];
-			}
+			int n = Math.min(len, fBuffer.length - fTakePos);
+			System.arraycopy(fBuffer, fTakePos, cbuf, off, n);
+			if (fTakePos + len > n)
+				System.arraycopy(fBuffer, 0, cbuf, off + n, len - n);
 			fTakePos = (fTakePos + len) % fBuffer.length;
 			boolean wasFull = fUsedSlots == fBuffer.length;
 			fUsedSlots -= len;
