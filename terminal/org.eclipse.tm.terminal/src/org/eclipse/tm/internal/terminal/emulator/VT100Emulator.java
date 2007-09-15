@@ -28,6 +28,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.tm.internal.terminal.control.impl.ITerminalControlForText;
 import org.eclipse.tm.internal.terminal.control.impl.TerminalControl;
+import org.eclipse.tm.internal.terminal.control.impl.TerminalPlugin;
 import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnector;
 import org.eclipse.tm.internal.terminal.provisional.api.Logger;
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
@@ -142,7 +143,7 @@ public class VT100Emulator implements ControlListener {
 			e.printStackTrace();
 		}
 		fReader=reader;
-		if(System.getProperty("org.eclipse.tm.internal.terminal.emulator.TRACING")!=null) //$NON-NLS-1$
+		if(TerminalPlugin.isOptionEnabled("org.eclipse.tm.terminal/debug/log/VT100Backend")) //$NON-NLS-1$
 			text=new VT100BackendTraceDecorator(new VT100EmulatorBackend(data),System.out);
 		else
 			text=new VT100EmulatorBackend(data);
