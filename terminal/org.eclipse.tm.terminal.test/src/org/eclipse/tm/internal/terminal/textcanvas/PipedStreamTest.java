@@ -3,8 +3,6 @@ package org.eclipse.tm.internal.terminal.textcanvas;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
 
 class PipedStreamTest {
@@ -40,19 +38,19 @@ class PipedStreamTest {
 
 	}
 	static class FakeInputStream extends InputStream {
+		int N;
+		FakeInputStream(int n) {
+			N=n;
+		}
 		public int read(byte[] b, int off, int len) throws IOException {
 			if(N==0)
 				return -1;
 			int n=Math.min(len,N);
-			N-=n;
 			for (int i = off; i < off+n; i++) {
 				b[i]='x';
 			}
+			N-=n;
 			return n;
-		}
-		int N;
-		FakeInputStream(int n) {
-			N=n;
 		}
 		public int read() throws IOException {
 			throw new UnsupportedOperationException();
@@ -66,34 +64,31 @@ class PipedStreamTest {
 	}
 	static class FakeOutputStream extends OutputStream {
 		long N;
-		long nTot;
-		long t0=System.currentTimeMillis();
-
 		public void write(int b) throws IOException {
 			throw new UnsupportedOperationException();
 		}
 		public void write(byte[] b, int off, int len) throws IOException {
 			N+=len;
-			nTot+=len;
-			if(N>1000*1000*10) {
-				long t=System.currentTimeMillis();
-				System.out.println(N/1024 + " kbyte in " +(t-t0)+" ms -> "+(N*1000)/((t-t0)*1024)+" kb/sec");
-				t0=System.currentTimeMillis();
-				N=0;
-			}
 		}
 	}
 	public static void main(String[] args) throws IOException, InterruptedException {
-		runTest();
-		runTest();
+		while(true) {
+			runSunTest();
+			runMyTest();
+		}
 	}
-	private static void runTest() throws IOException, InterruptedException {
-		PipedInputStream writeIn = new PipedInputStream();
-		PipedOutputStream readOut = new PipedOutputStream(writeIn);
-		runPipe(writeIn, readOut);
+	private static void runSunTest() throws IOException, InterruptedException {
+		java.io.PipedInputStream in = new java.io.PipedInputStream();
+		OutputStream out = new java.io.PipedOutputStream(in);
+		runPipe("Sun ",in, out,10);
 	}
-	public static void runPipe(InputStream writeIn, OutputStream readOut) throws InterruptedException {
-		FakeInputStream in=new FakeInputStream(25*1000*1000);
+	private static void runMyTest() throws IOException, InterruptedException {
+		PipedInputStream in=new PipedInputStream(4*1024);
+		OutputStream out=in.getOutputStream();
+		runPipe("My  ",in, out,99);
+	}
+	public static void runPipe(String what,InputStream writeIn, OutputStream readOut,int N) throws InterruptedException {
+		FakeInputStream in=new FakeInputStream(N*1000*1000);
 		FakeOutputStream out=new FakeOutputStream();
 		ReadThread rt = new ReadThread("reader", in , readOut);
 		ReadThread wt = new ReadThread("writer", writeIn, out);
@@ -102,7 +97,7 @@ class PipedStreamTest {
 		wt.start();
 		wt.join();
 		long t=System.currentTimeMillis();
-		long n=out.nTot;
-		System.out.println(n + " byte in " +(t-t0)+" ms -> "+(1000*n)/((t-t0+1)*1024)+" kb/sec");
+		long n=out.N;
+		System.out.println(what+n + " byte in " +(t-t0)+" ms -> "+(1000*n)/((t-t0+1)*1024)+" kb/sec");
 	}
 }

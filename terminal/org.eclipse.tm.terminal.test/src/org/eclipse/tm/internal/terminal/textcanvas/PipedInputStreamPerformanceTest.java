@@ -26,7 +26,7 @@ public class PipedInputStreamPerformanceTest {
 	private static void runPerformanceTest() throws InterruptedException {
 		PipedInputStream in=new PipedInputStream(1024);
 		OutputStream out=in.getOutputStream();
-		PipedStreamTest.runPipe(in, out);
+		PipedStreamTest.runPipe("",in, out,100);
 	}
 
 }
