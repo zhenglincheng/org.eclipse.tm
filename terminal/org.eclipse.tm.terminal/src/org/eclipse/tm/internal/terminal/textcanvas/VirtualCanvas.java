@@ -111,9 +111,11 @@ public abstract class VirtualCanvas extends Canvas {
 	protected void scrollY(ScrollBar vBar) {
 		int vSelection = vBar.getSelection ();
 		int destY = -vSelection - fVirtualBounds.y;
-		fVirtualBounds.y = -vSelection;
-		scrollSmart(0,destY);
-		updateViewRectangle();
+		if(destY!=0) {
+			fVirtualBounds.y = -vSelection;
+			scrollSmart(0,destY);
+			updateViewRectangle();
+		}
 		
 	}
 	protected void scrollYDelta(int delta) {

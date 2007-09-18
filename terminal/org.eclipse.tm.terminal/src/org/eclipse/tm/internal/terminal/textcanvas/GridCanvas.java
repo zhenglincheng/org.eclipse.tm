@@ -33,10 +33,12 @@ abstract public class GridCanvas extends VirtualCanvas {
 		super(parent, style);
 		addListener(SWT.MouseWheel, new Listener() {
 			public void handleEvent(Event event) {
-				int delta=-fCellHeight;
-				if(event.count<0)
-					delta=-delta;
-				scrollYDelta(delta);
+				if(getVerticalBar().isVisible()) {
+					int delta=-fCellHeight;
+					if(event.count<0)
+						delta=-delta;
+					scrollYDelta(delta);
+				}
 				event.doit=false;
 			}
 		});
