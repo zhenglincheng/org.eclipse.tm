@@ -675,6 +675,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 			fMenuAboutToShow = true;
 			updateEditCopy();
 			updateEditCut();
+			updateEditSelectAll();
 			updateEditPaste();
 			updateEditClearAll();
 

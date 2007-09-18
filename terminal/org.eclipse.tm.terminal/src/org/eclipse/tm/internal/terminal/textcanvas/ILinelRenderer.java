@@ -19,12 +19,4 @@ public interface ILinelRenderer {
 	int getCellWidth();
 	int getCellHeight();
 	void drawLine(ITextCanvasModel model, GC gc, int line, int x, int y, int colFirst, int colLast);
-	/**
-	 * This is is 
-	 * @param startLine
-	 * @param startCol
-	 * @param height
-	 * @param width
-	 */
-	void setVisibleRectangle(int startLine, int startCol, int height, int width);
 }

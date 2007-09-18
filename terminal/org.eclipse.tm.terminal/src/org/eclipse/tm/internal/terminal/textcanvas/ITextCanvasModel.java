@@ -10,22 +10,23 @@
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.tm.terminal.model.ITerminalTextDataReadOnly;
+
 public interface ITextCanvasModel {
 	void addCellCanvasModelListener(ITextCanvasModelListener listener);
 	void removeCellCanvasModelListener(ITextCanvasModelListener listener);
-	/**
-	 * @return the number of columns the terminal has
-	 */
-	int getWidth();
-	/**
-	 * @return the number of lines the terminal has
-	 */
-	int getHeight();
-	/**
-	 * must be called from the UI thread
-	 */
-	void update();
 	
+	ITerminalTextDataReadOnly getTerminalText();
+	/**
+	 * This is is 
+	 * @param startLine
+	 * @param startCol
+	 * @param height
+	 * @param width
+	 */
+	void setVisibleRectangle(int startLine, int startCol, int height, int width);
+
 	/**
 	 * @return true when the cursor is shown (used for blinking cursors)
 	 */
@@ -49,4 +50,30 @@ public interface ITextCanvasModel {
 	 * @return the column of the cursor
 	 */
 	int getCursorColumn();
+	
+	/**
+	 * @return the start of the selection or null if nothing is selected
+	 * {@link Point#x} is the column and {@link Point#y} is the line. 
+	 */
+	Point getSelectionStart();
+	/**
+	 * @return the end of the selection or null if nothing is selected
+	 * {@link Point#x} is the column and {@link Point#y} is the line. 
+	 */
+	Point getSelectionEnd();
+	/**
+	 * @param startLine
+	 * @param endLine
+	 * @param startColumn
+	 * @param endColumn
+	 */
+	void setSelection(int startLine, int endLine, int startColumn, int endColumn);
+	
+	/**
+	 * @param line
+	 * @return true if line is part of the selection
+	 */
+	boolean hasLineSelection(int line);
+	
+	String getSelectedText();
 }

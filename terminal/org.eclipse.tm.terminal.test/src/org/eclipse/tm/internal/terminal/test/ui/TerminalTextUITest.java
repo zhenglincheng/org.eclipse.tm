@@ -83,7 +83,7 @@ public class TerminalTextUITest {
 		snapshot.updateSnapshot(false);
 		fgModel=new PollingTextCanvasModel(snapshot);
 		fgTextCanvas=new TextCanvas(shell,fgModel, SWT.NONE);
-		fgTextCanvas.setCellRenderer(new TextLineRenderer(fgTextCanvas,snapshot));
+		fgTextCanvas.setCellRenderer(new TextLineRenderer(fgTextCanvas,fgModel));
 		fgTextCanvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 

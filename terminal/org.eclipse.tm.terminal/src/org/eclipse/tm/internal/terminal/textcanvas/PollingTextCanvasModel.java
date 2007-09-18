@@ -9,7 +9,6 @@
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
-
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 
@@ -18,53 +17,19 @@ import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
  *
  */
 public class PollingTextCanvasModel extends AbstractTextCanvasModel {
-	final ITerminalTextDataSnapshot fSnapshot;
 	int fPollInterval=50;
-	int fLines;
 	/**
 	 * 
 	 */
 	public PollingTextCanvasModel(ITerminalTextDataSnapshot snapshot) {
-		fSnapshot=snapshot;
-		fLines=fSnapshot.getHeight();
+		super(snapshot);
 		Display.getDefault().timerExec(fPollInterval,new Runnable(){
 			public void run() {
 				update();
 				Display.getDefault().timerExec(fPollInterval,this);
 			}});
 	}
-	void setUpdateInterval(int t) {
+	public void setUpdateInterval(int t) {
 		fPollInterval=t;
-	}
-	public void update() {
-		// do the poll....
-		if(fSnapshot.isOutOfDate()) {
-			fSnapshot.updateSnapshot(false);
-			if(fSnapshot.hasTerminalChanged())
-				fireTerminalDataChanged();
-			// TODO why does hasDimensionsChanged not work??????
-//			if(fSnapshot.hasDimensionsChanged())
-//				fireDimensionsChanged();
-			if(fLines!=fSnapshot.getHeight()) {
-				fireDimensionsChanged();
-				fLines=fSnapshot.getHeight();
-			}
-			int y=fSnapshot.getFirstChangedLine();
-			// has any line changed?
-			if(y<Integer.MAX_VALUE) {
-				int height=fSnapshot.getLastChangedLine()-y+1;
-				fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
-			}
-		}
-		updateCursor();
-	}
-	public int getHeight() {
-		return fSnapshot.getHeight();
-	}
-	public int getWidth() {
-		return fSnapshot.getWidth();
-	}
-	protected ITerminalTextDataSnapshot getSnapshot() {
-		return fSnapshot;
 	}
 }

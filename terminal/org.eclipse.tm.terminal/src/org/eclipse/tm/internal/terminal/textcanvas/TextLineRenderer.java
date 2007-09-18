@@ -14,7 +14,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.tm.terminal.model.ITerminalTextDataReadOnly;
 import org.eclipse.tm.terminal.model.LineSegment;
 import org.eclipse.tm.terminal.model.Style;
 
@@ -23,16 +25,13 @@ import org.eclipse.tm.terminal.model.Style;
  */
 public class TextLineRenderer implements ILinelRenderer {
 	TextCanvas fCanvas;
-	ITerminalTextDataSnapshot fSnapshot;
+	private final ITextCanvasModel fModel;
 	StyleMap fStyleMap=new StyleMap();
-	Color fSelectionBackgroundColor;
-	Color fSelectionForegooundColor;
 	Color fBackgroundColor;
-	public TextLineRenderer(TextCanvas c, ITerminalTextDataSnapshot snapshot) {
+	public TextLineRenderer(TextCanvas c, ITextCanvasModel model) {
 		fCanvas=c;
-		fSnapshot=snapshot;
-		fSelectionBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-		fBackgroundColor = c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+		fModel=model;
+		fBackgroundColor=c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 	}
 	/* (non-Javadoc)
 	 * @see com.imagicus.thumbs.view.ICellRenderer#getCellWidth()
@@ -46,19 +45,42 @@ public class TextLineRenderer implements ILinelRenderer {
 	public int getCellHeight() {
 		return fStyleMap.getFontHeight();
 	}
-	public void drawLine(ITextCanvasModel model, GC gc, int row, int x, int y, int colFirst, int colLast) {
-		if(row<0 || row>=fSnapshot.getHeight() || colFirst>=fSnapshot.getWidth() || colFirst-colLast==0) {
+	public void drawLine(ITextCanvasModel model, GC gc, int line, int x, int y, int colFirst, int colLast) {
+		if(line<0 || line>=getTerminalText().getHeight() || colFirst>=getTerminalText().getWidth() || colFirst-colLast==0) {
 			fillBackground(gc, x, y, getCellWidth()*(colFirst-colLast), getCellHeight());
 		} else {
-			colLast=Math.min(colLast, fSnapshot.getWidth());
-			LineSegment[] segments=fSnapshot.getLineSegments(row, colFirst, colLast-colFirst);
+			colLast=Math.min(colLast, getTerminalText().getWidth());
+			LineSegment[] segments=getTerminalText().getLineSegments(line, colFirst, colLast-colFirst);
 			for (int i = 0; i < segments.length; i++) {
 				LineSegment segment=segments[i];
 				Style style=segment.getStyle();
 				setupGC(gc, style);
 				String text=segment.getText();
 				drawText(gc, x, y, colFirst, segment.getColumn(), text);
-				drawCursor(model, gc, row, x, y, colFirst);
+				drawCursor(model, gc, line, x, y, colFirst);
+			}
+			if(fModel.hasLineSelection(line)) {
+				gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+				gc.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION));
+				Point start=model.getSelectionStart();
+				Point end=model.getSelectionEnd();
+				char[] chars=model.getTerminalText().getChars(line);
+				if(chars==null)
+					return;
+				int offset=0;
+				if(start.y==line)
+					offset=start.x;
+				offset=Math.max(offset, colFirst);
+				int len;
+				if(end.y==line)
+					len=end.x-offset+1;
+				else
+					len=chars.length-offset+1;
+				len=Math.min(len,chars.length-offset);
+				if(len>0) {
+					String text=new String(chars,offset,len);
+					drawText(gc, x, y, colFirst, offset, text);
+				}
 			}
 		}
 	}
@@ -81,15 +103,15 @@ public class TextLineRenderer implements ILinelRenderer {
 			
 		if(row==cursorLine) {
 			int cursorColumn=model.getCursorColumn();
-			if(cursorColumn<fSnapshot.getWidth()) {
-				Style style=fSnapshot.getStyle(row, cursorColumn);
+			if(cursorColumn<getTerminalText().getWidth()) {
+				Style style=getTerminalText().getStyle(row, cursorColumn);
 				if(style==null) {
 					// TODO make the cursor color customizable
 					style=Style.getStyle("BLACK", "WHITE");  //$NON-NLS-1$//$NON-NLS-2$
 				}
 				style=style.setReverse(!style.isReverse());
 				setupGC(gc,style);
-				String text=String.valueOf(fSnapshot.getChar(row, cursorColumn));
+				String text=String.valueOf(getTerminalText().getChar(row, cursorColumn));
 				drawText(gc, x, y, colFirst, cursorColumn, text);
 			}
 		}
@@ -113,8 +135,7 @@ public class TextLineRenderer implements ILinelRenderer {
 			gc.setFont(f);
 		}
 	}
-	public void setVisibleRectangle(int startLine, int startCol, int height, int width) {
-		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,Math.min(fSnapshot.getHeight(),height)));
-		
+	ITerminalTextDataReadOnly getTerminalText() {
+		return fModel.getTerminalText();
 	}
 }

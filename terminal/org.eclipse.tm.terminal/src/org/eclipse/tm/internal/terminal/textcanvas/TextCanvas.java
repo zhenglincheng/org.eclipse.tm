@@ -12,10 +12,14 @@ package org.eclipse.tm.internal.terminal.textcanvas;
 
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -33,6 +37,8 @@ public class TextCanvas extends GridCanvas {
 	/** Renders the cells */
 	private ILinelRenderer fCellRenderer;
 	private boolean fScrollLock;
+	private Point fDraggingStart;
+	private Point fDraggingEnd;
 	/**
 	 * Create a new CellCanvas with the given SWT style bits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
@@ -77,11 +83,53 @@ public class TextCanvas extends GridCanvas {
 			}
 			public void mouseDown(MouseEvent e) {
 				if(e.button==1) { // left button
+					fDraggingStart=screenPointToCell(e.x, e.y);
+					fDraggingEnd=null;
 				}
 			}
 			public void mouseUp(MouseEvent e) {				
+				if(e.button==1) { // left button
+					setSelection(screenPointToCell(e.x, e.y));
+					fDraggingStart=null;
+				}
 			}
 		});
+		addMouseMoveListener(new MouseMoveListener() {
+
+			public void mouseMove(MouseEvent e) {
+				if (fDraggingStart != null) {
+					setSelection(screenPointToCell(e.x, e.y));
+				}
+			}
+		});
+	}
+
+	void setSelection(Point p) {
+		if (!p.equals(fDraggingEnd)) {
+			fDraggingEnd = p;
+			if (compare(p, fDraggingStart) < 0) {
+				fCellCanvasModel.setSelection(p.y, fDraggingStart.y, p.x, fDraggingStart.x);
+			} else {
+				fCellCanvasModel.setSelection(fDraggingStart.y, p.y, fDraggingStart.x, p.x);
+
+			}
+		}
+	}
+
+	int compare(Point p1, Point p2) {
+		if (p1.equals(p2))
+			return 0;
+		if (p1.y == p2.y) {
+			if (p1.x > p2.x)
+				return 1;
+			else
+				return -1;
+		}
+		if (p1.y > p2.y) {
+			return 1;
+		} else {
+			return -1;
+		}
 	}
 	public void setCellRenderer(ILinelRenderer cellRenderer) {
 		fCellRenderer = cellRenderer;
@@ -136,31 +184,29 @@ public class TextCanvas extends GridCanvas {
 		
 	}
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {
-		fCellRenderer.setVisibleRectangle(y,x,height,width);
-		fCellCanvasModel.update();
-		// reset the auto reveal
+		fCellCanvasModel.setVisibleRectangle(y,x,height,width);
 		update();
 	}
 	protected int getCols() {
-		return fCellCanvasModel.getWidth();
+		return fCellCanvasModel.getTerminalText().getWidth();
 	}
 	protected int getRows() {
-		return fCellCanvasModel.getHeight();
+		return fCellCanvasModel.getTerminalText().getHeight();
 	}
 	public String getSelectionText() {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO -- create a hasSelectionMethod!
+		return fCellCanvasModel.getSelectedText();
 	}
 	public void copy() {
-		// TODO Auto-generated method stub
-		
+		Clipboard clipboard = new Clipboard(getDisplay());
+		clipboard.setContents(new Object[] { getSelectionText() }, new Transfer[] { TextTransfer.getInstance() });
+		clipboard.dispose();
 	}
 	public void selectAll() {
-		// TODO Auto-generated method stub
+		fCellCanvasModel.setSelection(0, fCellCanvasModel.getTerminalText().getHeight(), 0, fCellCanvasModel.getTerminalText().getWidth());
 		
 	}
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }

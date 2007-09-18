@@ -57,6 +57,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnectorInfo;
 import org.eclipse.tm.internal.terminal.provisional.api.ITerminalControl;
 import org.eclipse.tm.internal.terminal.provisional.api.Logger;
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
+import org.eclipse.tm.internal.terminal.textcanvas.ITextCanvasModel;
 import org.eclipse.tm.internal.terminal.textcanvas.PipedInputStream;
 import org.eclipse.tm.internal.terminal.textcanvas.PollingTextCanvasModel;
 import org.eclipse.tm.internal.terminal.textcanvas.TextCanvas;
@@ -487,8 +488,9 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		ITerminalTextDataSnapshot snapshot=fTerminalModel.makeSnapshot();
 		// TODO how to get the initial size correctly!
 		snapshot.updateSnapshot(false);
-		fCtlText=new TextCanvas(fWndParent,new PollingTextCanvasModel(snapshot),SWT.NONE);
-		fCtlText.setCellRenderer(new TextLineRenderer(fCtlText,snapshot));
+		ITextCanvasModel canvasModel=new PollingTextCanvasModel(snapshot);
+		fCtlText=new TextCanvas(fWndParent,canvasModel,SWT.NONE);
+		fCtlText.setCellRenderer(new TextLineRenderer(fCtlText,canvasModel));
 
 		fCtlText.setLayoutData(new GridData(GridData.FILL_BOTH));
 		fCtlText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
