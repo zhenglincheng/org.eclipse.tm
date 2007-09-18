@@ -1336,4 +1336,9 @@ public class TerminalTextDataSnapshotTest extends TestCase {
 
 		assertFalse(snapshot.hasTerminalChanged());
 	}
+	public void testGetTerminalTextData() {
+		ITerminalTextData term=makeITerminalTextData();
+		ITerminalTextDataSnapshot snapshot=term.makeSnapshot();
+		assertSame(term, snapshot.getTerminalTextData());
+	}
 }

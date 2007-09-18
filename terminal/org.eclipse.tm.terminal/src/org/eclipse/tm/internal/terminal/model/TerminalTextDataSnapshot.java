@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.tm.terminal.model.ITerminalTextData;
 import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 import org.eclipse.tm.terminal.model.LineSegment;
 import org.eclipse.tm.terminal.model.Style;
@@ -289,6 +290,9 @@ class TerminalTextDataSnapshot implements ITerminalTextDataSnapshot {
 	}
 	public int getCursorLine() {
 		return fSnapshot.getCursorLine();
+	}
+	public ITerminalTextData getTerminalTextData() {
+		return fTerminal;
 	}
 }
 

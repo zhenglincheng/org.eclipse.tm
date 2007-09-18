@@ -203,5 +203,10 @@ public interface ITerminalTextDataSnapshot extends ITerminalTextDataReadOnly {
 	 * to the previous snapshot. See also {@link ITerminalTextData#scroll(int, int, int)}
 	 */
 	int getScrollWindowShift();
+	
+	/**
+	 * @return The {@link ITerminalTextData} on that this instance is observing.
+	 */
+	ITerminalTextData getTerminalTextData();
 
 }
