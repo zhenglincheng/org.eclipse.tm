@@ -136,7 +136,7 @@ public class SystemFilterStringPropertyPage extends SystemBasePropertyPage imple
 	 */
 	public void setEditable(boolean editable)
 	{
-		this.editable = editable;
+		editable = false;
 	}
 	
 	// lifecyle methods...
