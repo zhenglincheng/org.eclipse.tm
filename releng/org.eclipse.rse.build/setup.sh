@@ -93,8 +93,8 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_4.0.1.200709241202.jar ]; then
   CMD="${CMD} -application org.eclipse.update.core.standaloneUpdate"
   CMD="${CMD} -command install"
   CMD="${CMD} -from file://${CDTTMP}"
-  CMD="${CMD} -featureId org.eclipse.cdt.sdk"
-  CMD="${CMD} -version org.eclipse.cdt.sdk_4.0.1.200709241202"
+  CMD="${CMD} -featureId org.eclipse.cdt"
+  CMD="${CMD} -version 4.0.1.200709241202"
   ${CMD}
   rc=$?
   if [ ${rc} != 0 ]; then
