@@ -31,17 +31,19 @@
 <li><b>Apache Commons.Net and ORO</b> are now distributed as verbatim compies
   from the Orbit project, so they will not be changed any more.</li>
 -->
-<li>Bugs fixed since TM 2.0.1:
+<li>Highlights of Bugs fixed since TM 2.0.1:
     <ul>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205393">bug 205393</a> - <font color="red"><b>cri - [terminal] stack overflow</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
+<!--
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=204943">bug 204943</a> - nor - [terminal][regression] Cannot expand selection with shift+click</li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205385">bug 205385</a> - nor - [terminal] Use system property to switch to old implementation</li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205389">bug 205389</a> - nor - [terminal] null pointer exception when opening a view</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205393">bug 205393</a> - <font color="red"><b>cri - [terminal] stack overflow</b></font></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205443">bug 205443</a> - nor - [terminal] view refresh problem between perspectives</li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205679">bug 205679</a> - nor - [terminal] Initial cursor and scrollbar are wrong</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205592">bug 205592</a> - nor - [regression] ClassCastException when trying to expand folder that doesn't have read permissions</li>
+-->
 </ul></li>
 <li>Plugins and Features changed since TM 2.0.1:
 <ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
