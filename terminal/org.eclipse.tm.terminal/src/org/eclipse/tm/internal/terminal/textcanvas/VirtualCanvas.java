@@ -11,6 +11,8 @@
 package org.eclipse.tm.internal.terminal.textcanvas;
 
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -23,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.tm.internal.terminal.control.impl.TerminalPlugin;
 
 /**
  * A <code>Canvas</code> showing a virtual object.
@@ -38,7 +41,8 @@ public abstract class VirtualCanvas extends Canvas {
 	 * prevent infinite loop in {@link #updateScrollbars()}
 	 */
 	private boolean fInUpdateScrollbars;
-
+	private static boolean fInUpdateScrollbarsLogged;
+	
 	public VirtualCanvas(Composite parent, int style) {
 		super(parent, style|SWT.NO_BACKGROUND|SWT.NO_REDRAW_RESIZE);
 		fPaintGC= new GC(this);
@@ -51,13 +55,12 @@ public abstract class VirtualCanvas extends Canvas {
 		addListener(SWT.Resize, new Listener() {
 			public void handleEvent(Event event) {
 				fClientArea=getClientArea();
-				updateViewRectangle();
+				onResize();
 			}
 		});
 		getVerticalBar().addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 				scrollY((ScrollBar)e.widget);
-				postScrollEventHandling(e);
 
 			}
 
@@ -65,7 +68,6 @@ public abstract class VirtualCanvas extends Canvas {
 		getHorizontalBar().addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 				scrollX((ScrollBar)e.widget);
-				postScrollEventHandling(e);
 
 			}
 		});
@@ -78,24 +80,10 @@ public abstract class VirtualCanvas extends Canvas {
 			}
 			
 		});
+	}	
+	protected void onResize() {
+		updateViewRectangle();
 	}
-	/** HACK: run an event loop if the scrollbar is dragged...*/
-	private void postScrollEventHandling(Event e) {
-		if(true&&e.detail==SWT.DRAG) {
-			// TODO check if this is always ok???
-			// used to process runnables while scrolling
-			// This fixes the update problems when scrolling!
-			// see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=47582#5
-			// TODO investigate:
-			// The alternative is to call redraw on the new visible area
-			// 	  redraw(expose.x, expose.y, expose.width, expose.height, true);
-
-			while (!getDisplay().isDisposed() && getDisplay().readAndDispatch()) {	
-				// do nothing here...
-			}
-		}
-	}
-	
 	protected void scrollX(ScrollBar hBar) {
 		int hSelection = hBar.getSelection ();
 		int destX = -hSelection - fVirtualBounds.x;
@@ -228,7 +216,7 @@ public abstract class VirtualCanvas extends Canvas {
 	}
 	
 	/**
-	 * Sets the extend of the virtual dieplay ares
+	 * Sets the extend of the virtual display ares
 	 * @param width
 	 * @param height
 	 */
@@ -274,7 +262,7 @@ public abstract class VirtualCanvas extends Canvas {
 	}
 	/** called when the viewed part is changing */
 	private Rectangle fViewRectangle=new Rectangle(0,0,0,0);
-	void updateViewRectangle() {
+	protected void updateViewRectangle() {
 		if(
 				fViewRectangle.x==-fVirtualBounds.x 
 				&& fViewRectangle.y==-fVirtualBounds.y
@@ -317,37 +305,52 @@ public abstract class VirtualCanvas extends Canvas {
 			} finally {
 				fInUpdateScrollbars=false;
 			}
+		} else {
+			if(!fInUpdateScrollbarsLogged) {
+				fInUpdateScrollbarsLogged=true;
+				TerminalPlugin.getDefault().getLog().log(new Status(IStatus.WARNING, 
+						TerminalPlugin.PLUGIN_ID, IStatus.OK, "Unexpected Recursion in terminal", //$NON-NLS-1$
+						new RuntimeException()));
+			}
 		}
 	}
 	private void doUpdateScrollbar() {
 		Point size= getSize();
 		Rectangle clientArea= getClientArea();
-	
 		ScrollBar horizontal= getHorizontalBar();
-		if (fVirtualBounds.width <= clientArea.width) {
-			// TODO IMPORTANT in ScrollBar.setVisible comment out the line
-			// that checks 'isvisible' and returns (at the beginning)
-			horizontal.setVisible(false);
-			horizontal.setSelection(0);
-		} else {
+		// even if setVisible was called on the scrollbar, isVisible
+		// returns false if its parent is not visible. 
+		if(!isVisible() || horizontal.isVisible()) {
 			horizontal.setPageIncrement(clientArea.width - horizontal.getIncrement());
 			int max= fVirtualBounds.width + (size.x - clientArea.width);
 			horizontal.setMaximum(max);
 			horizontal.setThumb(size.x > max ? max : size.x);
-			horizontal.setVisible(true);
 		}
-	
 		ScrollBar vertical= getVerticalBar();
-		if (fVirtualBounds.height <= clientArea.height) {
-			vertical.setVisible(false);
-			vertical.setSelection(0);
-		} else {
+		// even if setVisible was called on the scrollbar, isVisible
+		// returns false if its parent is not visible. 
+		if(!isVisible() || vertical.isVisible()) {
 			vertical.setPageIncrement(clientArea.height - vertical.getIncrement());
 			int max= fVirtualBounds.height + (size.y - clientArea.height);
 			vertical.setMaximum(max);
 			vertical.setThumb(size.y > max ? max : size.y);
-			vertical.setVisible(true);
 		}
+	}
+	protected boolean isVertialBarVisible() {
+		return getVerticalBar().isVisible();
+	}
+	protected void serVerticalBarVisible(boolean showVScrollBar) {
+		ScrollBar vertical= getVerticalBar();
+		vertical.setVisible(showVScrollBar);
+		vertical.setSelection(0);
+	}
+	protected boolean isHorizontalBarVisble() {
+		return getHorizontalBar().isVisible();
+	}
+	protected void setHorizontalBarVisible(boolean showHScrollBar) {
+		ScrollBar horizontal= getHorizontalBar();
+		horizontal.setVisible(showHScrollBar);
+		horizontal.setSelection(0);
 	}
 }
 

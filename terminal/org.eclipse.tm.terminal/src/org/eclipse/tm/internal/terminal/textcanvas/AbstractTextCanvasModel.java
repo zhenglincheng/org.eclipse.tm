@@ -35,6 +35,11 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	private ITerminalTextDataSnapshot fSelectionSnapshot;
 	private String fCurrentSelection=""; //$NON-NLS-1$
 	private final Point fSelectionAnchor=new Point(0,0);
+	/**
+	 * do not update while update is running
+	 */
+	boolean fInUpdate;
+	private int fCols;
 
 	public AbstractTextCanvasModel(ITerminalTextDataSnapshot snapshot) {
 		fSnapshot=snapshot;
@@ -68,6 +73,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		}
 		
 	}
+	
 	public ITerminalTextDataReadOnly getTerminalText() {
 		return fSnapshot;
 	}
@@ -75,22 +81,29 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		return fSnapshot;
 	}
 	protected void updateSnapshot() {
-		if(fSnapshot.isOutOfDate()) {
-			fSnapshot.updateSnapshot(false);
-			if(fSnapshot.hasTerminalChanged())
-				fireTerminalDataChanged();
-			// TODO why does hasDimensionsChanged not work??????
-			//			if(fSnapshot.hasDimensionsChanged())
-			//				fireDimensionsChanged();
-			if(fLines!=fSnapshot.getHeight()) {
-				fireDimensionsChanged(fSnapshot.getWidth(),fSnapshot.getHeight());
-				fLines=fSnapshot.getHeight();
-			}
-			int y=fSnapshot.getFirstChangedLine();
-			// has any line changed?
-			if(y<Integer.MAX_VALUE) {
-				int height=fSnapshot.getLastChangedLine()-y+1;
-				fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
+		if(!fInUpdate && fSnapshot.isOutOfDate()) {
+			fInUpdate=true;
+			try {
+				fSnapshot.updateSnapshot(false);
+				if(fSnapshot.hasTerminalChanged())
+					fireTerminalDataChanged();
+				// TODO why does hasDimensionsChanged not work??????
+				//			if(fSnapshot.hasDimensionsChanged())
+				//				fireDimensionsChanged();
+				if(fLines!=fSnapshot.getHeight() || fCols!=fSnapshot.getWidth()) {
+					fireDimensionsChanged(fSnapshot.getWidth(),fSnapshot.getHeight());
+					fLines=fSnapshot.getHeight();
+					fCols=fSnapshot.getWidth();
+				}
+				int y=fSnapshot.getFirstChangedLine();
+				// has any line changed?
+				if(y<Integer.MAX_VALUE) {
+					int height=fSnapshot.getLastChangedLine()-y+1;
+					fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
+				}
+				
+			} finally {
+				fInUpdate=false;
 			}
 		}
 	}

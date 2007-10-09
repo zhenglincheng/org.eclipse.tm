@@ -37,14 +37,12 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.tm.internal.terminal.control.ICommandInputField;
 import org.eclipse.tm.internal.terminal.control.ITerminalListener;
@@ -114,7 +112,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		fConnectors=connectors;
 		fTerminalListener=target;
 		fTerminalModel=TerminalTextDataFactory.makeTerminalTextData();
-		fTerminalModel.setDimensions(24, 80);
 		fTerminalModel.setMaxHeight(1000);
 		fInputStream=new PipedInputStream(8*1024);
 		fTerminalText=new VT100Emulator(fTerminalModel,this,fInputStream);
@@ -489,16 +486,13 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		// TODO how to get the initial size correctly!
 		snapshot.updateSnapshot(false);
 		ITextCanvasModel canvasModel=new PollingTextCanvasModel(snapshot);
-		fCtlText=new TextCanvas(fWndParent,canvasModel,SWT.NONE);
-		fCtlText.setCellRenderer(new TextLineRenderer(fCtlText,canvasModel));
+		fCtlText=new TextCanvas(fWndParent,canvasModel,SWT.NONE,new TextLineRenderer(fCtlText,canvasModel));
+
 
 		fCtlText.setLayoutData(new GridData(GridData.FILL_BOTH));
 		fCtlText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		fCtlText.addListener(SWT.Resize, new Listener() {
-			public void handleEvent(Event e) {
-				Rectangle bonds=fCtlText.getClientArea();
-				int lines=bonds.height/fCtlText.getCellHeight();
-				int columns=bonds.width/fCtlText.getCellWidth();
+		fCtlText.addResizeHandler(new TextCanvas.ResizeListener() {
+			public void sizeChanged(int lines, int columns) {
 				fTerminalText.setDimensions(lines, columns);
 			}
 		});
