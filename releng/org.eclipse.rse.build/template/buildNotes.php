@@ -33,6 +33,7 @@
 -->
 <li>Highlights of Bugs fixed since TM 2.0.1:
     <ul>
+    <li>Terminal: System Property <b>-Dorg.eclipse.tm.terminal.OldImplementation=true</b> can now be used to fall back to old terminal implementation [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205385">bug 205385</a>]</li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205393">bug 205393</a> - <font color="red"><b>cri - [terminal] stack overflow</b></font></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
