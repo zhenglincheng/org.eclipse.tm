@@ -41,13 +41,17 @@
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205679">bug 205679</a> - nor - [terminal] Initial cursor and scrollbar are wrong</li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205592">bug 205592</a> - nor - [regression] ClassCastException when trying to expand folder that doesn't have read permissions</li>
 </ul></li>
 <li>Plugins and Features changed since TM 2.0.1:
-<ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205385,205389,205393,205443,205679,205772">205385,205389,205393,205443,205679,205772</a>)
-    <li>Plugin: org.eclipse.tm.terminal.test (added)
-    <li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
-    <li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205297">205297</a>)
+<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205385,205389,205393,205443,205679,205772">205385,205389,205393,205443,205679,205772</a>)</li>
+        <li>Plugin: org.eclipse.tm.terminal.test (added)</li>
+    </ul></li>
     <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205297">205297</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
+    </ul></li>
 </ul></li>
 <li>Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
