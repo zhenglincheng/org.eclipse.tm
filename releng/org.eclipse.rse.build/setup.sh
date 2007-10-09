@@ -90,11 +90,11 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_4.0.1.200709241202.jar ]; then
   unzip ../cdt-master-4.0.1.zip
   cd ..
   CMD="java -jar eclipse/plugins/org.eclipse.equinox.launcher_1.0.1.R33x_v20070828.jar"
-  CMD=CMD+" -application org.eclipse.update.core.standaloneUpdate"
-  CMD=CMD+" -command install"
-  CMD=CMD+" -from file://${CDTTMP}"
-  CMD=CMD+" -featureId org.eclipse.cdt.sdk"
-  CMD=CMD+" -version org.eclipse.cdt.sdk_4.0.1.200709241202"
+  CMD="${CMD} -application org.eclipse.update.core.standaloneUpdate"
+  CMD="${CMD} -command install"
+  CMD="${CMD} -from file://${CDTTMP}"
+  CMD="${CMD} -featureId org.eclipse.cdt.sdk"
+  CMD="${CMD} -version org.eclipse.cdt.sdk_4.0.1.200709241202"
   ${CMD}
   rc=$?
   if [ ${rc} != 0 ]; then
