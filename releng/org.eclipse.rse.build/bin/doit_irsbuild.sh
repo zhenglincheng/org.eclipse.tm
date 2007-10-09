@@ -117,6 +117,7 @@ if [ -f package.count -a "$FILES" != "" ]; then
     cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
     chgrp dsdp-tmadmin ../N.latest/*.zip
     chmod g+w ../N.latest/*.zip
+  fi
 
     if [ ${buildType} != N ]; then
       #Update the testPatchUpdates site
@@ -130,7 +131,6 @@ if [ -f package.count -a "$FILES" != "" ]; then
       cvs update
       ./mkTestUpdates.sh
     fi
-  fi
   
   cd "$curdir"
 else
