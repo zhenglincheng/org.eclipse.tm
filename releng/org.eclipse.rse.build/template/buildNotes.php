@@ -48,7 +48,7 @@
     <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205385,205389,205393,205443,205679,205772">205385,205389,205393,205443,205679,205772</a>)</li>
         <li>Plugin: org.eclipse.tm.terminal.test (added)</li>
     </ul></li>
-    <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse.sdk-feature
+    <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
     <ul><li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205297">205297</a>)</li>
         <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
     </ul></li>
