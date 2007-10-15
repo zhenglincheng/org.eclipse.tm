@@ -19,4 +19,6 @@ public interface ILinelRenderer {
 	int getCellWidth();
 	int getCellHeight();
 	void drawLine(ITextCanvasModel model, GC gc, int line, int x, int y, int colFirst, int colLast);
+	void onFontChange();
+	void setInvertedColors(boolean invert);
 }

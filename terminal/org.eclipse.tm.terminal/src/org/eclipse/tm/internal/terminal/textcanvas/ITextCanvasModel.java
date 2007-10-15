@@ -66,6 +66,7 @@ public interface ITextCanvasModel {
 	
 	void setSelectionAnchor(Point anchor);
 	/**
+	 * Sets the selection. A negative startLine clears the selection.
 	 * @param startLine
 	 * @param endLine
 	 * @param startColumn

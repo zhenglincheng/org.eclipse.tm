@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.tm.terminal.model.ITerminalTextData;
+import org.eclipse.tm.terminal.model.ITerminalTextDataReadOnly;
 import org.eclipse.tm.terminal.model.ITerminalTextDataSnapshot;
 import org.eclipse.tm.terminal.model.LineSegment;
 import org.eclipse.tm.terminal.model.Style;
@@ -31,6 +32,40 @@ public class TerminalTextData implements ITerminalTextData {
 	public TerminalTextDataSnapshot[] fSnapshots=new TerminalTextDataSnapshot[0];
 	private int fCursorColumn;
 	private int fCursorLine;
+	/**
+	 * Debug helper method -- use as "New Detail Formatter.." in the
+	 * debugger variables view:
+	 *   <pre>TerminalTextData.toMultiLineText(this,0,200))</pre>
+	 * @param term the terminal
+	 * @param start start line to show
+	 * @param len number of lines to show -- negative numbers means show all
+	 * @return a string representation of the content
+	 */
+	static public String toMultiLineText(ITerminalTextDataReadOnly term, int start, int len) {
+		if(len<0)
+			len=term.getHeight();
+		StringBuffer buff=new StringBuffer();
+		int width=term.getWidth();
+		int n=Math.min(len,term.getHeight()-start);
+		for (int line = start; line < n; line++) {
+			if(line>0)
+				buff.append("\n"); //$NON-NLS-1$
+			for (int column = 0; column < width; column++) {
+				buff.append(term.getChar(line, column));
+			}
+		}
+		return buff.toString().replaceAll("\000+", "");  //$NON-NLS-1$//$NON-NLS-2$
+	}
+
+	/**
+	 * Show the first 100 lines
+	 * see {@link #toMultiLineText(ITerminalTextDataReadOnly, int, int)}
+	 * @param term
+	 * @return a string representaron of the terminal
+	 */
+	static public String toMultiLineText(ITerminalTextDataReadOnly term) {
+		return toMultiLineText(term, 0, 100);
+	}
 
 	public TerminalTextData() {
 		this(new TerminalTextDataFastScroll());

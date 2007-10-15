@@ -13,7 +13,6 @@ package org.eclipse.tm.internal.terminal.textcanvas;
 /**
  */
 public interface ITextCanvasModelListener {
-	void cellSizeChanged();
 	void rangeChanged(int col, int line, int width, int height);
 	void dimensionsChanged(int cols, int rows);
 	/**

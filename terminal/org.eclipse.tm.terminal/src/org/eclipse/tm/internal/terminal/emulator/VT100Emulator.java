@@ -79,7 +79,7 @@ public class VT100Emulator implements ControlListener {
 	 * This field holds a reference to the {@link TerminalControl} object that
 	 * instantiates this class.
 	 */
-	private ITerminalControlForText terminal;
+	private final ITerminalControlForText terminal;
 
 	/**
 	 * This field holds a reference to the StyledText widget that is used to
@@ -104,13 +104,13 @@ public class VT100Emulator implements ControlListener {
 	 * parsing the escape sequence "\e[20;10H", this array holds the strings
 	 * "20" and "10".
 	 */
-	private StringBuffer[] ansiParameters = new StringBuffer[16];
+	private final StringBuffer[] ansiParameters = new StringBuffer[16];
 
 	/**
 	 * This field holds the OS-specific command found in an escape sequence of
 	 * the form "\e]...\u0007".
 	 */
-	private StringBuffer ansiOsCommand = new StringBuffer(128);
+	private final StringBuffer ansiOsCommand = new StringBuffer(128);
 
 	/**
 	 * This field holds the index of the next unused element of the array stored

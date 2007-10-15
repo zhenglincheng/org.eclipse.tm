@@ -56,6 +56,11 @@
         <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
     </ul></li>
 </ul></li>
+<li>Plugins and Features changed since TM 2.0.1 / M20071009-1030:
+<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206164,205260,206218,205878,205879,206320">206164,205260,206218,205878,205879,206320</a>)</li>
+    </ul></li>
+</ul></li>
 <li>Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&target_milestone=2.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&cmdtype=doit">

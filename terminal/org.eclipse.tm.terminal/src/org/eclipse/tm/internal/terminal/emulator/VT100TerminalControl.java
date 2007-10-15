@@ -87,13 +87,13 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
      * text processing on data received from the remote host and controls how text is
      * displayed using the view's StyledText widget.
      */
-    private VT100Emulator			  fTerminalText;
+    private final VT100Emulator			  fTerminalText;
     private Display                   fDisplay;
     private TextCanvas                fCtlText;
     private Composite                 fWndParent;
     private Clipboard                 fClipboard;
     private KeyListener               fKeyHandler;
-    private ITerminalListener         fTerminalListener;
+    private final ITerminalListener         fTerminalListener;
     private String                    fMsg = ""; //$NON-NLS-1$
     private FocusListener             fFocusListener;
     private ITerminalConnectorInfo		  fConnectorInfo;
@@ -104,7 +104,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	private volatile TerminalState fState;
 
-	private ITerminalTextData fTerminalModel;
+	private final ITerminalTextData fTerminalModel;
 
 	volatile private Job fJob;
 
@@ -458,7 +458,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		}
 
 		// Tell the TerminalControl singleton that the font has changed.
-
+		fCtlText.onFontChange();
 		getTerminalText().fontChanged();
 	}
 	public Font getFont() {
@@ -881,7 +881,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		fCommandInputField=inputField;
 		if(fCommandInputField!=null)
 			fCommandInputField.createControl(fWndParent, this);
-		fWndParent.layout(true);
+		if(fWndParent.isVisible())
+			fWndParent.layout(true);
 	}
 
 	public int getBufferLineLimit() {

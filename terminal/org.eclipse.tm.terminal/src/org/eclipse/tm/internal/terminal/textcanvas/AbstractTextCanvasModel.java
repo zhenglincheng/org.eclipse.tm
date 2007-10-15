@@ -28,7 +28,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	private final ITerminalTextDataSnapshot fSnapshot;
 	private int fLines;
 
-	private int fSelectionStartLine;
+	private int fSelectionStartLine=-1;
 	private int fSeletionEndLine;
 	private int fSelectionStartCoumn;
 	private int fSelectionEndColumn;
@@ -168,7 +168,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		}
 	}
 	public void setVisibleRectangle(int startLine, int startCol, int height, int width) {
-		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,Math.min(fSnapshot.getHeight(),height)));
+		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,height));
 		update();
 	}
 	protected void showCursor(boolean show) {
@@ -264,7 +264,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	 * @return the currently selected text
 	 */
 	private String extractSelectedText() {
-		if(fSelectionStartLine<0 || fSelectionStartCoumn<0|| fSelectionSnapshot==null)
+		if(fSelectionStartLine<0 || fSelectionStartCoumn<0 || fSelectionEndColumn<0 || fSelectionSnapshot==null)
 			return ""; //$NON-NLS-1$
 		StringBuffer buffer=new StringBuffer();
 		for (int line = fSelectionStartLine; line <= fSeletionEndLine; line++) {
