@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2007 Wind River Systems, Inc. and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Public License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/legal/epl-v10.html 
- * 
- * Contributors: 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.model;
@@ -153,7 +153,7 @@ public class TerminalTextData implements ITerminalTextData {
 			fSnapshots[i].markLinesChanged(line, n);
 		}
 	}
-	
+
 	/**
 	 * Notify snapshot that a region was scrolled
 	 * @param startLine
@@ -198,7 +198,7 @@ public class TerminalTextData implements ITerminalTextData {
 		// was is an append or a scroll?
 		int newHeight=getHeight();
 		if(newHeight>oldHeight) {
-			//the line was appended 
+			//the line was appended
 			sendLinesChangedToSnapshot(oldHeight, 1);
 			int width=getWidth();
 			sendDimensionsChanged(oldHeight, width, newHeight, width);
@@ -207,7 +207,7 @@ public class TerminalTextData implements ITerminalTextData {
 			// the line was scrolled
 			sendScrolledToSnapshots(0, oldHeight, -1);
 		}
-			
+
 	}
 
 	public void copy(ITerminalTextData source) {
