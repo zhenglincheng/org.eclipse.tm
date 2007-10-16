@@ -149,7 +149,14 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			// hide the old cursor!
 			fShowCursor=false;
 			// clean the previous cursor
-			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+			// bug 206363: paint also the char to the left and right of the cursor - see also below
+			int col=fCursorColumn;
+			int width=2;
+			if(col>0) {
+				col--;
+				width++;
+			}
+			fireCellRangeChanged(col, fCursorLine, width, 1);
 			// the cursor is shown when it moves!
 			fShowCursor=true;
 			fCursorTime=System.currentTimeMillis();
@@ -163,7 +170,16 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			if(t-fCursorTime>500) {
 				fShowCursor=!fShowCursor;
 				fCursorTime=t;
-				fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+				// on some windows machines, there is some left
+				// over when updating the cursor .
+				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=206363
+				int col=fCursorColumn;
+				int width=2;
+				if(col>0) {
+					col--;
+					width++;
+				}
+				fireCellRangeChanged(col, fCursorLine, width, 1);
 			}
 		}
 	}
