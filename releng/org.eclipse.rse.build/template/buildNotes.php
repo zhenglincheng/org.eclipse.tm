@@ -56,19 +56,15 @@
         <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
     </ul></li>
 </ul></li>
-<li>Plugins and Features changed since TM 2.0.1 / M20071009-1030:
+<li>Plugins and Features changed since TM 2.0.2 / M20071009-1030:
 <ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
     <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206164,205260,206218,205878,205879,206320">206164,205260,206218,205878,205879,206320</a>)</li>
     </ul></li>
 </ul></li>
-<li>Plugins and Features changed since TM 2.0.1 / M20071015-1045:
-<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206363">206363</a>)</li>
-    </ul></li>
-</ul></li>
-<li>Plugins and Features changed since TM 2.0.1 / M20071016-0835:
-<ul><li>Features: org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456">196456</a>)</li>
+<li>Plugins and Features changed since TM 2.0.2 / M20071015-1045:
+<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205186,206363,206643">205186,206363,206643</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456">196456</a>)</li>
     </ul></li>
 </ul></li>
 <li>Use 
