@@ -13,6 +13,7 @@
  * Contributors:
  * Michael Scharf (Wind River) - split into core, view and connector plugins 
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Martin Oberhuber (Wind River) - [206892] State handling: Only allow connect when CLOSED
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.view;
 
@@ -210,7 +211,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void onTerminalConnect() {
-		if (isConnected())
+		//if (isConnected())
+		if (fCtlTerminal.getState()!=TerminalState.CLOSED)
 			return;
 		if(fCtlTerminal.getTerminalConnectorInfo()==null)
 			setConnector(showSettingsDialog());
@@ -224,13 +226,15 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalConnect() {
-		boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalConnect.setEnabled(bEnabled);
 	}
 
 	private boolean isConnecting() {
-		return fCtlTerminal.getState()==TerminalState.CONNECTING;
+		return fCtlTerminal.getState()==TerminalState.CONNECTING
+		    || fCtlTerminal.getState()==TerminalState.OPENED;
 	}
 	private boolean isConnected() {
 		return fCtlTerminal.getState()==TerminalState.CONNECTED;
@@ -280,10 +284,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalSettings() {
-		boolean bEnabled;
-
-		bEnabled = ((!isConnecting()) && (!fCtlTerminal
-				.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalSettings.setEnabled(bEnabled);
 	}

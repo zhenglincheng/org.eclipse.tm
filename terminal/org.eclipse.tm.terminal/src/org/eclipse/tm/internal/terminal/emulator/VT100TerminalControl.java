@@ -13,6 +13,8 @@
  * Contributors:
  * Michael Scharf (Wind River) - split into core, view and connector plugins
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Martin Oberhuber (Wind River) - [206892] State handling: Only allow connect when CLOSED
+ * Martin Oberhuber (Wind River) - [206883] Serial Terminal leaks Jobs
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
@@ -106,6 +108,9 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	private final ITerminalTextData fTerminalModel;
 
+	/**
+	 * Is protected by synchronize on this
+	 */
 	volatile private Job fJob;
 
 	public VT100TerminalControl(ITerminalListener target, Composite wndParent, ITerminalConnectorInfo[] connectors) {
@@ -287,6 +292,21 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		if(getTerminalConnector()!=null) {
 			getTerminalConnector().disconnect();
 		}
+  		//Ensure that a new Job can be started; then clean up old Job.
+ 		//TODO not sure whether the fInputStream needs to be cleaned too,
+ 		//or whether the Job could actually cancel in case the fInputStream is closed.
+ 		Job job;
+ 		synchronized(this) {
+ 			job = fJob;
+ 			fJob = null;
+ 		}
+ 		if (job!=null) {
+ 			job.cancel();
+ 			//There's not really a need to interrupt, since the job will
+ 			//check its cancel status after 500 msec latest anyways...
+ 			//Thread t = job.getThread();
+ 			//if(t!=null) t.interrupt();
+ 		}
 	}
 
 	// TODO
@@ -312,7 +332,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	}
 
-	private void startReaderJob() {
+	private synchronized void startReaderJob() {
 		if(fJob==null) {
 			fJob=new Job("Terminal data reader") { //$NON-NLS-1$
 				protected IStatus run(IProgressMonitor monitor) {
@@ -655,7 +675,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 			char character = event.character;
 
-			if (!isConnected()) {
+			//if (!isConnected()) {
+			if (fState==TerminalState.CLOSED) {
 				// Pressing ENTER while not connected causes us to connect.
 				if (character == '\r') {
 					connectTerminal();
@@ -897,5 +918,17 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 				fTerminalModel.setDimensions(bufferLineLimit, fTerminalModel.getWidth());
 			fTerminalModel.setMaxHeight(bufferLineLimit);
 		}
+	}
+
+	public boolean isScrollLock() {
+		return fCtlText.isScrollLock();
+	}
+
+	public void setScrollLock(boolean on) {
+		fCtlText.setScrollLock(on);
+	}
+
+	public void setInvertedColors(boolean invert) {
+		fCtlText.setInvertedColors(invert);
 	}
 }

@@ -63,8 +63,11 @@
 </ul></li>
 <li>Plugins and Features changed since TM 2.0.2 / M20071015-1045:
 <ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205186,206363,206643">205186,206363,206643</a>)</li>
-        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456">196456</a>)</li>
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205186,206363,206643,206883,206892">205186,206363,206643,206883,206892</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456,206892">196456,206892</a>)</li>
+    </ul></li>
+    <li>Features: org.eclipse.tm.terminal.serial-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158">206892,207158</a>)</li>
     </ul></li>
 </ul></li>
 <li>Use 
