@@ -67,7 +67,7 @@
         <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456,206892">196456,206892</a>)</li>
     </ul></li>
     <li>Features: org.eclipse.tm.terminal.serial-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158">206892,207158</a>)</li>
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158,208029">206892,207158,208029</a>)</li>
     </ul></li>
 </ul></li>
 <li>Use 
