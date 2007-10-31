@@ -18,6 +18,7 @@
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * Martin Oberhuber (Wind River) - [189130] Move SystemIFileProperties from UI to Core
  * David McKnight   (IBM)        - [205297] Editor upload should not be on main thread
+ * Kevin Doyle 		(IBM)		 - [204810] Saving file in Eclipse does not update remote file
  ********************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -43,6 +44,7 @@ import org.eclipse.rse.ui.actions.DisplaySystemMessageAction;
 import org.eclipse.rse.ui.view.ISystemEditableRemoteObject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
 
 /**
  * This class manages listening for resource changes within our temp file project
@@ -194,17 +196,25 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 							editable = new SystemEditableRemoteFile(remoteFile);
 						}
 
-						// defect - we get a save event when saving during a close
-						// in that case, we shouldn't reopen the editor
-						// I think this was originally here so that, if a save is done on
-						// a file that hasn't yet been wrapped with an editable, we can
-						// set the editor member
-						// now call check method before
-						if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN)
-						{
-							editable.openEditor();
-						}
-						editable.addAsListener();
+						final SystemEditableRemoteFile fEditable = editable;
+						Display.getDefault().asyncExec(new Runnable() {
+							public void run() {
+								try {
+									// defect - we get a save event when saving during a close
+									// in that case, we shouldn't reopen the editor
+									// I think this was originally here so that, if a save is done on
+									// a file that hasn't yet been wrapped with an editable, we can
+									// set the editor member
+									// now call check method before
+									if (fEditable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN)
+									{
+										fEditable.openEditor();
+									} 
+									fEditable.addAsListener();
+								} catch (PartInitException e) {
+								}
+							}							
+						});
 						editable.setLocalResourceProperties();
 					}
 

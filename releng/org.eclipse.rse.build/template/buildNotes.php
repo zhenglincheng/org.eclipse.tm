@@ -69,6 +69,9 @@
     <li>Features: org.eclipse.tm.terminal.serial-feature
     <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158,208029">206892,207158,208029</a>)</li>
     </ul></li>
+    <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=204810">204810</a>)</li>
+    </ul></li>
 </ul></li>
 <li>Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
