@@ -39,8 +39,8 @@ mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
-  xM) mapTag=R1_0_maintenance ; ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xM|xR) mapTag=R2_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ $ok != 1 ]; then
