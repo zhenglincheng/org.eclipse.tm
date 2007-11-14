@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2007 Wind River Systems, Inc. and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Public License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/legal/epl-v10.html 
- * 
- * Contributors: 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
@@ -28,13 +28,18 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	private final ITerminalTextDataSnapshot fSnapshot;
 	private int fLines;
 
-	private int fSelectionStartLine;
+	private int fSelectionStartLine=-1;
 	private int fSeletionEndLine;
 	private int fSelectionStartCoumn;
 	private int fSelectionEndColumn;
 	private ITerminalTextDataSnapshot fSelectionSnapshot;
 	private String fCurrentSelection=""; //$NON-NLS-1$
 	private final Point fSelectionAnchor=new Point(0,0);
+	/**
+	 * do not update while update is running
+	 */
+	boolean fInUpdate;
+	private int fCols;
 
 	public AbstractTextCanvasModel(ITerminalTextDataSnapshot snapshot) {
 		fSnapshot=snapshot;
@@ -45,7 +50,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	}
 
 	public void removeCellCanvasModelListener(ITextCanvasModelListener listener) {
-		fListeners.remove(listener);	
+		fListeners.remove(listener);
 	}
 
 	protected void fireCellRangeChanged(int x, int y, int width, int height) {
@@ -59,15 +64,16 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
 			listener.dimensionsChanged(width,height);
 		}
-		
+
 	}
 	protected void fireTerminalDataChanged() {
 		for (Iterator iter = fListeners.iterator(); iter.hasNext();) {
 			ITextCanvasModelListener listener = (ITextCanvasModelListener) iter.next();
 			listener.terminalDataChanged();
 		}
-		
+
 	}
+
 	public ITerminalTextDataReadOnly getTerminalText() {
 		return fSnapshot;
 	}
@@ -75,22 +81,29 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		return fSnapshot;
 	}
 	protected void updateSnapshot() {
-		if(fSnapshot.isOutOfDate()) {
-			fSnapshot.updateSnapshot(false);
-			if(fSnapshot.hasTerminalChanged())
-				fireTerminalDataChanged();
-			// TODO why does hasDimensionsChanged not work??????
-			//			if(fSnapshot.hasDimensionsChanged())
-			//				fireDimensionsChanged();
-			if(fLines!=fSnapshot.getHeight()) {
-				fireDimensionsChanged(fSnapshot.getWidth(),fSnapshot.getHeight());
-				fLines=fSnapshot.getHeight();
-			}
-			int y=fSnapshot.getFirstChangedLine();
-			// has any line changed?
-			if(y<Integer.MAX_VALUE) {
-				int height=fSnapshot.getLastChangedLine()-y+1;
-				fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
+		if(!fInUpdate && fSnapshot.isOutOfDate()) {
+			fInUpdate=true;
+			try {
+				fSnapshot.updateSnapshot(false);
+				if(fSnapshot.hasTerminalChanged())
+					fireTerminalDataChanged();
+				// TODO why does hasDimensionsChanged not work??????
+				//			if(fSnapshot.hasDimensionsChanged())
+				//				fireDimensionsChanged();
+				if(fLines!=fSnapshot.getHeight() || fCols!=fSnapshot.getWidth()) {
+					fireDimensionsChanged(fSnapshot.getWidth(),fSnapshot.getHeight());
+					fLines=fSnapshot.getHeight();
+					fCols=fSnapshot.getWidth();
+				}
+				int y=fSnapshot.getFirstChangedLine();
+				// has any line changed?
+				if(y<Integer.MAX_VALUE) {
+					int height=fSnapshot.getLastChangedLine()-y+1;
+					fireCellRangeChanged(0, y, fSnapshot.getWidth(), height);
+				}
+
+			} finally {
+				fInUpdate=false;
 			}
 		}
 	}
@@ -136,7 +149,14 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			// hide the old cursor!
 			fShowCursor=false;
 			// clean the previous cursor
-			fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+			// bug 206363: paint also the char to the left and right of the cursor - see also below
+			int col=fCursorColumn;
+			int width=2;
+			if(col>0) {
+				col--;
+				width++;
+			}
+			fireCellRangeChanged(col, fCursorLine, width, 1);
 			// the cursor is shown when it moves!
 			fShowCursor=true;
 			fCursorTime=System.currentTimeMillis();
@@ -150,12 +170,21 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			if(t-fCursorTime>500) {
 				fShowCursor=!fShowCursor;
 				fCursorTime=t;
-				fireCellRangeChanged(fCursorColumn, fCursorLine, 1, 1);
+				// on some windows machines, there is some left
+				// over when updating the cursor .
+				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=206363
+				int col=fCursorColumn;
+				int width=2;
+				if(col>0) {
+					col--;
+					width++;
+				}
+				fireCellRangeChanged(col, fCursorLine, width, 1);
 			}
 		}
 	}
 	public void setVisibleRectangle(int startLine, int startCol, int height, int width) {
-		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,Math.min(fSnapshot.getHeight(),height)));
+		fSnapshot.setInterestWindow(Math.max(0,startLine), Math.max(1,height));
 		update();
 	}
 	protected void showCursor(boolean show) {
@@ -170,7 +199,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	public boolean isCursorEnabled() {
 		return fCursorIsEnabled;
 	}
-	
+
 	public Point getSelectionEnd() {
 		if(fSelectionStartLine<0)
 			return null;
@@ -242,7 +271,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 		else
 			return line >= fSelectionStartLine && line <= fSeletionEndLine;
 	}
-	
+
 	public String getSelectedText() {
 		return fCurrentSelection;
 	}
@@ -251,7 +280,7 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 	 * @return the currently selected text
 	 */
 	private String extractSelectedText() {
-		if(fSelectionStartLine<0 || fSelectionStartCoumn<0|| fSelectionSnapshot==null)
+		if(fSelectionStartLine<0 || fSelectionStartCoumn<0 || fSelectionEndColumn<0 || fSelectionSnapshot==null)
 			return ""; //$NON-NLS-1$
 		StringBuffer buffer=new StringBuffer();
 		for (int line = fSelectionStartLine; line <= fSeletionEndLine; line++) {
@@ -292,8 +321,8 @@ abstract public class AbstractTextCanvasModel implements ITextCanvasModel {
 			}
 			// check if the content of the selection has changed. If the content has
 			// changed, clear the selection
-			if (fCurrentSelection.length()>0 && fSelectionSnapshot != null 
-					&& fSelectionSnapshot.getFirstChangedLine() <= fSeletionEndLine 
+			if (fCurrentSelection.length()>0 && fSelectionSnapshot != null
+					&& fSelectionSnapshot.getFirstChangedLine() <= fSeletionEndLine
 					&& fSelectionSnapshot.getLastChangedLine() >= fSelectionStartLine) {
 				// has the selected text changed?
 				if (!fCurrentSelection.equals(extractSelectedText())) {

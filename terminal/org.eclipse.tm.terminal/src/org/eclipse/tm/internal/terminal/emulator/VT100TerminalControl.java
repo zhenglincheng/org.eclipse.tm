@@ -11,8 +11,12 @@
  * Helmut Haigermoser and Ted Williams.
  *
  * Contributors:
- * Michael Scharf (Wind River) - split into core, view and connector plugins 
+ * Michael Scharf (Wind River) - split into core, view and connector plugins
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Martin Oberhuber (Wind River) - [206892] State handling: Only allow connect when CLOSED
+ * Martin Oberhuber (Wind River) - [206883] Serial Terminal leaks Jobs
+ * Martin Oberhuber (Wind River) - [208145] Terminal prints garbage after quick disconnect/reconnect
+ * Martin Oberhuber (Wind River) - [207785] NPE when trying to send char while no longer connected
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
@@ -37,14 +41,12 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.tm.internal.terminal.control.ICommandInputField;
 import org.eclipse.tm.internal.terminal.control.ITerminalListener;
@@ -89,13 +91,13 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
      * text processing on data received from the remote host and controls how text is
      * displayed using the view's StyledText widget.
      */
-    private VT100Emulator			  fTerminalText;
+    private final VT100Emulator			  fTerminalText;
     private Display                   fDisplay;
     private TextCanvas                fCtlText;
     private Composite                 fWndParent;
     private Clipboard                 fClipboard;
     private KeyListener               fKeyHandler;
-    private ITerminalListener         fTerminalListener;
+    private final ITerminalListener         fTerminalListener;
     private String                    fMsg = ""; //$NON-NLS-1$
     private FocusListener             fFocusListener;
     private ITerminalConnectorInfo		  fConnectorInfo;
@@ -106,19 +108,21 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	private volatile TerminalState fState;
 
-	private ITerminalTextData fTerminalModel;
+	private final ITerminalTextData fTerminalModel;
 
+	/**
+	 * Is protected by synchronize on this
+	 */
 	volatile private Job fJob;
 
 	public VT100TerminalControl(ITerminalListener target, Composite wndParent, ITerminalConnectorInfo[] connectors) {
 		fConnectors=connectors;
 		fTerminalListener=target;
 		fTerminalModel=TerminalTextDataFactory.makeTerminalTextData();
-		fTerminalModel.setDimensions(24, 80);
 		fTerminalModel.setMaxHeight(1000);
 		fInputStream=new PipedInputStream(8*1024);
 		fTerminalText=new VT100Emulator(fTerminalModel,this,fInputStream);
-		
+
 		setupTerminal(wndParent);
 	}
 
@@ -146,7 +150,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 //				for (int i = 0; i < strText.length(); i++) {
 //					sendChar(strText.charAt(i), false);
 //				}
-//				
+//
 //			}
 //		}.start();
 	}
@@ -290,12 +294,27 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		if(getTerminalConnector()!=null) {
 			getTerminalConnector().disconnect();
 		}
+  		//Ensure that a new Job can be started; then clean up old Job.
+ 		//TODO not sure whether the fInputStream needs to be cleaned too,
+ 		//or whether the Job could actually cancel in case the fInputStream is closed.
+ 		Job job;
+ 		synchronized(this) {
+ 			job = fJob;
+ 			fJob = null;
+ 		}
+ 		if (job!=null) {
+ 			job.cancel();
+ 			//There's not really a need to interrupt, since the job will
+ 			//check its cancel status after 500 msec latest anyways...
+ 			//Thread t = job.getThread();
+ 			//if(t!=null) t.interrupt();
+ 		}
 	}
 
 	// TODO
 	private void waitForConnect() {
 		Logger.log("entered."); //$NON-NLS-1$
-		// TODO 
+		// TODO
 		// Eliminate this code
 		while (getState()==TerminalState.CONNECTING) {
 			if (fDisplay.readAndDispatch())
@@ -306,7 +325,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		if (!getMsg().equals("")) //$NON-NLS-1$
 		{
 			showErrorMessage(getMsg());
-	
+
 			disconnectTerminal();
 			return;
 		}
@@ -315,36 +334,43 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	}
 
-	private void startReaderJob() {
+	private synchronized void startReaderJob() {
 		if(fJob==null) {
 			fJob=new Job("Terminal data reader") { //$NON-NLS-1$
 				protected IStatus run(IProgressMonitor monitor) {
 					IStatus status=Status.OK_STATUS;
-					while(true) {
-						while(fInputStream.available()==0 && !monitor.isCanceled()) {
+					try {
+						while(true) {
+							while(fInputStream.available()==0 && !monitor.isCanceled()) {
+								try {
+									fInputStream.waitForAvailable(500);
+								} catch (InterruptedException e) {
+									Thread.currentThread().interrupt();
+								}
+							}
+							if(monitor.isCanceled()) {
+								//Do not disconnect terminal here because another reader job may already be running
+								status=Status.CANCEL_STATUS;
+								break;
+							}
 							try {
-								fInputStream.waitForAvailable(500);
-							} catch (InterruptedException e) {
-								Thread.currentThread().interrupt();
+								// TODO: should block when no text is available!
+								fTerminalText.processText();
+							} catch (Exception e) {
+								disconnectTerminal();
+								status=new Status(IStatus.ERROR,TerminalPlugin.PLUGIN_ID,e.getLocalizedMessage(),e);
+								break;
 							}
 						}
-						if(monitor.isCanceled()) {
-							disconnectTerminal();
-							status=Status.CANCEL_STATUS;
-							break;
-						}
-						try {
-							// TODO: should block when no text is available!
-							fTerminalText.processText();
-							
-						} catch (Exception e) {
-							disconnectTerminal();
-							status=new Status(IStatus.ERROR,TerminalPlugin.PLUGIN_ID,e.getLocalizedMessage(),e);
-							break;
+					} finally {
+						// clean the job: start a new one when the connection gets restarted
+						// Bug 208145: make sure we do not clean an other job that's already started (since it would become a Zombie) 
+						synchronized (VT100TerminalControl.this) {
+							if (fJob==this) {
+								fJob=null;
+							}
 						}
 					}
-					// clean the job: start a new one when the connection getst restarted
-					fJob=null;
 					return status;
 				}
 
@@ -394,27 +420,31 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	protected void sendChar(char chKey, boolean altKeyPressed) {
 		try {
 			int byteToSend = chKey;
-
-			if (altKeyPressed) {
-				// When the ALT key is pressed at the same time that a character is
-				// typed, translate it into an ESCAPE followed by the character.  The
-				// alternative in this case is to set the high bit of the character
-				// being transmitted, but that will cause input such as ALT-f to be
-				// seen as the ISO Latin-1 character '�', which can be confusing to
-				// European users running Emacs, for whom Alt-f should move forward a
-				// word instead of inserting the '�' character.
-				//
-				// TODO: Make the ESCAPE-vs-highbit behavior user configurable.
-
-				Logger.log("sending ESC + '" + byteToSend + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				getOutputStream().write('\u001b');
-				getOutputStream().write(byteToSend);
+			OutputStream os = getOutputStream();
+			if (os==null) {
+				// Bug 207785: NPE when trying to send char while no longer connected
+				Logger.log("NOT sending '" + byteToSend + "' because no longer connected"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
-				Logger.log("sending '" + byteToSend + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				getOutputStream().write(byteToSend);
-			}
+				if (altKeyPressed) {
+					// When the ALT key is pressed at the same time that a character is
+					// typed, translate it into an ESCAPE followed by the character.  The
+					// alternative in this case is to set the high bit of the character
+					// being transmitted, but that will cause input such as ALT-f to be
+					// seen as the ISO Latin-1 character '�', which can be confusing to
+					// European users running Emacs, for whom Alt-f should move forward a
+					// word instead of inserting the '�' character.
+					//
+					// TODO: Make the ESCAPE-vs-highbit behavior user configurable.
 
-			getOutputStream().flush();
+					Logger.log("sending ESC + '" + byteToSend + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+					getOutputStream().write('\u001b');
+					getOutputStream().write(byteToSend);
+				} else {
+					Logger.log("sending '" + byteToSend + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+					getOutputStream().write(byteToSend);
+				}
+				getOutputStream().flush();
+			}
 		} catch (SocketException socketException) {
 			Logger.logException(socketException);
 
@@ -461,7 +491,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		}
 
 		// Tell the TerminalControl singleton that the font has changed.
-
+		fCtlText.onFontChange();
 		getTerminalText().fontChanged();
 	}
 	public Font getFont() {
@@ -482,23 +512,20 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		GridLayout layout=new GridLayout();
 		layout.marginWidth=0;
 		layout.marginHeight=0;
-		
+
 		fWndParent.setLayout(layout);
-		
+
 		ITerminalTextDataSnapshot snapshot=fTerminalModel.makeSnapshot();
 		// TODO how to get the initial size correctly!
 		snapshot.updateSnapshot(false);
 		ITextCanvasModel canvasModel=new PollingTextCanvasModel(snapshot);
-		fCtlText=new TextCanvas(fWndParent,canvasModel,SWT.NONE);
-		fCtlText.setCellRenderer(new TextLineRenderer(fCtlText,canvasModel));
+		fCtlText=new TextCanvas(fWndParent,canvasModel,SWT.NONE,new TextLineRenderer(fCtlText,canvasModel));
+
 
 		fCtlText.setLayoutData(new GridData(GridData.FILL_BOTH));
 		fCtlText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		fCtlText.addListener(SWT.Resize, new Listener() {
-			public void handleEvent(Event e) {
-				Rectangle bonds=fCtlText.getClientArea();
-				int lines=bonds.height/fCtlText.getCellHeight();
-				int columns=bonds.width/fCtlText.getCellWidth();
+		fCtlText.addResizeHandler(new TextCanvas.ResizeListener() {
+			public void sizeChanged(int lines, int columns) {
 				fTerminalText.setDimensions(lines, columns);
 			}
 		});
@@ -549,10 +576,10 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		} catch (IOException e) {
 			// should never happen!
 			e.printStackTrace();
-		} 
-		
+		}
+
 	}
-	
+
 	public OutputStream getRemoteToTerminalOutputStream() {
 		return fInputStream.getOutputStream();
 	}
@@ -661,7 +688,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 			char character = event.character;
 
-			if (!isConnected()) {
+			//if (!isConnected()) {
+			if (fState==TerminalState.CLOSED) {
 				// Pressing ENTER while not connected causes us to connect.
 				if (character == '\r') {
 					connectTerminal();
@@ -875,7 +903,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 
 	public void setConnector(ITerminalConnectorInfo connector) {
 		fConnectorInfo=connector;
-		
+
 	}
 	public ICommandInputField getCommandInputField() {
 		return fCommandInputField;
@@ -887,7 +915,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		fCommandInputField=inputField;
 		if(fCommandInputField!=null)
 			fCommandInputField.createControl(fWndParent, this);
-		fWndParent.layout(true);
+		if(fWndParent.isVisible())
+			fWndParent.layout(true);
 	}
 
 	public int getBufferLineLimit() {
@@ -902,5 +931,17 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 				fTerminalModel.setDimensions(bufferLineLimit, fTerminalModel.getWidth());
 			fTerminalModel.setMaxHeight(bufferLineLimit);
 		}
+	}
+
+	public boolean isScrollLock() {
+		return fCtlText.isScrollLock();
+	}
+
+	public void setScrollLock(boolean on) {
+		fCtlText.setScrollLock(on);
+	}
+
+	public void setInvertedColors(boolean invert) {
+		fCtlText.setInvertedColors(invert);
 	}
 }

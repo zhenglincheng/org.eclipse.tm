@@ -23,31 +23,43 @@
 </table>
 <table><tbody><tr><td>
 <ul>
-<li>TM @buildId@ <b>requires Eclipse 3.3 later for the SSH component</b>.
+<li>TM @buildId@ <b>requires Eclipse 3.3 or later for the SSH component</b>.
   Other components may work with earlier Eclipse versions, but these have not been tested.
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF, and the RemoteCDT integration needs CDT.</li>
-<li>Highlights of bug fixes:
-    <ul>
 <!--
 <li><b>Apache Commons.Net and ORO</b> are now distributed as verbatim compies
   from the Orbit project, so they will not be changed any more.</li>
 -->
-<li>Several EFS related bugs have been fixed, particularly for FTP, and the EFS provider works reliably now [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=192610">192610</a> and others].</li>
-<li>Terminal performance has been radically improved [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=165216">165216</a>]</li>
-<li>Some deadlocks have been discovered and fixed [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=199552">199552</a> and others].</li>
-<li>Initial startup and initialization, as well as reading saved profiles, have been made more reliable [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=202416">202416</a>].</li>
-<li>FTP passive mode has been fixed [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=196632">196632</a>].</li>
-<li>Several encoding issues have been fixed [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=203500">203500</a> and others].</li>
-<li>Several archive handler related issues have been fixed for dstore [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=198114">198114</a> and others].</li>
+<li>Highlights of Bugs fixed since TM 2.0.1:
+    <ul>
+    <li>Terminal: System Property <b>-Dorg.eclipse.tm.terminal.OldImplementation=true</b> can now be used to fall back to old terminal implementation [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205385">bug 205385</a>]</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205393">bug 205393</a> - <font color="red"><b>cri - [terminal] stack overflow</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205186">bug 205186</a> - <font color="red"><b>cri - [regression][mac] SSH Terminal does not paint correctly on OSX</b></font></li>
+</ul></li>
+<li>Plugins and Features changed since TM 2.0.1:
+<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205385,205389,205393,205443,205679,205772,206164,205260,206218,205878,205879,206320,205186,206363,206643,206883,206892,207785,208145">19 bugs total</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456,206892">196456,206892</a>)</li>
+        <li>Plugin: org.eclipse.tm.terminal.test (added)</li>
+    </ul></li>
+    <li>Features: org.eclipse.tm.terminal.serial-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158,208029">206892,207158,208029</a>)</li>
+    </ul></li>
+    <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=204810,205297">204810,205297</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
+    </ul></li>
 </ul></li>
 <li>Use 
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-06-28&chfieldto=2007-09-28&chfield=resolution&cmdtype=doit">
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&target_milestone=2.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&cmdtype=doit"> -->
-  this query</a> to show the list of bugs fixed since the last milestone,
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.0.1-200707061039/index.php">
-  TM 2.0.0.1</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.0.1-200707061039/buildNotes.php">build notes</a>].</li>
+  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&target_milestone=2.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&cmdtype=doit">
+  this query</a> to show the list of bugs fixed since the last release,
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.1-200709270920/index.php">
+  TM 2.0.1</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.1-200709270920/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
   RSE CVS changelog</a>, and the
@@ -90,8 +102,8 @@ are the best places for you to get started.
 	</tr>
 </table>
 <table><tbody><tr><td>
-<p>No API changes are allowed in the TM 2.0.1 stream.
-Therefore, <b>TM 2.0.1 will be fully upward and backward compatible with TM 2.0</b>,
+<p>No API changes are allowed in the TM 2.0.x maintenance stream.
+Therefore, <b>TM 2.0.x is fully upward and backward compatible with TM 2.0 and TM 2.0.1</b>,
 and can be fully exchanged for TM 2.0 in any product based on it.</p>
 
 <p>For the upcoming TM 3.0 release, some API changes will be inevitable.

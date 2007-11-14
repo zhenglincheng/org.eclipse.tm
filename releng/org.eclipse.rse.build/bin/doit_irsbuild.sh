@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId]
@@ -32,15 +32,15 @@ echo ${mydir}
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
-export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+export PATH=${HOME}/ws3/IBMJava2-ppc-142/bin:$PATH
 
 #Get parameters
 mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
-  xM) mapTag=R1_0_maintenance ; ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xM|xR) mapTag=R2_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ $ok != 1 ]; then
@@ -51,7 +51,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws3
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -64,7 +64,7 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws3/log-${buildType}$stamp.txt
 touch $log
 cvs -q update -RPd >> $log 2>&1
 daystamp=`date +'%Y%m%d*%H'`
@@ -89,7 +89,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws3/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -117,20 +117,20 @@ if [ -f package.count -a "$FILES" != "" ]; then
     cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
     chgrp dsdp-tmadmin ../N.latest/*.zip
     chmod g+w ../N.latest/*.zip
+  fi
 
     if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the testPatchUpdates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/testPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signedPatchUpdates site
+      echo "Refreshing signedPatchUpdates site"
+      cd $HOME/downloads-tm/signedPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
     fi
-  fi
   
   cd "$curdir"
 else

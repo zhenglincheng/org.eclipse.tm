@@ -13,8 +13,12 @@
  * Contributors:
  * Michael Scharf (Wind River) - split into core, view and connector plugins 
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Martin Oberhuber (Wind River) - [206892] State handling: Only allow connect when CLOSED
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.view;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -57,6 +61,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.TerminalConnectorExtensi
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -73,6 +78,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
     private static final String STORE_HAS_COMMAND_INPUT_FIELD = "HasCommandInputField"; //$NON-NLS-1$
 
 	private static final String STORE_COMMAND_INPUT_FIELD_HISTORY = "CommandInputFieldHistory"; //$NON-NLS-1$
+
+	private static final String STORE_TITLE = "Title"; //$NON-NLS-1$
 
 	public static final String  FONT_DEFINITION = "terminal.views.view.font.definition"; //$NON-NLS-1$
 
@@ -123,6 +130,32 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	public TerminalView() {
 		Logger
 				.log("==============================================================="); //$NON-NLS-1$
+	}
+	
+	String findUniqueTitle(String title) {
+		IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+		String id=	getViewSite().getId();
+		Set names=new HashSet();
+		for (int i = 0; i < pages.length; i++) {
+			IViewReference[] views = pages[i].getViewReferences();
+			for (int j = 0; j < views.length; j++) {
+				IViewReference view = views[j];
+				// only look for views with the same ID
+				if(id.equals(view.getId())) {
+					String name=view.getTitle();
+					if(name!=null)
+						names.add(view.getPartName());
+				}
+			}
+		}
+		// find a unique name
+		int i=1;
+		String uniqueTitle=title;
+		while(true) {
+			if(!names.contains(uniqueTitle))
+				return uniqueTitle;
+			uniqueTitle=title+" "+i++; //$NON-NLS-1$
+		}
 	}
 	/**
 	 * Update the text limits from the preferences
@@ -178,7 +211,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void onTerminalConnect() {
-		if (isConnected())
+		//if (isConnected())
+		if (fCtlTerminal.getState()!=TerminalState.CLOSED)
 			return;
 		if(fCtlTerminal.getTerminalConnectorInfo()==null)
 			setConnector(showSettingsDialog());
@@ -192,13 +226,15 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalConnect() {
-		boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalConnect.setEnabled(bEnabled);
 	}
 
 	private boolean isConnecting() {
-		return fCtlTerminal.getState()==TerminalState.CONNECTING;
+		return fCtlTerminal.getState()==TerminalState.CONNECTING
+		    || fCtlTerminal.getState()==TerminalState.OPENED;
 	}
 	private boolean isConnected() {
 		return fCtlTerminal.getState()==TerminalState.CONNECTED;
@@ -226,7 +262,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// persistent settings.
 
 		TerminalSettingsDlg dlgTerminalSettings = new TerminalSettingsDlg(getViewSite().getShell(),fCtlTerminal.getConnectors(),fCtlTerminal.getTerminalConnectorInfo());
-
+		dlgTerminalSettings.setTerminalTitle(getPartName());
 		Logger.log("opening Settings dialog."); //$NON-NLS-1$
 
 		if (dlgTerminalSettings.open() == Window.CANCEL) {
@@ -239,6 +275,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// When the settings dialog is closed, we persist the Terminal settings.
 
 		saveSettings(dlgTerminalSettings.getConnector());
+		setPartName(dlgTerminalSettings.getTerminalTitle());
 		return dlgTerminalSettings.getConnector();
 	}
 
@@ -247,10 +284,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalSettings() {
-		boolean bEnabled;
-
-		bEnabled = ((!isConnecting()) && (!fCtlTerminal
-				.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalSettings.setEnabled(bEnabled);
 	}
@@ -285,6 +320,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		setContentDescription(strTitle);
 		getViewSite().getActionBars().getStatusLineManager().setMessage(
 				strTitle);
+		setTitleToolTip(getPartName()+": "+strTitle); //$NON-NLS-1$
 	}
 	/**
 	 * @return the setting summary. If there is no connection, or the connection 
@@ -388,8 +424,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// Bind plugin.xml key bindings to this plugin.  Overrides global Control-W key
 		// sequence.
 
-		setPartName(ViewMessages.PROP_TITLE);
-
+		setPartName(findUniqueTitle(ViewMessages.PROP_TITLE));
 		setupControls(wndParent);
 		setupActions();
 		setupMenus();
@@ -403,7 +438,6 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	public void dispose() {
 		Logger.log("entered."); //$NON-NLS-1$
 
-		setPartName("Terminal"); //$NON-NLS-1$
 		TerminalViewPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(fPreferenceListener);
 
 		JFaceResources.getFontRegistry().removeListener(fPropertyChangeHandler);
@@ -441,6 +475,10 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		updatePreferences();
 		TerminalViewPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(fPreferenceListener);
 
+		// restore the title of this view
+		String title=fStore.get(STORE_TITLE);
+		if(title!=null && title.length()>0)
+			setPartName(title);
 	}
 	
 	private void saveSettings(ITerminalConnectorInfo connector) {
@@ -464,6 +502,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 			fStore.put(STORE_COMMAND_INPUT_FIELD_HISTORY, fCommandInputField.getHistory());
 		fStore.put(STORE_HAS_COMMAND_INPUT_FIELD,hasCommandInputField()?"true":"false");   //$NON-NLS-1$//$NON-NLS-2$
 		fStore.put(STORE_SETTING_SUMMARY, getSettingsSummary());
+		fStore.put(STORE_TITLE,getPartName());
 		fStore.saveState(memento);
 	}
 	private ISettingsStore getStore(ITerminalConnectorInfo connector) {

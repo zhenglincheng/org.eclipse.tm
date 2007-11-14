@@ -28,6 +28,8 @@ public class ViewMessages extends NLS {
 
     public static String TERMINALSETTINGS;
     public static String CONNECTIONTYPE;
+	public static String VIEW_TITLE;
+	public static String VIEW_SETTINGS;
 
     public static String LIMITOUTPUT;
     public static String BUFFERLINES;
