@@ -37,8 +37,8 @@ TOPMODULES="\
   org.eclipse.tm.core \
   org.eclipse.tm.core/discovery \
   org.eclipse.tm.core/terminal \
-  org.eclipse.tm.core/thirdparty \
 "
+###  org.eclipse.tm.core/thirdparty \
 cvs co -l $TOPMODULES
 ##exit 0
 for topmod in $TOPMODULES ; do
@@ -47,6 +47,6 @@ for topmod in $TOPMODULES ; do
   #cvs tag -b R1_0_maintenance readme.txt
   #cvs tag -d v20060630 readme.txt
   cvs update -l -A .
-  cvs tag R2_0_1
+  cvs tag R2_0_2
   cd $curdir
 done
