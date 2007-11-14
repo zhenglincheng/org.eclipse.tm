@@ -108,16 +108,17 @@ if [ -f package.count -a "$FILES" != "" ]; then
     ${mydir}/batch_sign.sh `pwd`
   fi
 
-  if [ ${buildType} != M -a -d ../N.latest ]; then
-    #update the doc server
-    rm -f ../N.latest/RSE-*.zip
-    rm -f ../N.latest/TM-*.zip
-    cp -f RSE-SDK-*.zip ../N.latest/RSE-SDK-latest.zip
-    cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
-    cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
-    chgrp dsdp-tmadmin ../N.latest/*.zip
-    chmod g+w ../N.latest/*.zip
-  fi
+  ## Never update latest/ docs from the M-branch!
+  #if [ ${buildType} != M -a -d ../N.latest ]; then
+  #  #update the doc server
+  #  rm -f ../N.latest/RSE-*.zip
+  #  rm -f ../N.latest/TM-*.zip
+  #  cp -f RSE-SDK-*.zip ../N.latest/RSE-SDK-latest.zip
+  #  cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
+  #  cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
+  #  chgrp dsdp-tmadmin ../N.latest/*.zip
+  #  chmod g+w ../N.latest/*.zip
+  #fi
 
     if [ ${buildType} != N ]; then
       #Update the testPatchUpdates site
