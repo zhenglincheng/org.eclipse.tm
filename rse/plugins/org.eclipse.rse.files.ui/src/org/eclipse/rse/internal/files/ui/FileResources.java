@@ -12,7 +12,6 @@
  * 
  * Contributors:
  * David Dykstal (IBM) - 176488: adding some text for the cache limit checkbox
- * David McKnight(IBM) - [210142] for accessibility need transfer mode toggle button
  ********************************************************************************/
 
 package org.eclipse.rse.internal.files.ui;
@@ -101,10 +100,6 @@ public class FileResources extends NLS
 	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_REMOVEBUTTON_LABEL;
 	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_REMOVEBUTTON_TOOLTIP;
 
-	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_TOGGLEBUTTON_LABEL;
-	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_TOGGLEBUTTON_TOOLTIP;
-
-	
 	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_MODE_LABEL;
 	public static String RESID_PREF_UNIVERSAL_FILES_FILETYPES_MODE_TOOLTIP;
 
