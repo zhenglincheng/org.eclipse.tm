@@ -31,36 +31,43 @@
 <li><b>Apache Commons.Net and ORO</b> are now distributed as verbatim compies
   from the Orbit project, so they will not be changed any more.</li>
 -->
-<li>Highlights of Bugs fixed since TM 2.0.1:
+<li>Highlights of Bugs fixed since TM 2.0.2:
     <ul>
-    <li>Terminal: System Property <b>-Dorg.eclipse.tm.terminal.OldImplementation=true</b> can now be used to fall back to old terminal implementation [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205385">bug 205385</a>]</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205393">bug 205393</a> - <font color="red"><b>cri - [terminal] stack overflow</b></font></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205772">bug 205772</a> - <font color="red"><b>cri - [terminal] crash on linux (division by zero)</b></font></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205297">bug 205297</a> - <font color="red"><b>cri - SystemTempFileListener calls upload() in the dispatch thread</b></font></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=205186">bug 205186</a> - <font color="red"><b>cri - [regression][mac] SSH Terminal does not paint correctly on OSX</b></font></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=203501">bug 203501</a> - <b>maj - NPE in PFMetadataLocation when saving RSEDOM</b></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=217969">bug 217969</a> - <b>maj - ftp does not display hidden files - works with sftp</b></li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=219936">bug 219936</a> - enh - SSH sessions time out after inactivity - request keepalive</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=220230">bug 220230</a> - enh - [terminal] Add FieldAssist to the terminal input field</li>
 </ul></li>
-<li>Plugins and Features changed since TM 2.0.1:
-<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205385,205389,205393,205443,205679,205772,206164,205260,206218,205878,205879,206320,205186,206363,206643,206883,206892,207785,208145">19 bugs total</a>)</li>
-        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=196456,206892">196456,206892</a>)</li>
-        <li>Plugin: org.eclipse.tm.terminal.test (added)</li>
-    </ul></li>
-    <li>Features: org.eclipse.tm.terminal.serial-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal.serial</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=206892,207158,208029">206892,207158,208029</a>)</li>
+<li>Plugins and Features changed since TM 2.0.2:
+<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature, org.eclipse.tm.terminal.telnet-feature, org.eclipse.tm.terminal.ssh-feature
+    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209965,217868,220219,220227,220229,220230">209965,217868,220219,220227,220229,220230</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=219936">219936</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.telnet</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209965">209965</a>)</li>
+        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209964">209964</a>)</li>
     </ul></li>
     <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=204810,205297">204810,205297</a>)</li>
-        <li>Plugin: <b>org.eclipse.rse.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=205592">205592</a>)</li>
+    <ul><li>Plugin: <b>org.eclipse.rse.core</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=203501">203501</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209969">209969</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.services</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=220256">220256</a>)</li>
+    </ul></li>
+    <li>Features: org.eclipse.rse.ftp-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.services.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=217969">217969</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.subsystems.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=217969">217969</a>)</li>
+    </ul></li>
+    <li>Features: org.eclipse.rse.ssh-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.connectorservice.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=219936">219936</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.services.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=220193">220193</a>)</li>
     </ul></li>
 </ul></li>
-<li>Use 
+<li>At least 13 bugs were fixed: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&target_milestone=2.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&target_milestone=2.0.3&cmdtype=doit">
   this query</a> to show the list of bugs fixed since the last release,
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.1-200709270920/index.php">
-  TM 2.0.1</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.1-200709270920/buildNotes.php">build notes</a>].</li>
-<li>For details on checkins, see the
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.2-200711131300/index.php">
+  TM 2.0.2</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.2-200711131300/buildNotes.php">build notes</a>].</li>
+<li>For details on checkins, see
+  <a href="http://www.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
   RSE CVS changelog</a>, and the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/core/index.html">
@@ -156,12 +163,25 @@ Use
 	</tr>
 </table>
 <table><tbody><tr><td>
+The following critical or major bugs are known to be in TM 2.0.x,
+but have been fixed in TM 3.0. They have not been backported
+due to the amount of change, the requirement of API changes for
+fixing the bug, or the inherent risk associated:
+<ul>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=210563">bug 210563</a></strike> - maj - [regression] Error messages from remote are not shown under filters</li>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=208778">bug 208778</a></strike> - maj - [efs][api] RSEFileStore#getOutputStream() does not support EFS#APPEND</li>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=207308">bug 207308</a></strike> - maj - Removing a file type should not delete the platform's file association to editors</li>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=198143">bug 198143</a></strike> - maj - [dstore][performance] Refresh a big directory takes very long time, and freezes workbench</li>
+</ul>
+Use 
+<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&version=1.0&version=1.0.1&version=2.0&version=2.0.1&version=2.0.2&version=unspecified&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&bug_severity=blocker&bug_severity=critical&bug_severity=major&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=regexp&value0-0-0=%5E%5B12%5D&field0-0-1=longdesc&type0-0-1=substring&value0-0-1=backported">this query</a>
+for an up-to-date list of major or critical bugs known in TM 2.0.x but fixed in a later release.</p>
 The following critical or major bugs are currently known.
 We'll strive to fix these as soon as possible.
 <ul>
-  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=198143">bug 198143</a> - maj - [dstore][performance] Refresh a big directory takes very long time, and freezes workbench</li>
+  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=218387">bug 218387</a> - maj - [efs] Eclipse hangs on startup of a Workspace with a large efs-shared file system on a slow connection</li>
+  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=208185">bug 208185</a> - maj - [terminal][serial] terminal can hang the UI when text is entered while the backend side is not reading characters</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=198395">bug 198395</a> - maj - [dstore] Can connect to DStore with expired password</li>
-  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=203501">bug 203501</a> - maj - NPE in PFMetadataLocation when saving RSEDOM</li>
 </ul>
 <!--
 <p>No major or critical bugs are known at the time of release.
