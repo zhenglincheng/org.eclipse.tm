@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2007 Wind River Systems, Inc. and others.
+# Copyright (c) 2007, 2008 Wind River Systems, Inc. and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # which accompanies this distribution, and is available at
@@ -43,10 +43,11 @@ cvs co -l $TOPMODULES
 ##exit 0
 for topmod in $TOPMODULES ; do
   cd $topmod
-  #cvs update -l -r R1_0 .
-  #cvs tag -b R1_0_maintenance readme.txt
+  cvs update -l -r R2_0 .
+  cvs tag -b R2_0_maintenance readme.txt
   #cvs tag -d v20060630 readme.txt
-  cvs update -l -A .
+  #cvs update -l -A .
   cvs tag R2_0_2
+  cvs tag R2_0_3
   cd $curdir
 done
