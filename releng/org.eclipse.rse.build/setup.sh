@@ -105,7 +105,7 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_4.0.1.200709241202.jar ]; then
   rm cdt-master-4.0.1.zip
 fi
 if [ ! -f eclipse/plugins/org.eclipse.emf.ecore.editor_2.3.1.v200709252135.jar ]; then
-  # Need EMF 2.3.0 SDK for Service Discovery ISV Docs Backlinks
+  # Need EMF 2.3.1 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
   wget "http://download.eclipse.org/modeling/emf/emf/downloads/drops/2.3.1/R200709252135/emf-sdo-xsd-SDK-2.3.1.zip"
   unzip -o emf-sdo-xsd-SDK-2.3.1.zip
@@ -118,6 +118,13 @@ if [ ! -f eclipse/plugins/org.junit_3.8.2.v200706111738/junit.jar ]; then
   unzip -o eclipse-test-framework-3.3.1.zip
   rm eclipse-test-framework-3.3.1.zip
 fi
+if [ ! -f eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
+  echo "Getting RXTX..."
+  wget "http://rxtx.qbang.org/eclipse/downloads/RXTX-SDK-I20071016-1945.zip"
+  unzip -o RXTX-SDK-I20071016-1945.zip
+  rm RXTX-SDK-I20071016-1945.zip
+fi
+
 
 # checkout the basebuilder
 baseBuilderTag=v20070614
