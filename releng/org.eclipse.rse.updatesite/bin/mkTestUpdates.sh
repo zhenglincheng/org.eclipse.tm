@@ -193,14 +193,17 @@ elif [ `basename $SITE` = signedPatchUpdates ]; then
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
     ## CHECK VERSION CORRECTNESS for 2.0.3
+    # features or plugins that are just inherited from 2.0.2 or older
+    # must match the qualifiers found on the official update site.
+    ##
     echo "VERIFYING VERSION CORRECNESS: Features"
-    ls features | grep -v '_[12]\.0\.[012]\.v' | sort > f1.$$.txt
+    ls features | grep -v '_[12]\.0\.3\.v' | sort > f1.$$.txt
     ls ../updates/2.0/features | sort > f2.$$.txt
     echo "wc old-features:"
     wc f1.$$.txt
     diff f1.$$.txt f2.$$.txt | grep -v '^[>]'
     echo "VERIFYING VERSION CORRECNESS: Plugins"
-    ls plugins | grep -v '_[12]\.0\.[012]\.v' | sort > p1.$$.txt
+    ls plugins | grep -v '_[12]\.0\.3\.v' | sort > p1.$$.txt
     ls ../updates/2.0/plugins | sort > p2.$$.txt
     echo "wc old-plugins:"
     wc p1.$$.txt
