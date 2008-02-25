@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Wind River Systems, Inc. and others.
+ * Copyright (c) 2007, 2008 Wind River Systems, Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,8 @@
  *
  * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
+ * Michael Scharf (Wind River) - [205260] Terminal does not take the font from the preferences
+ * Michael Scharf (Wind River) - [206328] Terminal does not draw correctly with proportional fonts
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
@@ -116,8 +118,23 @@ public class TextLineRenderer implements ILinelRenderer {
 	}
 	private void drawText(GC gc, int x, int y, int colFirst, int col, String text) {
 		int offset=(col-colFirst)*getCellWidth();
-		text=text.replace('\000', ' ');
-		gc.drawString(text,x+offset,y,false);
+		if(fStyleMap.isFontProportional()) {
+			// draw the background
+			// TODO why does this not work???????
+//			gc.fillRectangle(x,y,fStyleMap.getFontWidth()*text.length(),fStyleMap.getFontHeight());
+			for (int i = 0; i < text.length(); i++) {
+				char c=text.charAt(i);
+				int xx=x+offset+i*fStyleMap.getFontWidth();
+				// TODO why do I have to draw the background character by character??????
+				gc.fillRectangle(xx,y,fStyleMap.getFontWidth(),fStyleMap.getFontHeight());
+				if(c!=' ' && c!='\000') {
+					gc.drawString(String.valueOf(c),fStyleMap.getCharOffset(c)+xx,y,true);
+				}
+			}
+		} else {
+			text=text.replace('\000', ' ');
+			gc.drawString(text,x+offset,y,false);
+		}
 	}
 	private void setupGC(GC gc, Style style) {
 		Color c=fStyleMap.getForegrondColor(style);

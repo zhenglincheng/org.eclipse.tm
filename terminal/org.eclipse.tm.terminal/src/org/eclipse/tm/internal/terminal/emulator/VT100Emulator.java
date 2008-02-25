@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2007 Wind River Systems, Inc. and others.
+ * Copyright (c) 2003, 2008 Wind River Systems, Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@
  * Contributors:
  * Michael Scharf (Wind River) - split into core, view and connector plugins
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Michael Scharf (Wind River) - [209746] There are cases where some colors not displayed correctly
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
@@ -27,7 +28,6 @@ import java.nio.charset.Charset;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.tm.internal.terminal.control.impl.ITerminalControlForText;
-import org.eclipse.tm.internal.terminal.control.impl.TerminalControl;
 import org.eclipse.tm.internal.terminal.control.impl.TerminalPlugin;
 import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnector;
 import org.eclipse.tm.internal.terminal.provisional.api.Logger;
@@ -777,7 +777,7 @@ public class VT100Emulator implements ControlListener {
 				break;
 
 			case 37:
-				text.setStyle(style.setForground("WHITE")); //$NON-NLS-1$
+				text.setStyle(style.setForground("WHITE_FOREGROUND")); //$NON-NLS-1$
 				break;
 
 			case 40:
