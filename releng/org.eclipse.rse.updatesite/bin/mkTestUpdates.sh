@@ -41,7 +41,7 @@ fi
 # get newest plugins and features: to be done manually on real update site
 TYPE=none
 if [ `basename $SITE` = testPatchUpdates ]; then
-    echo "Working on test update site"
+    echo "Working on test patch update site"
     TYPE=test
     REL=`ls $HOME/ws3/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
@@ -58,15 +58,15 @@ if [ `basename $SITE` = testPatchUpdates ]; then
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testPatchUpdates,g' \
-    	-e 's,Project 2.0 Update,Project Test Update,g' \
+    	-e 's,Project 2.0 Update,Project Test Patch Update,g' \
     	index.html > index.html.new
     mv -f index.html.new index.html
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testPatchUpdates,g' \
-        -e 's,Project 2.0 Update,Project Test Update,g' \
-    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_1 -->/d' \
+        -e 's,Project 2.0 Update,Project Test Patch Update,g' \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Test Update,g' \
+    sed -e 's,Project 2.0 Update,Project Test Patch Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
@@ -81,9 +81,9 @@ if [ `basename $SITE` = testPatchUpdates ]; then
     #	$HOME/ws3/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ `basename $SITE` = signedPatchUpdates ]; then
-    echo "Working on signed update site"
+    echo "Working on signed patch update site"
     TYPE=testSigned
-    echo "Signing jars from test update site (expecting conditioned jars)..."
+    echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
     if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
@@ -179,26 +179,26 @@ elif [ `basename $SITE` = signedPatchUpdates ]; then
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedPatchUpdates,g' \
-    	-e 's,Project 2.0 Update,Project Signed Test Update,g' \
+    	-e 's,Project 2.0 Update,Project Signed Test Patch Update,g' \
     	index.html > index.html.new
     mv -f index.html.new index.html
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedPatchUpdates,g' \
-        -e 's,Project 2.0 Update,Project Signed Test Update,g' \
-    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_1 -->/d' \
+        -e 's,Project 2.0 Update,Project Signed Test Patch Update,g' \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Signed Test Update,g' \
+    sed -e 's,Project 2.0 Update,Project Signed Test Patch Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
-    ## CHECK VERSION CORRECTNESS for 2.0.1
+    ## CHECK VERSION CORRECTNESS for 2.0.3
     echo "VERIFYING VERSION CORRECNESS: Features"
-    ls features | grep -v '_[12]\.0\.1\.v' | sort > f1.$$.txt
+    ls features | grep -v '_[12]\.0\.[012]\.v' | sort > f1.$$.txt
     ls ../updates/2.0/features | sort > f2.$$.txt
     echo "wc old-features:"
     wc f1.$$.txt
     diff f1.$$.txt f2.$$.txt | grep -v '^[>]'
     echo "VERIFYING VERSION CORRECNESS: Plugins"
-    ls plugins | grep -v '_[12]\.0\.1\.v' | sort > p1.$$.txt
+    ls plugins | grep -v '_[12]\.0\.[012]\.v' | sort > p1.$$.txt
     ls ../updates/2.0/plugins | sort > p2.$$.txt
     echo "wc old-plugins:"
     wc p1.$$.txt
@@ -257,7 +257,7 @@ else
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e '/<!-- BEGIN_2_0_3 -->/,/<!-- END_2_0_3 -->/d' \
+    sed -e '/<!-- BEGIN_2_0_4 -->/,/<!-- END_2_0_4 -->/d' \
         site.xml > site.xml.new1
     sed -e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0 -->/d' \
         site.xml.new1 > site.xml.new
