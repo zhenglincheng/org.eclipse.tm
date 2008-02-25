@@ -17,6 +17,8 @@
  * Martin Oberhuber (Wind River) - [206883] Serial Terminal leaks Jobs
  * Martin Oberhuber (Wind River) - [208145] Terminal prints garbage after quick disconnect/reconnect
  * Martin Oberhuber (Wind River) - [207785] NPE when trying to send char while no longer connected
+ * Michael Scharf (Wind River) - [209665] Add ability to log byte streams from terminal
+ * Ruslan Sychev (Xored Software) - [217675] NPE or SWTException when closing Terminal View while connection establishing
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
@@ -156,7 +158,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	}
 
 	/**
-	 * @param strText
+	 * @param strText the text to paste
 	 */
 	public boolean pasteString(String strText) {
 		if(!isConnected())
@@ -321,6 +323,10 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 				continue;
 
 			fDisplay.sleep();
+		}
+		if(getCtlText().isDisposed()) {
+			disconnectTerminal();
+			return;
 		}
 		if (!getMsg().equals("")) //$NON-NLS-1$
 		{
@@ -581,7 +587,11 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	}
 
 	public OutputStream getRemoteToTerminalOutputStream() {
-		return fInputStream.getOutputStream();
+		if(Logger.isLogEnabled()) {
+			return new LoggingOutputStream(fInputStream.getOutputStream());
+		} else {
+			return fInputStream.getOutputStream();
+		}
 	}
 	protected boolean isLogCharEnabled() {
 		return TerminalPlugin.isOptionEnabled(Logger.TRACE_DEBUG_LOG_CHAR);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2007 Wind River Systems, Inc. and others.
+ * Copyright (c) 2005, 2008 Wind River Systems, Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
  * Ted Williams (Wind River) - repackaged into org.eclipse namespace 
  * Michael Scharf (Wind River) - split into core, view and connector plugins 
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Michael Scharf (Wind River) - [209665] Add ability to log byte streams from terminal
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.telnet;
 
@@ -311,9 +312,6 @@ public class TelnetConnection extends Thread implements TelnetCodes {
 					terminalControl.setState(TerminalState.CLOSED);
 					break;
 				} else {
-					Logger.log("Received " + nRawBytes + " bytes: '" + //$NON-NLS-1$ //$NON-NLS-2$
-							Logger.encode(new String(rawBytes, 0, nRawBytes)) + "'"); //$NON-NLS-1$
-
 					// Process any TELNET protocol data that we receive. Don't
 					// send any TELNET protocol data until we are sure the remote
 					// endpoint is a TELNET server.
