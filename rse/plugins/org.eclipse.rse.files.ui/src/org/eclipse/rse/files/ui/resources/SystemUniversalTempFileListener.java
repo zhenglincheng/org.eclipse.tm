@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.events.ISystemResourceChangeEvents;
 import org.eclipse.rse.core.events.SystemResourceChangeEvent;
@@ -122,7 +123,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 	* @param monitor progress monitor
 	*/
 	protected void doResourceSynchronization(ISubSystem subsystem, IFile tempFile, String resourceId, IProgressMonitor monitor)
-	{
+	{		
 		if (subsystem instanceof IRemoteFileSubSystem)
 		{
 			IRemoteFileSubSystem fs = (IRemoteFileSubSystem) subsystem;
@@ -177,6 +178,13 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 					// get modification stamp and dirty state         
 					long storedModifiedStamp = properties.getRemoteFileTimeStamp();
 
+					// If remote file is read-only make it writable as the local
+					// copy has changed to be writable
+					if (remoteFile.exists() && !remoteFile.canWrite() && !tempFile.isReadOnly()) {
+						remoteFile.getParentRemoteFileSubSystem().setReadOnly(
+								remoteFile, false, new NullProgressMonitor());
+					}				
+					
 					// get associated editable
 					SystemEditableRemoteFile editable = getEditedFile(remoteFile);
 					if (editable != null && storedModifiedStamp == 0)

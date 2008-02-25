@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2002, 2007 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -19,7 +20,8 @@
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * Martin Oberhuber (Wind River) - [189130] Move SystemIFileProperties from UI to Core
  * David McKnight   (IBM)        - [187130] New Folder/File, Move and Rename should be available for read-only folders
- ********************************************************************************/
+ * Kevin Doyle      (IBM) 		 - [197976] Changing a file to read-only when it is open doesn't update local copy
+ *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
 
@@ -439,9 +441,15 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		{
 			setEditorAsReadOnly();
 		}
-		else if (editor instanceof ISystemTextEditor)
+		else
 		{
-			((ISystemTextEditor) editor).setReadOnly(false);
+			if (editor instanceof ISystemTextEditor) {
+				((ISystemTextEditor) editor).setReadOnly(false);
+			}
+			IFile file = getLocalResource();
+			setReadOnly(file, false);
+			SystemIFileProperties properties = new SystemIFileProperties(file);
+			properties.setReadOnly(false);
 		}
 	}
 
@@ -1600,7 +1608,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 			((ISystemTextEditor) editor).setReadOnly(true);
 		}
 		IFile file = getLocalResource();
-
+		setReadOnly(file, true);
+		
 		SystemIFileProperties properties = new SystemIFileProperties(file);
 		properties.setReadOnly(true);
 	}
