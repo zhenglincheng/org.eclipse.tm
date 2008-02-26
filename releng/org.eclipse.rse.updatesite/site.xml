@@ -172,7 +172,7 @@
       </description>
    </category-def>
 <!-- END_2_0_2 -->
-<!-- BEGIN_2_0_2 -->
+<!-- BEGIN_2_0_3 -->
    <feature url="features/org.eclipse.rse.core_2.0.3.qualifier.jar" id="org.eclipse.rse.core" version="2.0.3.qualifier">
       <category name="TM and RSE 2.0.3"/>
    </feature>
