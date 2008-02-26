@@ -62,6 +62,7 @@
  * Martin Oberhuber (Wind River) - [204669] Fix ftp path concatenation on systems using backslash separator
  * Martin Oberhuber (Wind River) - [203490] Fix NPE in FTPService.getUserHome()
  * Martin Oberhuber (Wind River) - [203500] Support encodings for FTP paths
+ * Javier Montalvo Orus (Symbian) - [208912] Cannot expand /C on a VxWorks SSH Server
  ********************************************************************************/
 
 package org.eclipse.rse.internal.services.files.ftp;
@@ -225,7 +226,7 @@ public class FTPService extends AbstractFileService implements IFileService, IFT
 	 * </table>
 	 * 
 	 * @see org.eclipse.rse.core.model.IPropertySet
-	 * @param ftpPropertySet
+	 * @param ftpPropertySet FTP Client Preference Properties to set 
 	 */
 	public void setPropertySet(IPropertySet ftpPropertySet)
 	{
@@ -1113,8 +1114,8 @@ public class FTPService extends AbstractFileService implements IFileService, IFT
 			try{
 				FTPClient ftpClient = getFTPClient(); 
 			
-				String source = srcParent.endsWith(String.valueOf(getSeparator())) ?  srcParent + srcName : srcParent + getSeparator() + srcName;
-				String target = tgtParent.endsWith(String.valueOf(getSeparator())) ?  tgtParent + tgtName : tgtParent + getSeparator() + tgtName;
+				String source = concat(srcParent,srcName);
+				String target = concat(tgtParent,tgtName);
 					
 				clearCache(srcParent);
 				clearCache(tgtParent);
@@ -1519,4 +1520,21 @@ public class FTPService extends AbstractFileService implements IFileService, IFT
 		}
 	}
 	
+	/**
+	 * Concatenate a parent directory with a file name to form a new proper path name.
+	 * @param parentDir path name of the parent directory.
+	 * @param fileName file name to concatenate.
+	 * @return path name concatenated from parent directory and file name.
+	 * 
+	 */
+	protected String concat(String parentDir, String fileName) {
+		StringBuffer path = new StringBuffer(parentDir);
+		if (!parentDir.endsWith(String.valueOf(getSeparator()))) 
+		{
+			path.append(getSeparator());
+		}
+		path.append(fileName);
+		return path.toString();
+	}
+
 }

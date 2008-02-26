@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006 Wind River Systems, Inc.
+# Copyright (c) 2006, 2007 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -61,6 +61,9 @@ if [ "$NEED_RESTART" != "0" ]; then
   ####################### Deploy nab ###############################
   rm -rf $IHOME/plugins/nab/eclipse/plugins/*
   cp -Rp $IHOME/deploy/nab/plugins/* $IHOME/plugins/nab/eclipse/plugins/
+  ####################### Deploy ercp ##############################
+  rm -rf $IHOME/plugins/ercp/eclipse/plugins/*
+  cp -Rp $IHOME/deploy/ercp/*.jar $IHOME/plugins/ercp/eclipse/plugins/
   
   #TODO: not sure if we need to delete the old index to force re-indexing
   echo "Deleting old index..."

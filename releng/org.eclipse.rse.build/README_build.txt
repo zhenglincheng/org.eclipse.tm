@@ -7,9 +7,9 @@ ssh build.eclipse.org
 cd /shared/dsdp/tm/
 mkdir ws2_user
 cd ws2_user
-ln -s `pws` $HOME/ws2
+ln -s `pws` $HOME/ws3
 ln -s /home/data/httpd/download.eclipse.org/dsdp/tm $HOME/downloads-tm
-cp -R ../ws2/IBMJava2-ppc-142 .
+cp -R ../ws3/IBMJava2-ppc-142 .
 wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 chmod a+x setup.sh
 ./setup.sh
@@ -17,7 +17,7 @@ chmod a+x setup.sh
 
 2. Do an N-build
 ----------------
-cd $HOME/ws2
+cd $HOME/ws3
 ./doit_nightly.sh
 
 
@@ -52,7 +52,7 @@ mv package.count.orig package.count
 
 3c) Promote an S-build to Europa
 --------------------------------
-After S-build has been prepared (on signedUpdates)
+After S-build has been prepared (on signedPatchUpdates)
 On local Eclipse client, checkout Europa projects according to
     http://wiki.eclipse.org/index.php/Europa_Build
 Open file 
@@ -62,8 +62,8 @@ cd downloads-tm/updates/milestones
 rm -rf features.prev plugins.prev
 mv features features.prev
 mv plugins plugins.prev
-cp -R ../../signedUpdates/features .
-cp -R ../../signedUpdates/plugins .
+cp -R ../../signedPatchUpdates/features .
+cp -R ../../signedPatchUpdates/plugins .
 cd bin
 ./mkTestUpdates.sh
 From the shell where the build is ongoing, copy & Paste the 

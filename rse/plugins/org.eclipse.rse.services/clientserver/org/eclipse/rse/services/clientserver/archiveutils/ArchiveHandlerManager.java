@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2007 IBM Corporation and others.
+ * Copyright (c) 2003, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * {Name} (company) - description of contribution.
  * Xuan Chen        (IBM)        - [194293] [Local][Archives] Saving file second time in an Archive Errors
+ * Xuan Chen (IBM)        - [218491] ArchiveHandlerManager#cleanUpVirtualPath is messing up the file separators (with updated fix)
  *******************************************************************************/
 
 package org.eclipse.rse.services.clientserver.archiveutils;
@@ -126,7 +127,7 @@ public class ArchiveHandlerManager
 	
 	/**
 	 * Tests whether a file is an known type of archive, based on the file name.
-	 * @param file the name of the file to test.
+	 * @param filename the name of the file to test.
 	 * @return true if and only if the file is an archive whose
 	 * type is registered with the ArchiveHandlerManager.
 	 */
@@ -346,7 +347,7 @@ public class ArchiveHandlerManager
 	/**
 	 * Tests whether the absolute path given by <code>path</code>
 	 * refers to a virtual object.
-	 * @param path
+	 * @param path an absolute path string to check
 	 * @return True if and only if the absolute path refers to a virtual object.
 	 */
 	public static boolean isVirtual(String path)
@@ -363,7 +364,19 @@ public class ArchiveHandlerManager
 	public static String cleanUpVirtualPath(String fullVirtualName)
 	{
 		int j = fullVirtualName.indexOf(VIRTUAL_CANONICAL_SEPARATOR);
-		if (j == -1 && fullVirtualName.indexOf(":") != -1) return fullVirtualName; //$NON-NLS-1$
+		if (j == -1) 
+		{
+			//fullVirtualName does not contains VIRTUAL_CANONICAL_SEPARATOR
+			//fullVirtualName could be the virtual path only, instead of the full path.
+			//So even fullVirtualName does not contains VIRTUAL_CANONICAL_SEPARATOR, we may still
+			//need to process it.
+			//But virtual path should neither start with "\", nor contains
+			//":".  So for those two cases, we could just return the fullVirtualName
+			if (fullVirtualName.indexOf(":") != -1 || fullVirtualName.trim().startsWith("\\"))
+			{
+				return fullVirtualName; 
+			}
+		}
 		String realPart = ""; //$NON-NLS-1$
 		String newPath = fullVirtualName;
 		if (j != -1)

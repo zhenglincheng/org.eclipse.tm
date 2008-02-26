@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.tm.terminal.serial"
       label="%featureName"
-      version="1.0.0.qualifier"
+      version="1.0.2.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -20,9 +20,6 @@
    <url>
       <update label="%tmUpdateSiteName" url="http://download.eclipse.org/dsdp/tm/updates/2.0"/>
       <discovery label="%tmUpdateSiteName" url="http://download.eclipse.org/dsdp/tm/updates/2.0"/>
-      <!-- TODO reference the RXTX discovery site once it exists
-      <discovery label="%tmRXTXSiteName" url="http://download.eclipse.org/dsdp/tm/updates/2.0"/>
-      -->
    </url>
 
    <requires>
