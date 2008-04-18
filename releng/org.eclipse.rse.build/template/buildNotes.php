@@ -31,41 +31,26 @@
 <li><b>Apache Commons.Net and ORO</b> are now distributed as verbatim compies
   from the Orbit project, so they will not be changed any more.</li>
 -->
-<li>Highlights of Bugs fixed since TM 2.0.2:
+<li>Highlights of Bugs fixed since TM 2.0.3:
     <ul>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=203501">bug 203501</a> - <b>maj - NPE in PFMetadataLocation when saving RSEDOM</b></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=217969">bug 217969</a> - <b>maj - ftp does not display hidden files - works with sftp</b></li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=219936">bug 219936</a> - enh - SSH sessions time out after inactivity - request keepalive</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=220230">bug 220230</a> - enh - [terminal] Add FieldAssist to the terminal input field</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227754">bug 227754</a> - nor - [ftp] Delete a folder should do recursive Delete</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227755">bug 227755</a> - nor - [ftp] FTP should support remote Drag&amp;Drop + Copy&amp;Paste operations</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227755">bug 227756</a> - nor - [ftp][releng] Rename Jakarta Commons Net to Apache Commons Net</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227777">bug 227777</a> - nor - [ftp] Invalid adoption of Commons Net NTFTPEntryParser and VMSFTPEntryParser
 </ul></li>
-<li>Plugins and Features changed since TM 2.0.2:
-<ul><li>Features: org.eclipse.tm.terminal-feature, org.eclipse.tm.terminal.view-feature, org.eclipse.tm.terminal.sdk-feature, org.eclipse.tm.terminal.telnet-feature, org.eclipse.tm.terminal.ssh-feature
-    <ul><li>Plugin: <b>org.eclipse.tm.terminal</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209965,217868,220219,220227,220229,220230">209965,217868,220219,220227,220229,220230</a>)</li>
-        <li>Plugin: <b>org.eclipse.tm.terminal.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=219936">219936</a>)</li>
-        <li>Plugin: <b>org.eclipse.tm.terminal.telnet</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209965">209965</a>)</li>
-        <li>Plugin: <b>org.eclipse.tm.terminal.view</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209964">209964</a>)</li>
-    </ul></li>
-    <li>Features: org.eclipse.rse.core-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.rse.core</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=203501">203501</a>)</li>
-        <li>Plugin: <b>org.eclipse.rse.files.ui</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=209969">209969</a>)</li>
-        <li>Plugin: <b>org.eclipse.rse.services</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=220256">220256</a>)</li>
-    </ul></li>
-    <li>Features: org.eclipse.rse.ftp-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.rse.services.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=217969">217969</a>)</li>
-        <li>Plugin: <b>org.eclipse.rse.subsystems.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=217969">217969</a>)</li>
-    </ul></li>
-    <li>Features: org.eclipse.rse.ssh-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
-    <ul><li>Plugin: <b>org.eclipse.rse.connectorservice.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=219936">219936</a>)</li>
-        <li>Plugin: <b>org.eclipse.rse.services.ssh</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=220193">220193</a>)</li>
+<li>Plugins and Features changed since TM 2.0.3:
+<ul><li>Features: org.eclipse.rse.ftp-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
+    <ul><li>Plugin: <b>org.eclipse.rse.services.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=227754,227755,227756">227754,227755,227756</a>)</li>
+        <li>Plugin: <b>org.eclipse.rse.subsystems.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=227756,227777">227756,227777</a>)</li>
     </ul></li>
 </ul></li>
-<li>At least 13 bugs were fixed: Use 
+<li>At least 3 bugs were fixed: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&target_milestone=2.0.3&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&target_milestone=2.0.4&cmdtype=doit">
   this query</a> to show the list of bugs fixed since the last release,
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.2-200711131300/index.php">
-  TM 2.0.2</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.2-200711131300/buildNotes.php">build notes</a>].</li>
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.3-200802251530/index.php">
+  TM 2.0.3</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-2.0.3-200802251530/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see
   <a href="http://www.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
@@ -179,9 +164,11 @@ for an up-to-date list of major or critical bugs known in TM 2.0.x but fixed in 
 The following critical or major bugs are currently known.
 We'll strive to fix these as soon as possible.
 <ul>
+  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=222380">bug 222380</a> - maj - [persistence][migration][team] Subsystem association is lost when creating connection with an installation that does not have subsystem impl</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=218387">bug 218387</a> - maj - [efs] Eclipse hangs on startup of a Workspace with a large efs-shared file system on a slow connection</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=208185">bug 208185</a> - maj - [terminal][serial] terminal can hang the UI when text is entered while the backend side is not reading characters</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=198395">bug 198395</a> - maj - [dstore] Can connect to DStore with expired password</li>
+  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=197027">bug 197027</a> - maj - [persistence] Can lose data if close Eclipse before saving profile completes</li>
 </ul>
 <!--
 <p>No major or critical bugs are known at the time of release.
