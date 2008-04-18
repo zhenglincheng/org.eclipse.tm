@@ -43,12 +43,11 @@ cvs co -l $TOPMODULES
 ##exit 0
 for topmod in $TOPMODULES ; do
   cd $topmod
-  cvs update -l -r R2_0 .
-  cvs tag -b R2_0_maintenance readme.txt .project .
+  #cvs update -l -r R2_0 .
+  #cvs tag -b R2_0_maintenance readme.txt .project .
   #cvs tag -d v20060630 readme.txt
   #cvs update -l -A .
   cvs update -r R2_0_maintenance .
-  cvs tag -F R2_0_2 readme.txt .project .
-  cvs tag -F R2_0_3 readme.txt .project .
+  cvs tag -F R2_0_4 readme.txt .project .
   cd $curdir
 done
