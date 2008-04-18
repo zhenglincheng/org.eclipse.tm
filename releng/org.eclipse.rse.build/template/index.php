@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="http://www.eclipse.org/default_style.css" type="text/css">
-<title>DSDP-TM Downloads</title>
+<title>DSDP-TM @buildTypeLong@ Build: @buildId@</title>
 </head>
 
 <body>
@@ -53,15 +53,15 @@
 <table>
   <tbody>
     <tr><td><b>TM @buildId@ requires 
-    	<a href="http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php">
+    	<a href="http://archive.eclipse.org/eclipse/downloads/">
          Eclipse 3.3</a> or later for the SSH component.
     </b></td></tr>
     <tr><td>
       Other components may work with earlier Eclipse versions, but these have not been tested.<br/>
       For core RSE and TM-Terminal, the
-        <a href="http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#PlatformRuntime">
+        <a href="http://archive.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#PlatformRuntime">
         Eclipse Platform Runtime Binary</a> is sufficient. Of course you can also use the popular
-        <a href="http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#EclipseSDK">SDK</a>. 
+        <a href="http://archive.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#EclipseSDK">SDK</a>. 
     </td></tr> 
     <tr><td>
       Prerequisites for the remotecdt and discovery add-ons (CDT, EMF) can be retrieved from the
@@ -146,7 +146,7 @@
         <td><small>&nbsp;</small><br/>
 			A Launch Configuration for running and debugging C/C++
 			programs on a remote host through RSE-provided shell
-			and file services, and gdbserver. Requires CDT and RSE.
+			and file services, and gdbserver. Requires CDT 3.0 or later.
 			Includes Source.
         </td>
     </tr>
@@ -155,6 +155,7 @@
 		<td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-examples-@buildId@.zip">RSE-examples-@buildId@.zip</a></td>
         <td><small>&nbsp;</small><br/>
         	Tutorial code and example projects for developing against RSE SDK.
+        	Includes Source.
         </td>
     </tr>
 </table>
@@ -241,9 +242,9 @@
 	</tr>
 	<tr>
 	    <td>The RSE test suite requires the JUnit plug-in, which is included in the 
-        <a href="http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#EclipseSDK">
+        <a href="http://archive.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#EclipseSDK">
         Eclipse SDK</a> or available as<br/>
-        <a href="http://download.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#JUnitPlugin">
+        <a href="http://archive.eclipse.org/eclipse/downloads/drops/R-3.3-200706251500/index.php#JUnitPlugin">
         eclipse-test-framework download</a> for users of the Eclipse Platform Runtime Binary. 
 	    </td>
 	</tr>
