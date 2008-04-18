@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2008 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -15,7 +15,7 @@
  * Javier Montalvo Orus (Symbian) - Fixing 140323 - provided implementation for delete, move and rename.
  * Javier Montalvo Orus (Symbian) - Bug 140348 - FTP did not use port number
  * Michael Berger (IBM) - Fixing 140404 - FTP new file creation does not work
- * Javier Montalvo Orus (Symbian) - Migrate to jakarta commons net FTP client
+ * Javier Montalvo Orus (Symbian) - Migrate to apache commons net FTP client
  * Javier Montalvo Orus (Symbian) - Fixing 161211 - Cannot expand /pub folder as anonymous on ftp.wacom.com
  * Javier Montalvo Orus (Symbian) - Fixing 161238 - [ftp] expand "My Home" node on ftp.ibiblio.org as anonymous fails
  * Javier Montalvo Orus (Symbian) - Fixing 160922 - create folder/file fails for FTP service
@@ -23,7 +23,7 @@
  * Javier Montalvo Orus (Symbian) - Fixing 162511 - FTP file service does not process filter strings correctly
  * Javier Montalvo Orus (Symbian) - Fixing 162782 - File filter does not display correct result in RC3
  * Javier Montalvo Orus (Symbian) - Fixing 162878 - New file and new folder dialogs don't work in FTP in a folder with subfolders
- * Javier Montalvo Orus (Symbian) - Fixing 162585 - [FTP] fetch children cannot be canceled
+ * Javier Montalvo Orus (Symbian) - Fixing 162585 - [FTP] fetch children cannot be cancelled
  * Javier Montalvo Orus (Symbian) - Fixing 161209 - Need a Log of ftp commands
  * Javier Montalvo Orus (Symbian) - Fixing 163264 - FTP Only can not delete first subfolder
  * Michael Scharf (Wind River) - Fix 164223 - Wrong call for setting binary transfer mode

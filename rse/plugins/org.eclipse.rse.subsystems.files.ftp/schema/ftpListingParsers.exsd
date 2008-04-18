@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.rse.subsystems.files.ftp">
+<schema targetNamespace="org.eclipse.rse.subsystems.files.ftp" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.eclipse.rse.subsystems.files.ftp" id="ftpListingParsers" name="FTP Directory Listing Parsers"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          Extension point that allows providing extra parsers for the FTP LIST command output.
 Apache commons net provides some APIs and factories to costumize the parser and this extension 
@@ -41,9 +41,9 @@ The string attributes &lt;code&gt;defaultDateFormatStr&lt;/code&gt; &lt;code&gt;
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -63,9 +63,9 @@ The string attributes &lt;code&gt;defaultDateFormatStr&lt;/code&gt; &lt;code&gt;
                <documentation>
                   Name that will be displayed in the FTP Settings dialog
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
@@ -73,9 +73,9 @@ The string attributes &lt;code&gt;defaultDateFormatStr&lt;/code&gt; &lt;code&gt;
                <documentation>
                   Extension of &lt;code&gt;org.apache.commons.net.ftp.Configurable,org.apache.commons.net.ftp.FTPFileEntryParser&lt;/code&gt; implementing the parser for the specific server
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.apache.commons.net.ftp.Configurable,org.apache.commons.net.ftp.FTPFileEntryParser"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="defaultDateFormatStr" type="string">
@@ -111,7 +111,7 @@ languages which do not meet this requirement are included if a
 common alternative set of short month names is known to be used.
 This means that users who can tell us of additional such encodings
 may get them added to the list of supported languages by contacting
-the jakarta-commons-net team.
+the Apache Commons Net team.
 &lt;strong&gt; Please note that this attribute will NOT be used to determine a locale-based date format for the language.  &lt;/strong&gt;  
 Experience has shown that many if not most FTP servers outside the
 United States employ the standard &lt;code&gt;en_US&lt;/code&gt; date format 
@@ -166,18 +166,18 @@ If no priority is specified, the default value will be &lt;code&gt;Integer.MAX_V
    </element>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="since"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          RSE 2.0
       </documentation>
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="examples"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          &lt;!-- Default UNIX parser provided by Apache commons net package --&gt;
 &lt;parser
@@ -216,29 +216,29 @@ If no priority is specified, the default value will be &lt;code&gt;Integer.MAX_V
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="apiInfo"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          The provider of a new FTPEntryParser must implement &lt;samp&gt;org.apache.commons.net.ftp.Configurable&lt;/samp&gt; and &lt;samp&gt;org.apache.commons.net.ftp.FTPFileEntryParser&lt;/samp&gt;
       </documentation>
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="implementation"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          Customized VMS and WinNT implementations are supplied in the &lt;code&gt;org.eclipse.rse.subsystems.files.ftp&lt;/code&gt; plug-in.
       </documentation>
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="copyright"/>
-      </appInfo>
+      </appinfo>
       <documentation>
-         Copyright (c) 2007 Symbian Software Ltd. and others. All rights reserved.
+         Copyright (c) 2007, 2008 Symbian Software Ltd. and others. All rights reserved.
 This program and the accompanying materials are made available under the terms
 of the Eclipse Public License v1.0 which accompanies this distribution, and is 
 available at http://www.eclipse.org/legal/epl-v10.html
