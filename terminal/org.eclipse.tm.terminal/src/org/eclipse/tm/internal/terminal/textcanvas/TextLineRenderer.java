@@ -1,12 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2007 Wind River Systems, Inc. and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Public License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/legal/epl-v10.html 
- * 
- * Contributors: 
+ * Copyright (c) 2007, 2008 Wind River Systems, Inc. and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
+ * Michael Scharf (Wind River) - [205260] Terminal does not take the font from the preferences
+ * Michael Scharf (Wind River) - [206328] Terminal does not draw correctly with proportional fonts
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
@@ -24,14 +26,12 @@ import org.eclipse.tm.terminal.model.Style;
  *
  */
 public class TextLineRenderer implements ILinelRenderer {
-	TextCanvas fCanvas;
 	private final ITextCanvasModel fModel;
 	StyleMap fStyleMap=new StyleMap();
 	Color fBackgroundColor;
 	public TextLineRenderer(TextCanvas c, ITextCanvasModel model) {
-		fCanvas=c;
 		fModel=model;
-		fBackgroundColor=c.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+		fBackgroundColor=Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 	}
 	/* (non-Javadoc)
 	 * @see com.imagicus.thumbs.view.ICellRenderer#getCellWidth()
@@ -84,13 +84,13 @@ public class TextLineRenderer implements ILinelRenderer {
 			}
 		}
 	}
-	
+
 	private void fillBackground(GC gc, int x, int y, int width, int height) {
 		Color bg=gc.getBackground();
 		gc.setBackground(getBackgroundColor());
 		gc.fillRectangle (x,y,width,height);
 		gc.setBackground(bg);
-		
+
 	}
 
 	private Color getBackgroundColor() {
@@ -100,7 +100,7 @@ public class TextLineRenderer implements ILinelRenderer {
 		if(!model.isCursorOn())
 			return;
 		int cursorLine=model.getCursorLine();
-			
+
 		if(row==cursorLine) {
 			int cursorColumn=model.getCursorColumn();
 			if(cursorColumn<getTerminalText().getWidth()) {
@@ -118,8 +118,23 @@ public class TextLineRenderer implements ILinelRenderer {
 	}
 	private void drawText(GC gc, int x, int y, int colFirst, int col, String text) {
 		int offset=(col-colFirst)*getCellWidth();
-		text=text.replace('\000', ' ');
-		gc.drawString(text,x+offset,y,false);
+		if(fStyleMap.isFontProportional()) {
+			// draw the background
+			// TODO why does this not work???????
+//			gc.fillRectangle(x,y,fStyleMap.getFontWidth()*text.length(),fStyleMap.getFontHeight());
+			for (int i = 0; i < text.length(); i++) {
+				char c=text.charAt(i);
+				int xx=x+offset+i*fStyleMap.getFontWidth();
+				// TODO why do I have to draw the background character by character??????
+				gc.fillRectangle(xx,y,fStyleMap.getFontWidth(),fStyleMap.getFontHeight());
+				if(c!=' ' && c!='\000') {
+					gc.drawString(String.valueOf(c),fStyleMap.getCharOffset(c)+xx,y,true);
+				}
+			}
+		} else {
+			text=text.replace('\000', ' ');
+			gc.drawString(text,x+offset,y,false);
+		}
 	}
 	private void setupGC(GC gc, Style style) {
 		Color c=fStyleMap.getForegrondColor(style);
@@ -137,5 +152,12 @@ public class TextLineRenderer implements ILinelRenderer {
 	}
 	ITerminalTextDataReadOnly getTerminalText() {
 		return fModel.getTerminalText();
+	}
+	public void onFontChange() {
+		fStyleMap.updateFont();
+	}
+	public void setInvertedColors(boolean invert) {
+		fStyleMap.setInvertedColors(invert);
+
 	}
 }

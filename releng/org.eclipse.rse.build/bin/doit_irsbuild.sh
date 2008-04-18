@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2007 Wind River Systems, Inc.
+# Copyright (c) 2006, 2008 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -11,13 +11,13 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
 #:#
 #:# Usage:
-#:#    doit_irsbuild.sh {buildType} [buildId]
+#:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
 #:# Examples:
 #:#    doit_irsbuild.sh R 1.0
-#:#    doit_irsbuild.sh S 1.0M5
+#:#    doit_irsbuild.sh S 1.0M5 S1_0M5
 #:#    doit_irsbuild.sh I
 
 #nothing we do should be hidden from the world
@@ -32,17 +32,20 @@ echo ${mydir}
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
-export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+export PATH=${HOME}/ws3/IBMJava2-ppc-142/bin:$PATH
 
 #Get parameters
 mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
-  xM) mapTag=R1_0_maintenance ; ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xM|xR) mapTag=R2_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
+if [ "$3" != "" ]; then
+  mapTag=$3
+fi
 if [ $ok != 1 ]; then
   grep '^#:#' $0 | grep -v grep | sed -e 's,^#:#,,'
   cd ${curdir}
@@ -51,7 +54,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws3
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -64,9 +67,10 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws3/log-${buildType}$stamp.txt
 touch $log
-cvs -q update -RPd >> $log 2>&1
+#cvs -q update -RPd >> $log 2>&1
+cvs -q update -r ${mapTag} -RPd >> $log 2>&1
 daystamp=`date +'%Y%m%d*%H'`
 
 echo "Running the builder..."
@@ -89,7 +93,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws3/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -108,29 +112,30 @@ if [ -f package.count -a "$FILES" != "" ]; then
     ${mydir}/batch_sign.sh `pwd`
   fi
 
-  if [ ${buildType} != M -a -d ../N.latest ]; then
-    #update the doc server
-    rm -f ../N.latest/RSE-*.zip
-    rm -f ../N.latest/TM-*.zip
-    cp -f RSE-SDK-*.zip ../N.latest/RSE-SDK-latest.zip
-    cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
-    cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
-    chgrp dsdp-tmadmin ../N.latest/*.zip
-    chmod g+w ../N.latest/*.zip
+  ## Never update latest/ docs from the M-branch!
+  #if [ ${buildType} != M -a -d ../N.latest ]; then
+  #  #update the doc server
+  #  rm -f ../N.latest/RSE-*.zip
+  #  rm -f ../N.latest/TM-*.zip
+  #  cp -f RSE-SDK-*.zip ../N.latest/RSE-SDK-latest.zip
+  #  cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
+  #  cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
+  #  chgrp dsdp-tmadmin ../N.latest/*.zip
+  #  chmod g+w ../N.latest/*.zip
+  #fi
 
     if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the testPatchUpdates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/testPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signedPatchUpdates site
+      echo "Refreshing signedPatchUpdates site"
+      cd $HOME/downloads-tm/signedPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
     fi
-  fi
   
   cd "$curdir"
 else

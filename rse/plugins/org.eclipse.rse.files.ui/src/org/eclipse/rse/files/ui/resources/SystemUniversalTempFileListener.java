@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -17,6 +17,8 @@
  * Martin Oberhuber (Wind River) - [186640] Add IRSESystemType.testProperty() 
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * Martin Oberhuber (Wind River) - [189130] Move SystemIFileProperties from UI to Core
+ * David McKnight   (IBM)        - [205297] Editor upload should not be on main thread
+ * Kevin Doyle 		(IBM)		 - [204810] Saving file in Eclipse does not update remote file
  ********************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.events.ISystemResourceChangeEvents;
 import org.eclipse.rse.core.events.SystemResourceChangeEvent;
@@ -42,6 +45,7 @@ import org.eclipse.rse.ui.actions.DisplaySystemMessageAction;
 import org.eclipse.rse.ui.view.ISystemEditableRemoteObject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
 
 /**
  * This class manages listening for resource changes within our temp file project
@@ -119,7 +123,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 	* @param monitor progress monitor
 	*/
 	protected void doResourceSynchronization(ISubSystem subsystem, IFile tempFile, String resourceId, IProgressMonitor monitor)
-	{
+	{		
 		if (subsystem instanceof IRemoteFileSubSystem)
 		{
 			IRemoteFileSubSystem fs = (IRemoteFileSubSystem) subsystem;
@@ -174,6 +178,13 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 					// get modification stamp and dirty state         
 					long storedModifiedStamp = properties.getRemoteFileTimeStamp();
 
+					// If remote file is read-only make it writable as the local
+					// copy has changed to be writable
+					if (remoteFile.exists() && !remoteFile.canWrite() && !tempFile.isReadOnly()) {
+						remoteFile.getParentRemoteFileSubSystem().setReadOnly(
+								remoteFile, false, new NullProgressMonitor());
+					}				
+					
 					// get associated editable
 					SystemEditableRemoteFile editable = getEditedFile(remoteFile);
 					if (editable != null && storedModifiedStamp == 0)
@@ -193,17 +204,25 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 							editable = new SystemEditableRemoteFile(remoteFile);
 						}
 
-						// defect - we get a save event when saving during a close
-						// in that case, we shouldn't reopen the editor
-						// I think this was originally here so that, if a save is done on
-						// a file that hasn't yet been wrapped with an editable, we can
-						// set the editor member
-						// now call check method before
-						if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN)
-						{
-							editable.openEditor();
-						}
-						editable.addAsListener();
+						final SystemEditableRemoteFile fEditable = editable;
+						Display.getDefault().asyncExec(new Runnable() {
+							public void run() {
+								try {
+									// defect - we get a save event when saving during a close
+									// in that case, we shouldn't reopen the editor
+									// I think this was originally here so that, if a save is done on
+									// a file that hasn't yet been wrapped with an editable, we can
+									// set the editor member
+									// now call check method before
+									if (fEditable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN)
+									{
+										fEditable.openEditor();
+									} 
+									fEditable.addAsListener();
+								} catch (PartInitException e) {
+								}
+							}							
+						});
 						editable.setLocalResourceProperties();
 					}
 
@@ -297,7 +316,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 			{
 				// conflict            	
 				// determine which file has a newer timestamp
-				boolean remoteNewer = remoteModifiedStamp > storedModifiedStamp;
+				final boolean remoteNewer = remoteModifiedStamp > storedModifiedStamp;
 
 				// case 1: the remote file has changed since our last download
 				//			it's new timestamp is newer than our stored timestamp (file got
@@ -312,11 +331,25 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 				//			2) Overwrite remote
 				//			3) Save as...
 				//			4) Cancel
-				Shell shell = RSEUIPlugin.getTheSystemRegistryUI().getShell();
+				
+				final SystemEditableRemoteFile remoteEdit = editable;
+				final IFile tFile = tempFile;
+				final IRemoteFile rFile = remoteFile;
+				
+				// upload is run in a job, so the conflict action/dialog needs to run in UI thread
+				Display.getDefault().asyncExec(new Runnable()
+				{
+					public void run()
+					{
+						Shell shell = RSEUIPlugin.getTheSystemRegistryUI().getShell();
 
-				SystemUploadConflictAction conflictAction = new SystemUploadConflictAction(shell, tempFile, remoteFile, remoteNewer);
-				conflictAction.run();
-				editable.updateDirtyIndicator();
+						SystemUploadConflictAction conflictAction = new SystemUploadConflictAction(shell, tFile, rFile, remoteNewer);
+						conflictAction.run();
+						remoteEdit.updateDirtyIndicator();
+					}
+				});
+				
+				
 				
 				
 			}

@@ -44,10 +44,10 @@
 
    <element name="connector">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  A class implementing ITerminalConnector
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnector"/>
@@ -57,7 +57,7 @@
          <attribute name="id" type="string">
             <annotation>
                <documentation>
-                  
+                  Uniquely identify this connector
                </documentation>
             </annotation>
          </attribute>

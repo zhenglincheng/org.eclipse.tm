@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2005 - 2007 IBM Corporation. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -12,14 +13,15 @@
  * 
  * Contributors:
  * Michael Berger (IBM) - Fixing 140408 - FTP upload does not work
- * Javier Montalvo Orús (Symbian) - Migrate to jakarta commons net FTP client
+ * Javier Montalvo Orús (Symbian) - Migrate to apache commons net FTP client
  * Javier Montalvo Orus (Symbian) - Fixing 161211 - Cannot expand /pub folder as anonymous on ftp.wacom.com
  * Javier Montalvo Orus (Symbian) - Fixing 161238 - [ftp] connections to VMS servers are not usable
  * Javier Montalvo Orus (Symbian) - Fixing 176216 - [api] FTP sould provide API to allow clients register their own FTPListingParser
  * Javier Montalvo Orus (Symbian) - [197758] Unix symbolic links are not classified as file vs. folder   
  * Javier Montalvo Orus (Symbian) - [198272] FTP should return classification for symbolic links so they show a link overlay
  * Martin Oberhuber (Wind River) - [204669] Fix ftp path concatenation on systems using backslash separator
- ********************************************************************************/
+ * Javier Montalvo Orus (Symbian) - [198692] FTP should mark files starting with "." as hidden
+ *******************************************************************************/
 
 package org.eclipse.rse.internal.services.files.ftp;
 
@@ -153,7 +155,8 @@ public class FTPHostFile implements IHostFile
 	}
 
 	public boolean isHidden() {
-		return false;
+		String name = getName();
+		return name.charAt(0) == '.';
 	}
 
 	public boolean isRoot() {

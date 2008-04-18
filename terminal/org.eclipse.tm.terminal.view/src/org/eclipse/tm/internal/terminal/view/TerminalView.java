@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2007 Wind River Systems, Inc. and others.
+ * Copyright (c) 2003, 2008 Wind River Systems, Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,11 +13,17 @@
  * Contributors:
  * Michael Scharf (Wind River) - split into core, view and connector plugins 
  * Martin Oberhuber (Wind River) - fixed copyright headers and beautified
+ * Martin Oberhuber (Wind River) - [206892] State handling: Only allow connect when CLOSED
+ * Michael Scharf (Wind River) - [209656] ClassCastException in TerminalView under Eclipse-3.4M3
+ * Michael Scharf (Wind River) - [189774] Ctrl+V does not work in the command input field. 
+ * Michael Scharf (Wind River) - [217999] Duplicate context menu entries in Terminal
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.view;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.runtime.Preferences;
-import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -26,7 +32,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.MenuEvent;
@@ -55,14 +60,11 @@ import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnectorInfo;
 import org.eclipse.tm.internal.terminal.provisional.api.Logger;
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalConnectorExtension;
 import org.eclipse.tm.internal.terminal.provisional.api.TerminalState;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.actions.RetargetAction;
 import org.eclipse.ui.part.ViewPart;
 
 public class TerminalView extends ViewPart implements ITerminalView, ITerminalListener {
@@ -73,6 +75,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
     private static final String STORE_HAS_COMMAND_INPUT_FIELD = "HasCommandInputField"; //$NON-NLS-1$
 
 	private static final String STORE_COMMAND_INPUT_FIELD_HISTORY = "CommandInputFieldHistory"; //$NON-NLS-1$
+
+	private static final String STORE_TITLE = "Title"; //$NON-NLS-1$
 
 	public static final String  FONT_DEFINITION = "terminal.views.view.font.definition"; //$NON-NLS-1$
 
@@ -98,8 +102,6 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 
 	protected TerminalAction fActionToggleCommandInputField;
 	
-	protected TerminalMenuHandlerEdit fMenuHandlerEdit;
-
 	protected TerminalPropertyChangeHandler fPropertyChangeHandler;
 
 	protected boolean fMenuAboutToShow;
@@ -123,6 +125,32 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	public TerminalView() {
 		Logger
 				.log("==============================================================="); //$NON-NLS-1$
+	}
+	
+	String findUniqueTitle(String title) {
+		IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+		String id=	getViewSite().getId();
+		Set names=new HashSet();
+		for (int i = 0; i < pages.length; i++) {
+			IViewReference[] views = pages[i].getViewReferences();
+			for (int j = 0; j < views.length; j++) {
+				IViewReference view = views[j];
+				// only look for views with the same ID
+				if(id.equals(view.getId())) {
+					String name=view.getTitle();
+					if(name!=null)
+						names.add(view.getPartName());
+				}
+			}
+		}
+		// find a unique name
+		int i=1;
+		String uniqueTitle=title;
+		while(true) {
+			if(!names.contains(uniqueTitle))
+				return uniqueTitle;
+			uniqueTitle=title+" "+i++; //$NON-NLS-1$
+		}
 	}
 	/**
 	 * Update the text limits from the preferences
@@ -178,7 +206,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void onTerminalConnect() {
-		if (isConnected())
+		//if (isConnected())
+		if (fCtlTerminal.getState()!=TerminalState.CLOSED)
 			return;
 		if(fCtlTerminal.getTerminalConnectorInfo()==null)
 			setConnector(showSettingsDialog());
@@ -192,13 +221,15 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalConnect() {
-		boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalConnect.setEnabled(bEnabled);
 	}
 
 	private boolean isConnecting() {
-		return fCtlTerminal.getState()==TerminalState.CONNECTING;
+		return fCtlTerminal.getState()==TerminalState.CONNECTING
+		    || fCtlTerminal.getState()==TerminalState.OPENED;
 	}
 	private boolean isConnected() {
 		return fCtlTerminal.getState()==TerminalState.CONNECTED;
@@ -226,7 +257,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// persistent settings.
 
 		TerminalSettingsDlg dlgTerminalSettings = new TerminalSettingsDlg(getViewSite().getShell(),fCtlTerminal.getConnectors(),fCtlTerminal.getTerminalConnectorInfo());
-
+		dlgTerminalSettings.setTerminalTitle(getPartName());
 		Logger.log("opening Settings dialog."); //$NON-NLS-1$
 
 		if (dlgTerminalSettings.open() == Window.CANCEL) {
@@ -239,6 +270,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// When the settings dialog is closed, we persist the Terminal settings.
 
 		saveSettings(dlgTerminalSettings.getConnector());
+		setPartName(dlgTerminalSettings.getTerminalTitle());
 		return dlgTerminalSettings.getConnector();
 	}
 
@@ -247,10 +279,8 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	}
 
 	public void updateTerminalSettings() {
-		boolean bEnabled;
-
-		bEnabled = ((!isConnecting()) && (!fCtlTerminal
-				.isConnected()));
+		//boolean bEnabled = ((!isConnecting()) && (!fCtlTerminal.isConnected()));
+		boolean bEnabled = (fCtlTerminal.getState()==TerminalState.CLOSED);
 
 		fActionTerminalSettings.setEnabled(bEnabled);
 	}
@@ -285,6 +315,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		setContentDescription(strTitle);
 		getViewSite().getActionBars().getStatusLineManager().setMessage(
 				strTitle);
+		setTitleToolTip(getPartName()+": "+strTitle); //$NON-NLS-1$
 	}
 	/**
 	 * @return the setting summary. If there is no connection, or the connection 
@@ -388,11 +419,9 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		// Bind plugin.xml key bindings to this plugin.  Overrides global Control-W key
 		// sequence.
 
-		setPartName(ViewMessages.PROP_TITLE);
-
+		setPartName(findUniqueTitle(ViewMessages.PROP_TITLE));
 		setupControls(wndParent);
 		setupActions();
-		setupMenus();
 		setupLocalToolBars();
 		setupContextMenus();
 		setupListeners(wndParent);
@@ -403,18 +432,9 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 	public void dispose() {
 		Logger.log("entered."); //$NON-NLS-1$
 
-		setPartName("Terminal"); //$NON-NLS-1$
 		TerminalViewPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(fPreferenceListener);
 
 		JFaceResources.getFontRegistry().removeListener(fPropertyChangeHandler);
-		MenuManager menuMgr = getEditMenuManager();
-		Menu menu = menuMgr.getMenu();
-
-		menuMgr.removeMenuListener(fMenuHandlerEdit);
-
-		if (menu != null)
-			menu.removeMenuListener(fMenuHandlerEdit);
-
 		fCtlTerminal.disposeTerminal();
 		super.dispose();
 	}
@@ -441,6 +461,10 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		updatePreferences();
 		TerminalViewPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(fPreferenceListener);
 
+		// restore the title of this view
+		String title=fStore.get(STORE_TITLE);
+		if(title!=null && title.length()>0)
+			setPartName(title);
 	}
 	
 	private void saveSettings(ITerminalConnectorInfo connector) {
@@ -464,6 +488,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 			fStore.put(STORE_COMMAND_INPUT_FIELD_HISTORY, fCommandInputField.getHistory());
 		fStore.put(STORE_HAS_COMMAND_INPUT_FIELD,hasCommandInputField()?"true":"false");   //$NON-NLS-1$//$NON-NLS-2$
 		fStore.put(STORE_SETTING_SUMMARY, getSettingsSummary());
+		fStore.put(STORE_TITLE,getPartName());
 		fStore.saveState(memento);
 	}
 	private ISettingsStore getStore(ITerminalConnectorInfo connector) {
@@ -481,36 +506,7 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		fActionEditClearAll = new TerminalActionClearAll(this);
 		fActionEditSelectAll = new TerminalActionSelectAll(this);
 		fActionToggleCommandInputField = new TerminalActionToggleCommandInputField(this);
-
-		IActionBars actionBars = getViewSite().getActionBars();
-		actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), fActionEditCopy);
-
-		actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(), fActionEditCut);
-
-		actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), fActionEditPaste);
-
-		actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), fActionEditSelectAll);
 	}
-
-	protected void setupMenus() {
-		MenuManager menuMgr = getEditMenuManager();
-		Menu menu = menuMgr.getMenu();
-
-		fMenuHandlerEdit = new TerminalMenuHandlerEdit();
-		menuMgr.addMenuListener(fMenuHandlerEdit);
-		menu.addMenuListener(fMenuHandlerEdit);
-	}
-	/**
-	 * @return the Edit Menu
-	 */
-	private MenuManager getEditMenuManager() {
-		ApplicationWindow workbenchWindow = (ApplicationWindow) TerminalViewPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow();
-		MenuManager menuMgr = workbenchWindow.getMenuBarManager();
-		menuMgr = (MenuManager) menuMgr.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
-		return menuMgr;
-	}
-
-
 	protected void setupLocalToolBars() {
 		IToolBarManager toolBarMgr = getViewSite().getActionBars().getToolBarManager();
 
@@ -530,10 +526,10 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		ctlText = fCtlTerminal.getControl();
 		menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		menu = menuMgr.createContextMenu(ctlText);
+		loadContextMenus(menuMgr);
 		contextMenuHandler = new TerminalContextMenuHandler();
 
 		ctlText.setMenu(menu);
-		menuMgr.setRemoveAllWhenShown(true);
 		menuMgr.addMenuListener(contextMenuHandler);
 		menu.addMenuListener(contextMenuHandler);
 	}
@@ -555,113 +551,6 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 		JFaceResources.getFontRegistry().addListener(fPropertyChangeHandler);
 	}
 
-	// Inner classes
-
-	/**
-	 * Because it is too expensive to update the cut/copy/pase/selectAll actions
-	 * each time the selection in the terminal view has changed, we update them,
-	 * when the menu is shown.
-	 * <p>
-	 * TODO: this might be dangerous because those actions might be shown in the toolbar
-	 * and might not update...
-	 *
-	 */
-	protected class TerminalMenuHandlerEdit implements MenuListener, IMenuListener {
-		protected String fActionDefinitionIdCopy;
-
-		protected String fActionDefinitionIdPaste;
-
-		protected String fActionDefinitionIdSelectAll;
-
-		protected int fAcceleratorCopy;
-
-		protected int fAcceleratorPaste;
-
-		protected int fAcceleratorSelectAll;
-
-		protected TerminalMenuHandlerEdit() {
-			super();
-
-			fActionDefinitionIdCopy = ""; //$NON-NLS-1$
-			fActionDefinitionIdPaste = ""; //$NON-NLS-1$
-			fActionDefinitionIdSelectAll = ""; //$NON-NLS-1$
-
-			fAcceleratorCopy = 0;
-			fAcceleratorPaste = 0;
-			fAcceleratorSelectAll = 0;
-		}
-		public void menuAboutToShow(IMenuManager menuMgr) {
-
-			fMenuAboutToShow = true;
-			updateEditCopy();
-			updateEditCut();
-			updateEditPaste();
-			updateEditSelectAll();
-
-			ActionContributionItem item = (ActionContributionItem) menuMgr.find(ActionFactory.COPY.getId());
-			RetargetAction action = (RetargetAction) item.getAction();
-			fActionDefinitionIdCopy = action.getActionDefinitionId();
-			fAcceleratorCopy = action.getAccelerator();
-			action.setActionDefinitionId(null);
-			action.enableAccelerator(false);
-			item.update();
-
-			item = (ActionContributionItem) menuMgr.find(ActionFactory.PASTE.getId());
-			action = (RetargetAction) item.getAction();
-			fActionDefinitionIdPaste = action.getActionDefinitionId();
-			fAcceleratorPaste = action.getAccelerator();
-			action.setActionDefinitionId(null);
-			action.enableAccelerator(false);
-			item.update();
-
-			item = (ActionContributionItem) menuMgr.find(ActionFactory.SELECT_ALL.getId());
-			action = (RetargetAction) item.getAction();
-			fActionDefinitionIdSelectAll = action.getActionDefinitionId();
-			fAcceleratorSelectAll = action.getAccelerator();
-			action.setActionDefinitionId(null);
-			action.enableAccelerator(false);
-			item.update();
-		}
-		public void menuShown(MenuEvent event) {
-			// do nothing
-		}
-		public void menuHidden(MenuEvent event) {
-			MenuManager menuMgr;
-			ActionContributionItem item;
-			RetargetAction action;
-
-			fMenuAboutToShow = false;
-			updateEditCopy();
-			updateEditCut();
-
-			menuMgr = getEditMenuManager();
-
-			item = (ActionContributionItem) menuMgr.find(ActionFactory.COPY
-					.getId());
-			action = (RetargetAction) item.getAction();
-			action.setActionDefinitionId(fActionDefinitionIdCopy);
-			action.setAccelerator(fAcceleratorCopy);
-			action.enableAccelerator(true);
-			item.update();
-
-			item = (ActionContributionItem) menuMgr.find(ActionFactory.PASTE
-					.getId());
-			action = (RetargetAction) item.getAction();
-			action.setActionDefinitionId(fActionDefinitionIdPaste);
-			action.setAccelerator(fAcceleratorPaste);
-			action.enableAccelerator(true);
-			item.update();
-
-			item = (ActionContributionItem) menuMgr
-					.find(ActionFactory.SELECT_ALL.getId());
-			action = (RetargetAction) item.getAction();
-			action.setActionDefinitionId(fActionDefinitionIdSelectAll);
-			action.setAccelerator(fAcceleratorSelectAll);
-			action.enableAccelerator(true);
-			item.update();
-		}
-	}
-
 	protected class TerminalContextMenuHandler implements MenuListener, IMenuListener {
 		public void menuHidden(MenuEvent event) {
 			fMenuAboutToShow = false;
@@ -678,8 +567,6 @@ public class TerminalView extends ViewPart implements ITerminalView, ITerminalLi
 			updateEditSelectAll();
 			updateEditPaste();
 			updateEditClearAll();
-
-			loadContextMenus(menuMgr);
 		}
 	}
 

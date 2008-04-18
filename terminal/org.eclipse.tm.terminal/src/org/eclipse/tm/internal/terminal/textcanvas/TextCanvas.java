@@ -1,11 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2007 Wind River Systems, Inc. and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Public License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/legal/epl-v10.html 
- * 
- * Contributors: 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
@@ -24,8 +24,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 
 /**
  * A cell oriented Canvas. Maintains a list of "cells".
@@ -35,40 +33,36 @@ import org.eclipse.swt.widgets.Listener;
 public class TextCanvas extends GridCanvas {
 	protected final ITextCanvasModel fCellCanvasModel;
 	/** Renders the cells */
-	private ILinelRenderer fCellRenderer;
+	private final ILinelRenderer fCellRenderer;
 	private boolean fScrollLock;
 	private Point fDraggingStart;
 	private Point fDraggingEnd;
+	private boolean fHasSelection;
+	private ResizeListener fResizeListener;
+	private int fMinColumns=20;
+	private int fMinLines=4;
 	/**
 	 * Create a new CellCanvas with the given SWT style bits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
 	 */
-	public TextCanvas(Composite parent, ITextCanvasModel model, int style) {
+	public TextCanvas(Composite parent, ITextCanvasModel model, int style,ILinelRenderer cellRenderer) {
 		super(parent, style | SWT.H_SCROLL | SWT.V_SCROLL);
+		fCellRenderer=cellRenderer;
+		setCellWidth(fCellRenderer.getCellWidth());
+		setCellHeight(fCellRenderer.getCellHeight());
 		fCellCanvasModel=model;
 		fCellCanvasModel.addCellCanvasModelListener(new ITextCanvasModelListener(){
-			public void cellSizeChanged() {
-				setCellWidth(fCellRenderer.getCellWidth());
-				setCellHeight(fCellRenderer.getCellHeight());
-
-				calculateGrid();
-				
-			}
 			public void rangeChanged(int col, int line, int width, int height) {
 				repaintRange(col,line,width,height);
 			}
 			public void dimensionsChanged(int cols, int rows) {
+				setVirtualExtend(cols+getCellWidth(), rows+getCellHeight());
 				calculateGrid();
 			}
 			public void terminalDataChanged() {
 				if(isDisposed())
 					return;
 				scrollToEnd();
-			}
-		});
-		addListener(SWT.Resize, new Listener() {
-			public void handleEvent(Event e) {
-				calculateGrid();
 			}
 		});
 		addFocusListener(new FocusListener(){
@@ -84,12 +78,24 @@ public class TextCanvas extends GridCanvas {
 			public void mouseDown(MouseEvent e) {
 				if(e.button==1) { // left button
 					fDraggingStart=screenPointToCell(e.x, e.y);
+					fHasSelection=false;
+					if((e.stateMask&SWT.SHIFT)!=0) {
+						Point anchor=fCellCanvasModel.getSelectionAnchor();
+						if(anchor!=null)
+							fDraggingStart=anchor;
+					} else {
+						fCellCanvasModel.setSelectionAnchor(fDraggingStart);
+					}
 					fDraggingEnd=null;
 				}
 			}
-			public void mouseUp(MouseEvent e) {				
+			public void mouseUp(MouseEvent e) {
 				if(e.button==1) { // left button
-					setSelection(screenPointToCell(e.x, e.y));
+					updateHasSelection(e);
+					if(fHasSelection)
+						setSelection(screenPointToCell(e.x, e.y));
+					else
+						fCellCanvasModel.setSelection(-1,-1,-1,-1);
 					fDraggingStart=null;
 				}
 			}
@@ -98,14 +104,31 @@ public class TextCanvas extends GridCanvas {
 
 			public void mouseMove(MouseEvent e) {
 				if (fDraggingStart != null) {
+					updateHasSelection(e);
 					setSelection(screenPointToCell(e.x, e.y));
 				}
 			}
 		});
+		serVerticalBarVisible(true);
+		setHorizontalBarVisible(false);
+	}
+
+	/**
+	 * The user has to drag the mouse to at least one character to make a selection.
+	 * Once this is done, even a one char selection is OK.
+	 *
+	 * @param e
+	 */
+	private void updateHasSelection(MouseEvent e) {
+		if(fDraggingStart!=null) {
+			Point p=screenPointToCell(e.x, e.y);
+			if(fDraggingStart.x!=p.x||fDraggingStart.y!=p.y)
+				fHasSelection=true;
+		}
 	}
 
 	void setSelection(Point p) {
-		if (!p.equals(fDraggingEnd)) {
+		if (fDraggingStart !=null && !p.equals(fDraggingEnd)) {
 			fDraggingEnd = p;
 			if (compare(p, fDraggingStart) < 0) {
 				fCellCanvasModel.setSelection(p.y, fDraggingStart.y, p.x, fDraggingStart.x);
@@ -131,14 +154,57 @@ public class TextCanvas extends GridCanvas {
 			return -1;
 		}
 	}
-	public void setCellRenderer(ILinelRenderer cellRenderer) {
-		fCellRenderer = cellRenderer;
-		setCellWidth(fCellRenderer.getCellWidth());
-		setCellHeight(fCellRenderer.getCellHeight());
-	}
 	public ILinelRenderer getCellRenderer() {
 		return fCellRenderer;
 	}
+
+	public int getMinColumns() {
+		return fMinColumns;
+	}
+
+	public void setMinColumns(int minColumns) {
+		fMinColumns = minColumns;
+	}
+
+	public int getMinLines() {
+		return fMinLines;
+	}
+
+	public void setMinLines(int minLines) {
+		fMinLines = minLines;
+	}
+
+	protected void onResize() {
+		if(fResizeListener!=null) {
+			Rectangle bonds=getClientArea();
+			int lines=bonds.height/getCellHeight();
+			int columns=bonds.width/getCellWidth();
+			// when the view is minimised, its size is set to 0
+			// we don't sent this to the terminal!
+			if(lines>0 && columns>0) {
+				if(columns<fMinColumns) {
+					if(!isHorizontalBarVisble()) {
+						setHorizontalBarVisible(true);
+						bonds=getClientArea();
+						lines=bonds.height/getCellHeight();
+					}
+					columns=fMinColumns;
+				} else if(columns>=fMinColumns && isHorizontalBarVisble()) {
+					setHorizontalBarVisible(false);
+					bonds=getClientArea();
+					lines=bonds.height/getCellHeight();
+					columns=bonds.width/getCellWidth();
+
+				}
+				if(lines<fMinLines)
+					lines=fMinLines;
+				fResizeListener.sizeChanged(lines, columns);
+			}
+		}
+		super.onResize();
+		calculateGrid();
+	}
+
 	private void calculateGrid() {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		// scroll to end
@@ -147,7 +213,6 @@ public class TextCanvas extends GridCanvas {
 		scrollY(getVerticalBar());
 		scrollX(getHorizontalBar());
 
-		updateViewRectangle();
 		getParent().layout();
 		redraw();
 	}
@@ -156,20 +221,20 @@ public class TextCanvas extends GridCanvas {
 			int y=-(getRows()*getCellHeight()-getClientArea().height);
 			Rectangle v=getViewRectangle();
 			if(v.y!=y) {
-				setVirtualOrigin(0,y);
+				setVirtualOrigin(v.x,y);
 			}
 		}
 	}
 	/**
-	 * 
+	 *
 	 * @return true if the cursor should be shown on output....
 	 */
 	public boolean isScrollLock() {
 		return fScrollLock;
 	}
 	/**
-	 * If set then if the size changes  
-	 * @param scrollLock 
+	 * If set then if the size changes
+	 * @param scrollLock
 	 */
 	public void setScrollLock(boolean scrollLock) {
 		fScrollLock=scrollLock;
@@ -181,7 +246,7 @@ public class TextCanvas extends GridCanvas {
 	}
 	protected void drawLine(GC gc, int line, int x, int y, int colFirst, int colLast) {
 		fCellRenderer.drawLine(fCellCanvasModel, gc,line,x,y,colFirst, colLast);
-		
+
 	}
 	protected void visibleCellRectangleChanged(int x, int y, int width, int height) {
 		fCellCanvasModel.setVisibleRectangle(y,x,height,width);
@@ -204,10 +269,41 @@ public class TextCanvas extends GridCanvas {
 	}
 	public void selectAll() {
 		fCellCanvasModel.setSelection(0, fCellCanvasModel.getTerminalText().getHeight(), 0, fCellCanvasModel.getTerminalText().getWidth());
-		
+		fCellCanvasModel.setSelectionAnchor(new Point(0,0));
 	}
 	public boolean isEmpty() {
 		return false;
 	}
+	/**
+	 * Gets notified when the visible size of the terminal changes.
+	 * This should update the model!
+	 *
+	 */
+	public interface ResizeListener {
+		void sizeChanged(int lines, int columns);
+	}
+	/**
+	 * @param listener this listener gets notified, when the size of
+	 * the widget changed. It should change the dimensions of the underlying
+	 * terminaldata
+	 */
+	public void addResizeHandler(ResizeListener listener) {
+		if(fResizeListener!=null)
+			throw new IllegalArgumentException("There can be at most one listener at the moment!"); //$NON-NLS-1$
+		fResizeListener=listener;
+	}
+
+	public void onFontChange() {
+		fCellRenderer.onFontChange();
+		setCellWidth(fCellRenderer.getCellWidth());
+		setCellHeight(fCellRenderer.getCellHeight());
+		calculateGrid();
+	}
+
+	public void setInvertedColors(boolean invert) {
+		fCellRenderer.setInvertedColors(invert);
+		redraw();
+	}
+
 }
 
