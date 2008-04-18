@@ -54,7 +54,7 @@ if [ ! -f eclipse/plugins/org.eclipse.swt_3.3.1.v3346j.jar ]; then
   fi
   # Eclipse SDK 3.3.1: Need the SDK so we can link into docs
   echo "Getting Eclipse SDK..."
-  wget "http://download.eclipse.org/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-SDK-3.3.1-${ep_arch}.tar.gz"
+  wget "http://archive.eclipse.org/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-SDK-3.3.1-${ep_arch}.tar.gz"
   tar xfvz eclipse-SDK-3.3.1-${ep_arch}.tar.gz
   rm eclipse-SDK-3.3.1-${ep_arch}.tar.gz
   cd "${curdir2}"
@@ -114,7 +114,7 @@ fi
 if [ ! -f eclipse/plugins/org.junit_3.8.2.v200706111738/junit.jar ]; then
   # Eclipse Test Framework
   echo "Getting Eclipse Test Framework..."
-  wget "http://download.eclipse.org/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-test-framework-3.3.1.zip"
+  wget "http://archive.eclipse.org/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-test-framework-3.3.1.zip"
   unzip -o eclipse-test-framework-3.3.1.zip
   rm eclipse-test-framework-3.3.1.zip
 fi
