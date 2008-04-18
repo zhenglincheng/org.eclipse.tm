@@ -62,6 +62,7 @@
  * Martin Oberhuber (Wind River) - [204669] Fix ftp path concatenation on systems using backslash separator
  * Martin Oberhuber (Wind River) - [203490] Fix NPE in FTPService.getUserHome()
  * Martin Oberhuber (Wind River) - [203500] Support encodings for FTP paths
+ * Javier Montalvo Orus (Symbian) - [196351] Delete a folder should do recursive Delete
  * Javier Montalvo Orus (Symbian) - [187096] Drag&Drop + Copy&Paste shows error message on FTP connection
  * Javier Montalvo Orus (Symbian) - [208912] Cannot expand /C on a VxWorks SSH Server
  ********************************************************************************/
@@ -109,7 +110,6 @@ import org.eclipse.rse.services.files.IHostFile;
 import org.eclipse.rse.services.files.RemoteFileCancelledException;
 import org.eclipse.rse.services.files.RemoteFileIOException;
 import org.eclipse.rse.services.files.RemoteFileSecurityException;
-import org.eclipse.rse.services.files.RemoteFolderNotEmptyException;
 
 public class FTPService extends AbstractFileService implements IFileService, IFTPService
 {
@@ -1025,55 +1025,90 @@ public class FTPService extends AbstractFileService implements IFileService, IFT
     	fileName = checkEncoding(fileName);
 
 		MyProgressMonitor progressMonitor = new MyProgressMonitor(monitor);
-		progressMonitor.init(FTPServiceResources.FTP_File_Service_Deleting_Task+fileName, 1);
+		progressMonitor.init(FTPServiceResources.FTP_File_Service_Deleting_Task + fileName, IProgressMonitor.UNKNOWN);
+		try {
+			IHostFile file = getFile(remoteParent, fileName, monitor);
 
-		IHostFile file = getFile(remoteParent, fileName, monitor);
-
-		boolean isFile = file.isFile();
-
-		if(_commandMutex.waitForLock(monitor, Long.MAX_VALUE)) {
-			try {
-				FTPClient ftpClient = getFTPClient();
-
-				clearCache(remoteParent);
-				hasSucceeded = FTPReply.isPositiveCompletion(ftpClient.cwd(remoteParent));
-
-				if(hasSucceeded)
+			if (_commandMutex.waitForLock(monitor, Long.MAX_VALUE)) {
+				try {
+					FTPClient ftpClient = getFTPClient();
+					hasSucceeded = internalDelete(ftpClient, remoteParent, fileName, file.isFile(), progressMonitor);
+				}
+				catch (IOException e)
 				{
-					if(isFile)
-					{
-						hasSucceeded = ftpClient.deleteFile(fileName);
-					}
-					else
-					{
-						hasSucceeded = ftpClient.removeDirectory(fileName);
-					}
-				}
-
-				if(!hasSucceeded){
-					throw new Exception(ftpClient.getReplyString()+" ("+fileName+")"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				else
-				{
-					progressMonitor.worked(1);
-				}
-
-			}
-			catch (Exception e) {
-				if(isFile){
 					throw new RemoteFileIOException(e);
 				}
-				else{
-					throw new RemoteFolderNotEmptyException(e);
+				finally {
+					_commandMutex.release();
 				}
-			} finally {
-				_commandMutex.release();
 			}
+		} finally {
+			progressMonitor.end();
 		}
-		progressMonitor.end();
-
+		// Can only return true since !hasSucceeded always leads to Exception
 		return hasSucceeded;
 	}
+
+	private boolean internalDelete(FTPClient ftpClient, String parentPath, String fileName, boolean isFile, MyProgressMonitor monitor)
+			throws RemoteFileIOException, IOException
+	{
+		if(monitor.isCanceled())
+		{
+			throw new RemoteFileCancelledException();
+		}
+
+		clearCache(parentPath);
+		boolean hasSucceeded = FTPReply.isPositiveCompletion(ftpClient.cwd(parentPath));
+		monitor.worked(1);
+
+		if(hasSucceeded)
+		{
+			if(isFile)
+			{
+				hasSucceeded = ftpClient.deleteFile(fileName);
+				monitor.worked(1);
+			}
+			else
+			{
+				hasSucceeded = ftpClient.removeDirectory(fileName);
+				monitor.worked(1);
+			}
+		}
+
+		if(!hasSucceeded){
+			if(isFile)
+			{
+				throw new RemoteFileIOException(new Exception(ftpClient.getReplyString()+" ("+concat(parentPath,fileName)+")")); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			else //folder recursively
+			{
+				String newParentPath = concat(parentPath,fileName);
+
+				ftpClient.changeWorkingDirectory(newParentPath);
+				FTPFile[] fileNames = ftpClient.listFiles();
+
+				for (int i = 0; i < fileNames.length; i++) {
+					String curName = fileNames[i].getName();
+					if (curName == null || curName.equals(".") || curName.equals("..")) { //$NON-NLS-1$ //$NON-NLS-2$
+						continue;
+					}
+					hasSucceeded = internalDelete(ftpClient, newParentPath, curName, fileNames[i].isFile(), monitor);
+				}
+
+				//remove empty folder
+				ftpClient.changeWorkingDirectory(parentPath);
+				hasSucceeded = ftpClient.removeDirectory(fileName);
+				if (!hasSucceeded)
+				{
+					throw new RemoteFileIOException(new Exception(ftpClient.getReplyString() + " (" + concat(parentPath, fileName) + ")")); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+		}
+
+		// Can only return true since !hasSucceeded always leads to Exception
+		return hasSucceeded;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.rse.services.files.IFileService#rename(org.eclipse.core.runtime.IProgressMonitor, java.lang.String, java.lang.String, java.lang.String)
@@ -1469,12 +1504,16 @@ public class FTPService extends AbstractFileService implements IFileService, IFT
 		  private long fWorkToDate;
 
 		  public MyProgressMonitor(IProgressMonitor monitor) {
-			  fMonitor = monitor;
+			  if (monitor == null) {
+				fMonitor = new NullProgressMonitor();
+			} else {
+				fMonitor = monitor;
+			}
 		  }
 
 		  public boolean isCanceled() {
 			  // embedded null progress monitor is never canceled
-			  return fMonitor == null ? false : fMonitor.isCanceled();
+			  return fMonitor.isCanceled();
 		  }
 
 		  public void init(int op, String src, String dest, long max){
