@@ -31,12 +31,12 @@
 <li><b>Apache Commons.Net and ORO</b> are now distributed as verbatim compies
   from the Orbit project, so they will not be changed any more.</li>
 -->
-<li>Highlights of Bugs fixed since TM 2.0.3:
+<li>TM 2.0.4 <b>only fixes bugs in the RSE FTP component</b>, most importantly an invalid adoption of Apache source code:
     <ul>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227754">bug 227754</a> - nor - [ftp] Delete a folder should do recursive Delete</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227755">bug 227755</a> - nor - [ftp] FTP should support remote Drag&amp;Drop + Copy&amp;Paste operations</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227777">bug 227777</a> - <b>nor</b> - <b>[ftp] Invalid adoption of Commons Net NTFTPEntryParser and VMSFTPEntryParser</b></li>
     <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227755">bug 227756</a> - nor - [ftp][releng] Rename Jakarta Commons Net to Apache Commons Net</li>
-    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227777">bug 227777</a> - nor - [ftp] Invalid adoption of Commons Net NTFTPEntryParser and VMSFTPEntryParser
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227755">bug 227755</a> - nor - [ftp] FTP should support remote Drag&amp;Drop + Copy&amp;Paste operations</li>
+    <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=227754">bug 227754</a> - nor - [ftp] Delete a folder should do recursive Delete</li>
 </ul></li>
 <li>Plugins and Features changed since TM 2.0.3:
 <ul><li>Features: org.eclipse.rse.ftp-feature, org.eclipse.rse-feature, org.eclipse.rse.sdk-feature
@@ -44,7 +44,7 @@
         <li>Plugin: <b>org.eclipse.rse.subsystems.files.ftp</b> (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=227756,227777">227756,227777</a>)</li>
     </ul></li>
 </ul></li>
-<li>At least 3 bugs were fixed: Use 
+<li>At least 4 bugs were fixed: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=INVALID&resolution=WORKSFORME&chfieldfrom=2007-09-29&chfieldto=2007-10-10&chfield=resolution&cmdtype=doit">  -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&target_milestone=2.0.4&cmdtype=doit">
   this query</a> to show the list of bugs fixed since the last release,
@@ -153,6 +153,8 @@ but have been fixed in TM 3.0. They have not been backported
 due to the amount of change, the requirement of API changes for
 fixing the bug, or the inherent risk associated:
 <ul>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=224799">bug 224799</a></strike> - cri - [ssh][encodings] Bidi3.4: Remote arabic folder & file names are not displayed properly when using SSH protocol</li>
+  <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=224380">bug 224380</a></strike> - maj - system view should only fire property sheet update event when in focus</li> 
   <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=210563">bug 210563</a></strike> - maj - [regression] Error messages from remote are not shown under filters</li>
   <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=208778">bug 208778</a></strike> - maj - [efs][api] RSEFileStore#getOutputStream() does not support EFS#APPEND</li>
   <li><strike><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=207308">bug 207308</a></strike> - maj - Removing a file type should not delete the platform's file association to editors</li>
