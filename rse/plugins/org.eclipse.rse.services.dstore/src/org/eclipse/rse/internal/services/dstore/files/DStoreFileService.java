@@ -58,7 +58,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -273,7 +272,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 
 
-	public void upload(InputStream inputStream, String remoteParent, String remoteFile, boolean isBinary,
+	public boolean upload(InputStream inputStream, String remoteParent, String remoteFile, boolean isBinary,
 			String hostEncoding, IProgressMonitor monitor) throws SystemMessageException
 	{
 		BufferedInputStream bufInputStream = null;
@@ -439,10 +438,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				throw new RemoteFileCancelledException();
 			}
 		}
+
+		return true;
 	}
 
 
-	public void upload(File file, String remoteParent, String remoteFile, boolean isBinary,
+	public boolean upload(File file, String remoteParent, String remoteFile, boolean isBinary,
 			String srcEncoding, String hostEncoding, IProgressMonitor monitor) throws SystemMessageException
 	{
 		FileInputStream inputStream = null;
@@ -657,10 +658,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 //				}
 			}
 		}
+
+		return true;
 	}
 
 
-	public void download(String remoteParent, String remoteFile, File localFile, boolean isBinary,
+	public boolean download(String remoteParent, String remoteFile, File localFile, boolean isBinary,
 			String encoding, IProgressMonitor monitor) throws SystemMessageException
 	{
 		DataStore ds = getDataStore();
@@ -669,7 +672,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		//int mode = isBinary ? IUniversalDataStoreConstants.BINARY_MODE : IUniversalDataStoreConstants.TEXT_MODE;
 		int mode = IUniversalDataStoreConstants.BINARY_MODE;
 
-		makeSureLocalExists(localFile);
+		if (!makeSureLocalExists(localFile))
+		{
+			FileNotFoundException e = new FileNotFoundException();
+			throw new RemoteFileIOException(e);
+		}
+
 
 		String remotePath = remoteParent + getSeparator(remoteParent) + remoteFile;
 
@@ -771,6 +779,10 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 					codePageConverter.convertFileFromRemoteEncoding(remotePath, localFile, encoding, localEncoding, this);
 				}
+
+
+
+				return true;
 			}
 			else if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_FILE_NOT_FOUND_EXCEPTION))
 			{
@@ -813,9 +825,10 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		{
 			//monitor.done();
 		}
+		return true;
 	}
 
-	private void makeSureLocalExists(File localFile) throws SystemMessageException
+	private boolean makeSureLocalExists(File localFile)
 	{
 		if (!localFile.exists())
 		{
@@ -831,18 +844,19 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 		catch (IOException e)
 		{
-			SimpleSystemMessage message = new SimpleSystemMessage(Activator.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage());
-			throw new SystemMessageException(message);
+			return false;
 		}
+		return true;
 	}
 
 	/**
 	 * Default implementation - just iterate through each file
 	 */
-	public void downloadMultiple(String[] remoteParents, String[] remoteFiles,
+	public boolean downloadMultiple(String[] remoteParents, String[] remoteFiles,
 			File[] localFiles, boolean[] isBinaries, String[] hostEncodings,
 			IProgressMonitor monitor) throws SystemMessageException
 	{
+		boolean result = true;
 
 
 		List downloadListeners = new ArrayList();
@@ -886,7 +900,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 
 		// kick off all downloads
-		for (int i = 0; i < des.length; i++)
+		for (int i = 0; i < des.length && result == true; i++)
 		{
 			int mode = IUniversalDataStoreConstants.BINARY_MODE;
 			DataElement de = des[i];
@@ -895,7 +909,11 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			File localFile = localFiles[i];
 			String hostEncoding = hostEncodings[i];
 
-			makeSureLocalExists(localFile);
+			if (!makeSureLocalExists(localFile))
+			{
+				FileNotFoundException e = new FileNotFoundException();
+				throw new RemoteFileIOException(e);
+			}
 
 			long fileLength = DStoreHostFile.getFileLength(de.getSource());
 			if (monitor != null)
@@ -1000,6 +1018,8 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 							codePageConverter.convertFileFromRemoteEncoding(remoteElement.getName(), localFile, hostEncodings[i], localEncoding, this);
 						}
+
+						result = true;
 					}
 					else if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_FILE_NOT_FOUND_EXCEPTION))
 					{
@@ -1014,19 +1034,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					}
 					else if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_UNSUPPORTED_ENCODING_EXCEPTION))
 					{
-						// TODO inspect this
-						localFile.delete();
-						String msgTxt = ServiceResources.FILEMSG_SECURITY_ERROR;
-						String msgDetails = NLS.bind(ServiceResources.FILEMSG_SECURITY_ERROR_DETAILS, IUniversalDataStoreConstants.DOWNLOAD_RESULT_UNSUPPORTED_ENCODING_EXCEPTION);
-						SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-								IDStoreMessageIds.FILEMSG_SECURITY_ERROR,
-								IStatus.ERROR, msgTxt, msgDetails);
-						throw new SystemMessageException(msg);
 						//SystemMessage msg = getMessage();
 						//throw new SystemMessageException(msg);
 						//UnsupportedEncodingException e = new UnsupportedEncodingException(resultChild.getName());
 						//UniversalSystemPlugin.logError(CLASSNAME + "." + "copy: " + "error reading file " + remotePath, e);
 						//throw new RemoteFileIOException(e);
+						result = false;
 					}
 
 					else if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_IO_EXCEPTION))
@@ -1044,14 +1057,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					}
 					else
 					{
-						// TODO inspect this
-						localFile.delete();
-						String msgTxt = ServiceResources.FILEMSG_SECURITY_ERROR;
-						String msgDetails = NLS.bind(ServiceResources.FILEMSG_SECURITY_ERROR_DETAILS, IUniversalDataStoreConstants.DOWNLOAD_RESULT_IO_EXCEPTION);
-						SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-								IDStoreMessageIds.FILEMSG_SECURITY_ERROR,
-								IStatus.ERROR, msgTxt, msgDetails);
-						throw new SystemMessageException(msg);
+						result = false;
 					}
 				}
 
@@ -1061,17 +1067,19 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				}
 			}
 		}
+		return result;
 	}
 
 	/**
 	 * Default implementation - just iterate through each file
 	 */
-	public void uploadMultiple(File[] localFiles, String[] remoteParents,
+	public boolean uploadMultiple(File[] localFiles, String[] remoteParents,
 			String[] remoteFiles, boolean[] isBinaries, String[] srcEncodings,
 			String[] hostEncodings, IProgressMonitor monitor)
 			throws SystemMessageException
 	{
-		for (int i = 0; i < localFiles.length; i++)
+		boolean result = true;
+		for (int i = 0; i < localFiles.length && result == true; i++)
 		{
 			File localFile = localFiles[i];
 			String remoteParent = remoteParents[i];
@@ -1080,8 +1088,9 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			boolean isBinary = isBinaries[i];
 			String srcEncoding = srcEncodings[i];
 			String hostEncoding = hostEncodings[i];
-			upload(localFile, remoteParent, remoteFile, isBinary, srcEncoding, hostEncoding, monitor);
+			result = upload(localFile, remoteParent, remoteFile, isBinary, srcEncoding, hostEncoding, monitor);
 		}
+		return result;
 	}
 
 	private DataElement getSubjectFor(String remoteParent, String name)
@@ -1350,7 +1359,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 	}
 
-	public void delete(String remoteParent, String fileName, IProgressMonitor monitor) throws SystemMessageException
+	public boolean delete(String remoteParent, String fileName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String remotePath = remoteParent + getSeparator(remoteParent) + fileName;
 		DataElement de = getElementFor(remotePath);
@@ -1373,23 +1382,21 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		// When running a server older than 2.0.1 success is not set for directories, so we must
 		// check if the source message is an empty string
 		if (sourceMsg.equals(IServiceConstants.SUCCESS) || sourceMsg.equals("")) { //$NON-NLS-1$
-			return;
-		}
-		String msgTxt = NLS.bind(ServiceResources.FILEMSG_DELETE_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
-		String msgDetails = ServiceResources.FILEMSG_DELETE_FILE_FAILED_DETAILS;
-		SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-				IDStoreMessageIds.FILEMSG_DELETE_FILE_FAILED,
-				IStatus.ERROR, msgTxt, msgDetails);
+			return true;
+		} else {
+			String msgTxt = NLS.bind(ServiceResources.FILEMSG_DELETE_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
+			String msgDetails = ServiceResources.FILEMSG_DELETE_FILE_FAILED_DETAILS;
+			SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+					IDStoreMessageIds.FILEMSG_DELETE_FILE_FAILED,
+					IStatus.ERROR, msgTxt, msgDetails);
 
-		throw new SystemMessageException(msg);
+			throw new SystemMessageException(msg);
+		}
 	}
 
-	public void deleteBatch(String[] remoteParents, String[] fileNames, IProgressMonitor monitor) throws SystemMessageException
+	public boolean deleteBatch(String[] remoteParents, String[] fileNames, IProgressMonitor monitor) throws SystemMessageException
 	{
-		if (remoteParents.length == 1) {
-			delete(remoteParents[0], fileNames[0], monitor);
-			return;
-		}
+		if (remoteParents.length == 1) return delete(remoteParents[0], fileNames[0], monitor);
 
 		ArrayList dataElements = new ArrayList(remoteParents.length);
 		for (int i = 0; i < remoteParents.length; i++)
@@ -1413,27 +1420,31 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			// When running a server older than 2.0.1 success is not set for directories, so we must
 			// check if the source message is an empty string
 			if (sourceMsg.equals(IServiceConstants.SUCCESS) || sourceMsg.equals("")) { //$NON-NLS-1$
-				return;
-			}
-			String msgTxt = NLS.bind(ServiceResources.FILEMSG_DELETE_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
-			String msgDetails = ServiceResources.FILEMSG_DELETE_FILE_FAILED_DETAILS;
-			SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-					IDStoreMessageIds.FILEMSG_DELETE_FILE_FAILED,
-					IStatus.ERROR, msgTxt, msgDetails);
+				return true;
+			} else {
+				String msgTxt = NLS.bind(ServiceResources.FILEMSG_DELETE_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
+				String msgDetails = ServiceResources.FILEMSG_DELETE_FILE_FAILED_DETAILS;
+				SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+						IDStoreMessageIds.FILEMSG_DELETE_FILE_FAILED,
+						IStatus.ERROR, msgTxt, msgDetails);
 
-			throw new SystemMessageException(msg);
+				throw new SystemMessageException(msg);
+			}
 		}
 		else {
 			// no delete batch descriptor so need to fall back to single command approach
-			for (int i = 0; i < remoteParents.length; i++){
+			boolean result = true;
+			for (int i = 0; i < remoteParents.length && result; i++){
 				String parent = remoteParents[i];
 				String name = fileNames[i];
-				delete(parent, name, monitor);
+				result = delete(parent, name, monitor);
 			}
+			return result;
+
 		}
 	}
 
-	public void rename(String remoteParent, String oldName, String newName, IProgressMonitor monitor) throws SystemMessageException
+	public boolean rename(String remoteParent, String oldName, String newName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String oldPath, newPath = null;
  		// if remoteParent is null or empty then we are doing a move
@@ -1487,48 +1498,57 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			//This operation has been cancelled by the user.
 			throw new SystemMessageException(msg);
 		}
-		if (FileSystemMessageUtil.getSourceMessage(status).equals(IServiceConstants.SUCCESS)) {
-			return;
-		}
-		String msgTxt = NLS.bind(ServiceResources.FILEMSG_RENAME_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
-		String msgDetails = ServiceResources.FILEMSG_RENAME_FILE_FAILED_DETAILS;
-		SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-				IDStoreMessageIds.FILEMSG_RENAME_FILE_FAILED,
-				IStatus.ERROR, msgTxt, msgDetails);
+		if (FileSystemMessageUtil.getSourceMessage(status).equals(IServiceConstants.SUCCESS))
+			return true;
+		else
+		{
+			String msgTxt = NLS.bind(ServiceResources.FILEMSG_RENAME_FILE_FAILED, FileSystemMessageUtil.getSourceLocation(status));
+			String msgDetails = ServiceResources.FILEMSG_RENAME_FILE_FAILED_DETAILS;
+			SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+					IDStoreMessageIds.FILEMSG_RENAME_FILE_FAILED,
+					IStatus.ERROR, msgTxt, msgDetails);
 
-		throw new SystemMessageException(msg);
+			throw new SystemMessageException(msg);
+		}
 	}
 
-	public void rename(String remoteParent, String oldName, String newName, IHostFile oldFile, IProgressMonitor monitor) throws SystemMessageException
+	public boolean rename(String remoteParent, String oldName, String newName, IHostFile oldFile, IProgressMonitor monitor) throws SystemMessageException
 	{
-		rename(remoteParent, oldName, newName, monitor);
+		boolean retVal = rename(remoteParent, oldName, newName, monitor);
 		String newPath = remoteParent + getSeparator(remoteParent) + newName;
 		oldFile.renameTo(newPath);
+		return retVal;
 	}
 
-	protected void moveByCopy(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
+	protected boolean moveByCopy(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
 	{
-		copy(srcParent, srcName, tgtParent, tgtName, monitor);
-		try
+		boolean movedOk = false;
+
+		if (copy(srcParent, srcName, tgtParent, tgtName, monitor))
 		{
-			delete(srcParent, srcName, monitor);
-		}
-		catch (SystemMessageException exc)
-		{
-			if (null != monitor && monitor.isCanceled())
+			try
 			{
-				//This mean the copy operation is ok, but delete operation has been cancelled by user.
-				//The delete() call will take care of recovered from the cancel operation.
-				//So we need to make sure to remove the already copied file/folder.
-				getFile(tgtParent, tgtName, null); //need to call getFile first to put this object into DataElement map first
-				                                   //otherwise it type will default to FilterObject, and could not be deleted properly for virtual object.
-				delete(tgtParent, tgtName, null);
+				movedOk = delete(srcParent, srcName, monitor);
 			}
-			throw exc;
+			catch (SystemMessageException exc)
+			{
+				if (null != monitor && monitor.isCanceled())
+				{
+					//This mean the copy operation is ok, but delete operation has been cancelled by user.
+					//The delete() call will take care of recovered from the cancel operation.
+					//So we need to make sure to remove the already copied file/folder.
+					getFile(tgtParent, tgtName, null); //need to call getFile first to put this object into DataElement map first
+					                                   //otherwise it type will default to FilterObject, and could not be deleted properly for virtual object.
+					delete(tgtParent, tgtName, null);
+				}
+				throw exc;
+			}
 		}
+
+	 	return movedOk;
 	}
 
-	public void move(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
+	public boolean move(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String src = srcParent + getSeparator(srcParent) + srcName;
 		String tgt = tgtParent + getSeparator(tgtParent) + tgtName;
@@ -1536,20 +1556,25 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		boolean isArchive = ArchiveHandlerManager.getInstance().isRegisteredArchive(tgt);
 		if (isVirtual || isArchive)
 		{
-			moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
+			return moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
 		}
 		else
 		{
+			boolean movedOk = false;
 			try
 			{
-				rename("", src, tgt, monitor); //$NON-NLS-1$
+				movedOk = rename("", src, tgt, monitor); //$NON-NLS-1$
 			}
 			catch (SystemMessageException e)
 			{
-				moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
+				return moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
 			}
 			// movedOk should never be false otherwise the last DataElement status was null
-			moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
+			if (!movedOk)
+			{
+				movedOk = moveByCopy(srcParent, srcName, tgtParent, tgtName, monitor);
+			}
+			return movedOk;
 		}
 
 /*
@@ -1644,7 +1669,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 	}
 
-	public void copy(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
+	public boolean copy(String srcParent, String srcName, String tgtParent, String tgtName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		DataStore ds = getDataStore();
 		String srcRemotePath = srcParent + getSeparator(srcParent) + srcName;
@@ -1697,6 +1722,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					monitor.setCanceled(true);
 				}
 			}
+			return true;
 		}
 		else {
 			throw new SystemMessageException(new SimpleSystemMessage(Activator.PLUGIN_ID,
@@ -1706,7 +1732,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 	}
 
-	public void copyBatch(String[] srcParents, String[] srcNames, String tgtParent, IProgressMonitor monitor) throws SystemMessageException
+	public boolean copyBatch(String[] srcParents, String[] srcNames, String tgtParent, IProgressMonitor monitor) throws SystemMessageException
 	{
 		DataStore ds = getDataStore();
 
@@ -1762,14 +1788,18 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				//InterruptedException is used to report user cancellation, so no need to log
 				//This should be reviewed (use OperationCanceledException) with bug #190750
 			}
+			return true;
 		}
 		else {
 			// no copy batch descriptor so need to fall back to single command approach
-			for (int i = 0; i < srcParents.length; i++){
+			boolean result = true;
+			for (int i = 0; i < srcParents.length && result; i++){
 				String parent = srcParents[i];
 				String name = srcNames[i];
-				copy(parent, name, tgtParent, name, monitor);
+				result = copy(parent, name, tgtParent, name, monitor);
 			}
+			return result;
+
 		}
 	}
 
@@ -1845,18 +1875,17 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 	}
 
 
-	public void listMultiple(String[] remoteParents,
-			String[] fileFilters, int[] fileTypes, List hostFiles, IProgressMonitor monitor)
+	public IHostFile[] listMultiple(String[] remoteParents,
+			String[] fileFilters, int[] fileTypes, IProgressMonitor monitor)
 			throws SystemMessageException
 	{
 		String[] queryStrings = getQueryStrings(fileTypes);
 
-		IHostFile[] result = fetchMulti(remoteParents, fileFilters, queryStrings, monitor);
-		hostFiles.addAll(Arrays.asList(result));
+		return fetchMulti(remoteParents, fileFilters, queryStrings, monitor);
 	}
 
-	public void listMultiple(String[] remoteParents,
-			String[] fileFilters, int fileType, List hostFiles, IProgressMonitor monitor)
+	public IHostFile[] listMultiple(String[] remoteParents,
+			String[] fileFilters, int fileType, IProgressMonitor monitor)
 			throws SystemMessageException
 	{
 		String queryString = getQueryString(fileType);
@@ -1868,8 +1897,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			queryStrings[i] = queryString;
 		}
 
-		IHostFile[] result = fetchMulti(remoteParents, fileFilters, queryStrings, monitor);
-		hostFiles.addAll(Arrays.asList(result));
+		return fetchMulti(remoteParents, fileFilters, queryStrings, monitor);
 	}
 
 	protected String[] getPathsFor(String[] remoteParents, String[] remoteFiles)
@@ -2023,7 +2051,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		return true;
 	}
 
-	public void setLastModified(String parent, String name,
+	public boolean setLastModified(String parent, String name,
 			long timestamp, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String remotePath = parent + getSeparator(parent) + name;
@@ -2037,6 +2065,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				// first modify the source attribute to temporarily be the date field
 				de.setAttribute(DE.A_SOURCE, timestamp + "");			 //$NON-NLS-1$
 				ds.command(setCmd, de, true);
+				return true;
 			}
 		}
 		throw new SystemMessageException(new SimpleSystemMessage(Activator.PLUGIN_ID,
@@ -2045,7 +2074,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					CommonMessages.MSG_ERROR_UNEXPECTED));
 	}
 
-	public void setReadOnly(String parent, String name,
+	public boolean setReadOnly(String parent, String name,
 			boolean readOnly, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String remotePath = parent + getSeparator(parent) + name;
@@ -2067,6 +2096,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				{
 					throw new RemoteFileIOException(e);
 				}
+				return true;
 			}
 		}
 		throw new SystemMessageException(new SimpleSystemMessage(Activator.PLUGIN_ID,

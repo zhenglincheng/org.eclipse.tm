@@ -64,34 +64,38 @@ public abstract class AbstractFileService extends AbstractService implements IFi
 		return internalFetch(remoteParent, fileFilter, fileType, monitor);
 	}
 
-	public void listMultiple(String[] remoteParents,
-			String[] fileFilters, int fileTypes[], List hostFiles, IProgressMonitor monitor)
+	public IHostFile[] listMultiple(String[] remoteParents,
+			String[] fileFilters, int fileTypes[], IProgressMonitor monitor)
 			throws SystemMessageException {
 
+		List files = new ArrayList();
 		for (int i = 0; i < remoteParents.length; i++)
 		{
 			IHostFile[] result = list(remoteParents[i], fileFilters[i], fileTypes[i], monitor);
 			for (int j = 0; j < result.length; j++)
 			{
-				hostFiles.add(result[j]);
+				files.add(result[j]);
 			}
 		}
 
+		return (IHostFile[])files.toArray(new IHostFile[files.size()]);
 	}
 
-	public void listMultiple(String[] remoteParents,
-			String[] fileFilters, int fileType, List hostFiles, IProgressMonitor monitor)
+	public IHostFile[] listMultiple(String[] remoteParents,
+			String[] fileFilters, int fileType, IProgressMonitor monitor)
 			throws SystemMessageException {
 
+		List files = new ArrayList();
 		for (int i = 0; i < remoteParents.length; i++)
 		{
 			IHostFile[] result = list(remoteParents[i], fileFilters[i], fileType, monitor);
 			for (int j = 0; j < result.length; j++)
 			{
-				hostFiles.add(result[j]);
+				files.add(result[j]);
 			}
 		}
 
+		return (IHostFile[])files.toArray(new IHostFile[files.size()]);
 	}
 
 	protected boolean isRightType(int fileType, IHostFile node)
@@ -124,42 +128,46 @@ public abstract class AbstractFileService extends AbstractService implements IFi
 	}
 
 
-	public void deleteBatch(String[] remoteParents, String[] fileNames, IProgressMonitor monitor) throws SystemMessageException
+	public boolean deleteBatch(String[] remoteParents, String[] fileNames, IProgressMonitor monitor) throws SystemMessageException
 	{
+		boolean ok = true;
 		for (int i = 0; i < remoteParents.length; i++)
 		{
-			delete(remoteParents[i], fileNames[i], monitor);
+			ok = ok && delete(remoteParents[i], fileNames[i], monitor);
 		}
+		return ok;
 	}
 
 	/**
 	 * Default implementation - just iterate through each file
 	 */
-	public void downloadMultiple(String[] remoteParents, String[] remoteFiles,
+	public boolean downloadMultiple(String[] remoteParents, String[] remoteFiles,
 			File[] localFiles, boolean[] isBinaries, String[] hostEncodings,
 			IProgressMonitor monitor) throws SystemMessageException
 	{
-		for (int i = 0; i < remoteParents.length; i++)
+		boolean result = true;
+		for (int i = 0; i < remoteParents.length && result == true; i++)
 		{
 			String remoteParent = remoteParents[i];
 			String remoteFile = remoteFiles[i];
 			File localFile = localFiles[i];
 			boolean isBinary = isBinaries[i];
 			String hostEncoding = hostEncodings[i];
-			download(remoteParent, remoteFile, localFile, isBinary, hostEncoding, monitor);
+			result = download(remoteParent, remoteFile, localFile, isBinary, hostEncoding, monitor);
 		}
+		return result;
 	}
 
 	/**
 	 * Default implementation - just iterate through each file
 	 */
-	public void uploadMultiple(File[] localFiles, String[] remoteParents,
+	public boolean uploadMultiple(File[] localFiles, String[] remoteParents,
 			String[] remoteFiles, boolean[] isBinaries, String[] srcEncodings,
 			String[] hostEncodings, IProgressMonitor monitor)
 			throws SystemMessageException
 	{
 		boolean result = true;
-		for (int i = 0; i < localFiles.length; i++)
+		for (int i = 0; i < localFiles.length && result == true; i++)
 		{
 			File localFile = localFiles[i];
 			String remoteParent = remoteParents[i];
@@ -168,8 +176,9 @@ public abstract class AbstractFileService extends AbstractService implements IFi
 			boolean isBinary = isBinaries[i];
 			String srcEncoding = srcEncodings[i];
 			String hostEncoding = hostEncodings[i];
-			upload(localFile, remoteParent, remoteFile, isBinary, srcEncoding, hostEncoding, monitor);
+			result = upload(localFile, remoteParent, remoteFile, isBinary, srcEncoding, hostEncoding, monitor);
 		}
+		return result;
 	}
 
 	/**
