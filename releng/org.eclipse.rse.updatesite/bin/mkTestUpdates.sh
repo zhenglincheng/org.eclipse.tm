@@ -337,13 +337,14 @@ java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -digestBuilder -digestOutputDir=$SITE \
     -siteXML=$SITE/site-europa.xml
 
-if false ; then
+##if false ; then
 #Create P2 metadata
 echo "Creating P2 metadata..."
 #Always create from scratch
 cd ${SITE}
-if [ -f content.xml ]; then rm -f content.xml; fi
-if [ -f content.jar ]; then rm -f content.jar; fi
+for x in content.xml content.jar content.jar.pack.gz artifacts.xml artifacts.jar artifacts.jar.pack.gz ; do
+  if [ -f $x ]; then rm -f $x; fi
+done
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.equinox.p2.metadata.generator.EclipseGenerator \
     -updateSite ${SITE}/ \
@@ -354,8 +355,9 @@ java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -artifactRepositoryName "Target Management 3.0 Artifacts" \
     -compress \
     -reusePack200Files \
-    -noDefaultIUs
-fi
+    -noDefaultIUs \
+    -vmargs -Xmx256M
+##fi
 
 cd $SITE
 chgrp -R dsdp-tmadmin .
