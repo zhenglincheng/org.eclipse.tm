@@ -113,12 +113,12 @@ else
   DROPUP=../..
 fi
 
-# EMF 2.4.0
-EMFBRANCH=2.4.0
+# EMF 2.4.1
+EMFBRANCH=2.4.1
 EMFREL=R
-EMFDATE=200806091234
-EMFVER=2.4.0
-if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_2.4.0.v${EMFDATE}.jar ]; then
+EMFDATE=200808251517
+EMFVER=2.4.1
+if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_${EMFVER}.v${EMFDATE}.jar ]; then
   # Need EMF 2.4 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
   cd ${DROPIN}
@@ -143,13 +143,16 @@ if [ ! -f ${DROPIN}/eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
   cd ${DROPUP}
 fi
 
-# CDT 5.0 Runtime
-CDTVER=200806171202
-#CDTNAME=cdt-master-5.0.0-I${CDTVER}.zip
-#CDTLOC=builds/5.0.0/I.I${CDTVER}/${CDTNAME}
-CDTNAME=cdt-master-5.0.0.zip
-CDTLOC=releases/ganymede/dist/${CDTNAME}
-if [ ! -f eclipse/plugins/org.eclipse.cdt.core_5.0.0.${CDTVER}.jar ]; then
+# CDT Runtime
+#CDTREL=5.0.0
+#CDTVER=200806171202
+#CDTNAME=cdt-master-5.0.0.zip
+#CDTLOC=releases/ganymede/dist/${CDTNAME}
+CDTREL=5.0.1
+CDTVER=200808290803
+CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
+CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
+if [ ! -f eclipse/plugins/org.eclipse.cdt.core_${CDTREL}.${CDTVER}.jar ]; then
   echo "Getting CDT Runtime..."
   wget "http://download.eclipse.org/tools/cdt/${CDTLOC}"
   CDTTMP=`pwd`/tmp.$$
@@ -163,13 +166,13 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_5.0.0.${CDTVER}.jar ]; then
     -command install \
     -from file://${CDTTMP} \
     -featureId org.eclipse.cdt.platform \
-    -version 5.0.0.${CDTVER}
+    -version ${CDTREL}.${CDTVER}
   java -jar eclipse/plugins/org.eclipse.equinox.launcher_1.0.*.jar \
     -application org.eclipse.update.core.standaloneUpdate \
     -command install \
     -from file://${CDTTMP} \
     -featureId org.eclipse.cdt \
-    -version 5.0.0.${CDTVER}
+    -version ${CDTREL}.${CDTVER}
   rm -rf ${CDTTMP}
   rm ${CDTNAME}
 fi
