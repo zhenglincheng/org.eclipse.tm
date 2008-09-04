@@ -14,14 +14,14 @@
 # Works on build.eclipse.org -- may need to be adjusted
 # for other hosts.
 #
-# This must be run in $HOME/ws2 in order for the mkTestUpdateSite.sh
+# This must be run in $HOME/ws_30x in order for the mkTestUpdateSite.sh
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testUpdates/bin
+# cd testPatchUpdates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -201,7 +201,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -dPR
+  cvs -q update -dPR -r R3_0_maintenance 
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -210,7 +210,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd -r R3_0_maintenance org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -225,9 +225,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testUpdates
-  if [ -d ${D} ]; then ln -s ${D} testUpdates; else mkdir testUpdates; fi
+if [ ! -d testPatchUpdates ]; then
+  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testPatchUpdates
+  if [ -d ${D} ]; then ln -s ${D} testPatchUpdates; else mkdir testPatchUpdates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
@@ -258,11 +258,11 @@ echo "Your build environment is now created."
 echo ""
 echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
 echo ""
-echo "Test the testUpdates, then copy them to updates:"
+echo "Test the testPatchUpdates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testUpdates/plugins ."
-echo "cp -R ../testUpdates/features ."
+echo "cp -R ../testPatchUpdates/plugins ."
+echo "cp -R ../testPatchUpdates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"
