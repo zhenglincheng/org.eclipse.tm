@@ -41,10 +41,17 @@ fi
 # get newest plugins and features: to be done manually on real update site
 TPVERSION="Target Management 3.0"
 TYPE=none
-if [ `basename $SITE` = testPatchUpdates ]; then
+SITENAME=`basename ${SITE}`
+case ${SITENAME} in
+  test*Updates)   TYPE=test ;;
+  signed*Updates) TYPE=testSigned ;;
+  *milestones)    TYPE=milestone ;;
+  *interim)       TYPE=interim ;;
+  *)              TYPE=unknown ;;
+esac
+if [ ${TYPE} = test ]; then
     echo "Working on test patch update site"
     TPVERSION="${TPVERSION} Test Patch"
-    TYPE=test
     REL=`ls $HOME/ws_30x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
@@ -83,10 +90,9 @@ if [ `basename $SITE` = testPatchUpdates ]; then
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
     #	$HOME/ws_30x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
-elif [ `basename $SITE` = signedPatchUpdates ]; then
+elif [ ${TYPE} = testSigned ]; then
     echo "Working on signed patch update site"
     TPVERSION="${TPVERSION} Signed Test Patch"
-    TYPE=testSigned
     echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
@@ -209,19 +215,18 @@ elif [ `basename $SITE` = signedPatchUpdates ]; then
     wc p1.$$.txt
     diff p1.$$.txt p2.$$.txt | grep -v '^[>]'
     rm f1.$$.txt f2.$$.txt p1.$$.txt p2.$$.txt    
-elif [ `basename $SITE` = milestones ]; then
+elif [ ${TYPE} = milestone ]; then
     echo "Working on milestone update site"
     TPVERSION="${TPVERSION} Milestone"
-    TYPE=milestone
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
-    	-e 's,Project 2.0 Update,Project Milestone Update,g' \
+    	-e 's,Project 2.0 Update,Project 3.0 Milestone Update,g' \
     	-e '\,</h1>,a\
 This site contains Target Management Milestones (I-, S- and M- builds) which are \
-being contributed to the Europa coordinated release train (Eclipse 3.3).' \
+being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
     ## keep 3.0.x features in site.xml
@@ -232,19 +237,18 @@ being contributed to the Europa coordinated release train (Eclipse 3.3).' \
     	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Milestone Update,g' \
+    sed -e 's,Project 2.0 Update,Project 3.0 Milestone Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
-elif [ `basename $SITE` = interim ]; then
+elif [ ${TYPE} = interim ]; then
     echo "Working on interim update site"
     TPVERSION="${TPVERSION} Interim"
-    TYPE=interim
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
     sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
-    	-e 's,Project 2.0 Update,Project Interim Update,g' \
+    	-e 's,Project 2.0 Update,Project 3.0 Interim Update,g' \
     	-e '\,</h1>,a\
 This site contains Target Management Interim Maintenance builds (I-, S-, and M-builds) in order \
 to test them before going live.' \
@@ -257,7 +261,7 @@ to test them before going live.' \
     	-e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Interim Update,g' \
+    sed -e 's,Project 2.0 Update,Project 3.0 Interim Update,g' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = 3.0 ]; then
