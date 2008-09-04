@@ -18,6 +18,12 @@
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
+# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
+# cvs co -r R3_0_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
+# sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
+#
+# - OR -
+#
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
@@ -201,7 +207,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -dPR -r R3_0_maintenance 
+  cvs -q update -r R3_0_maintenance -dPR 
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -210,7 +216,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd -r R3_0_maintenance org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_0_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -247,7 +253,7 @@ if [ ! -h doit_nightly.sh ]; then
 fi
 if [ ! -h setup.sh ]; then
   if [ -f setup.sh ]; then rm -f setup.sh; fi
-  ln -s org.eclipse.rse.build/bin/setup.sh .
+  ln -s org.eclipse.rse.build/setup.sh .
 fi
 chmod a+x doit_irsbuild.sh doit_nightly.sh
 cd org.eclipse.rse.build
