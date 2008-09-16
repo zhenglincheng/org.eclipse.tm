@@ -51,7 +51,7 @@
     [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=dstore&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
   <li><b>RSE Drag and Drop</b> received some fixes to be more pervasive
     [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=drag&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
-  <li><b>Terminals</b> can now be shared in multiple perspective, similar to
+  <li><b>Terminals</b> can now be shared in multiple perspectives, similar to
     what the Eclipse Console provides
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=172483">172483</a>]</li>
   <li><b>Terminal Paste</b> is now possible by pressing the middle mouse button
