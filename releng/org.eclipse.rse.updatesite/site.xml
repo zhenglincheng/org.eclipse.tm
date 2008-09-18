@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site pack200="true" 
 	mirrorsURL="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/updates/2.0/site.xml&amp;format=xml&amp;protocol=http"
-	digestURL="http://download.eclipse.org/dsdp/tm/updates/2.0/">
+	digestURL=".">
 <!-- was disabled due to bug 163406 digestURL="http://download.eclipse.org/dsdp/tm/updates/2.0/" -->
-   <description url="http://download.eclipse.org/dsdp/tm/updates/2.0/">
+   <description url=".">
       This is the Target Management Project 2.0 Update Site.
    </description>
 <!-- BEGIN_2_0 -->
@@ -371,7 +371,7 @@
    <feature url="features/org.eclipse.rse.ssh_2.1.1.qualifier.jar" id="org.eclipse.rse.ssh" version="2.1.1.qualifier">
       <category name="TM and RSE 3.0.1"/>
    </feature>
-   <feature url="features/org.eclipse.rse.telnet_2.1.0.qualifier.jar" id="org.eclipse.rse.telnet" version="2.1.0.qualifier">
+   <feature url="features/org.eclipse.rse.telnet_2.1.1.qualifier.jar" id="org.eclipse.rse.telnet" version="2.1.1.qualifier">
       <category name="TM and RSE 3.0.1"/>
    </feature>
    <feature url="features/org.eclipse.rse.examples_3.0.0.qualifier.jar" id="org.eclipse.rse.examples" version="3.0.0.qualifier">
