@@ -17,7 +17,6 @@
  * Martin Oberhuber (Wind River) - Fix 154874 - handle files with space or $ in the name
  * Martin Oberhuber (Wind River) - Fix 183991 - handle windows C:/ paths for FTP
  * Martin Oberhuber (Wind River) - [246710] Fix quoting backslashes in UNIX shells
- * Martin Oberhuber (Wind River) - [164110] Fix quoting single-quotes in UNIX shells
  ********************************************************************************/
 
 package org.eclipse.rse.services.clientserver;
@@ -227,8 +226,6 @@ public class PathUtility
 				switch(c) {
 				case '$':
 				case '\\':
-				case '\'':
-				case '`':
 					//Need to treat specially to work in both bash and tcsh:
 					//close the quote, insert quoted $, reopen the quote
 					buf.append('"');
@@ -237,6 +234,8 @@ public class PathUtility
 					buf.append('"');
 					break;
 				case '"':
+				case '\'':
+				case '`':
 				case '\n':
 					//just quote it. The newline will work in tcsh only -
 					//bash replaces it by the empty string. But newlines

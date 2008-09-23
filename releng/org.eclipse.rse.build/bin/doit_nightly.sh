@@ -18,13 +18,13 @@ umask 22
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
-export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+export PATH=${HOME}/ws_30x/IBMJava2-ppc-142/bin:$PATH
 
 curdir=`pwd`
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_30x
 rm log-N*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -37,7 +37,7 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-N$stamp.txt
+log=$HOME/ws_30x/log-N$stamp.txt
 touch $log
 cvs -q update -RPd >> $log 2>&1
 daystamp=`date +'%Y%m%d-%H'`
@@ -61,7 +61,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Copy latest SDK in order to give access to DOC server
-cd $HOME/ws2/publish
+cd $HOME/ws_30x/publish
 if [ -d N.latest ]; then
   FILES=`ls -t N${daystamp}*/RSE-SDK-N${daystamp}*.zip | head -1 2>/dev/null`
   echo "FILES=$FILES"
@@ -82,6 +82,6 @@ if [ -d N.latest ]; then
 fi
 
 #Cleanup old nightly builds (leave only last 5 in place)
-cd $HOME/ws2/publish
+cd $HOME/ws_30x/publish
 ls -d N200* | sort | head -n-5 | xargs rm -rf
 

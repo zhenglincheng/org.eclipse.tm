@@ -33,8 +33,6 @@
  * Martin Oberhuber (Wind River) - [235477][ssh] SftpFileService.createFolder() fails for file named "a?*"
  * Martin Oberhuber (Wind River) - [235360][ftp][ssh][local] Return proper "Root" IHostFile
  * David McKnight   (IBM)        - [235472] [ssh] RSE doesn't show correct properties of the file system root ("/")
- * Martin Oberhuber (Wind River) - [238703] getFile() needs to lstat for consistency with internalFetch()
- * Martin Oberhuber (Wind River) - [237616][ssh] Dont perform forced setLastModified during upload
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.ssh.files;
@@ -472,7 +470,7 @@ public class SftpFileService extends AbstractFileService implements ISshService,
 		String fullPath = concat(remoteParent, fileName);
 		if (fDirChannelMutex.waitForLock(monitor, fDirChannelTimeout)) {
 			try {
-				attrs = getChannel("SftpFileService.getFile: " + fullPath).lstat(recodeSafeForJsch(fullPath)); //$NON-NLS-1$
+				attrs = getChannel("SftpFileService.getFile: " + fullPath).stat(recodeSafeForJsch(fullPath)); //$NON-NLS-1$
 				Activator.trace("SftpFileService.getFile <--"); //$NON-NLS-1$
 				node = makeHostFile(remoteParent, fileName, attrs);
 			} catch(Exception e) {
@@ -689,16 +687,12 @@ public class SftpFileService extends AbstractFileService implements ISshService,
 				throw new SystemOperationCancelledException();
 			} else {
 				SftpATTRS attr = channel.stat(dst);
-				////[237616] Modtime will be set by calling setLastModified() from UniversalFileTransferUtility
-				//attr.setACMODTIME(attr.getATime(), (int)(localFile.lastModified()/1000));
-
+				attr.setACMODTIME(attr.getATime(), (int)(localFile.lastModified()/1000));
 				////TODO check if we want to maintain permissions
 				//if (!localFile.canWrite()) {
 				//	attr.setPERMISSIONS( attr.getPermissions() & (~00400));
 				//}
-
-				////[237616] Modtime will be set by calling setLastModified() from UniversalFileTransferUtility
-				//channel.setStat(dst, attr);
+				channel.setStat(dst, attr);
 				if (attr.getSize() != localFile.length()) {
 					//Error: file truncated? - Inform the user!!
 					//TODO test if this works
