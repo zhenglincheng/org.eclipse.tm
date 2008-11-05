@@ -22,6 +22,7 @@
  * David McKnight   (IBM)        - [228587] [dnd] NPE From Refresh on Copy/Paste
  * David McKnight   (IBM)        - [232889] Dragging and dropping files from a remote unix system to a local project does not work
  * David McKnight   (IBM)        - [234721] [dnd] When dragging a file from windows file explorer into RSE, a refresh error is given.
+ * David McKnight   (IBM(        - [250139] backport of bug 248922 - [dnd] Remote to local overwrite copy does not work          
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -29,16 +30,22 @@ package org.eclipse.rse.internal.ui.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.events.ISystemRemoteChangeEvents;
 import org.eclipse.rse.core.events.ISystemResourceChangeEvents;
@@ -53,14 +60,20 @@ import org.eclipse.rse.core.subsystems.ISubSystem;
 import org.eclipse.rse.core.subsystems.ISubSystemConfiguration;
 import org.eclipse.rse.core.subsystems.ISystemDragDropAdapter;
 import org.eclipse.rse.internal.ui.GenericMessages;
+import org.eclipse.rse.internal.ui.SystemResources;
 import org.eclipse.rse.services.clientserver.messages.SystemMessage;
 import org.eclipse.rse.ui.ISystemMessages;
 import org.eclipse.rse.ui.RSEUIPlugin;
 import org.eclipse.rse.ui.SystemBasePlugin;
 import org.eclipse.rse.ui.internal.model.SystemScratchpad;
 import org.eclipse.rse.ui.messages.SystemMessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.undo.CopyResourcesOperation;
+import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
+import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.progress.UIJob;
 
 
@@ -87,6 +100,8 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 	private int _sourceType;
 	private Viewer _originatingViewer;
 	private boolean _ok;
+    private Shell _shell;
+	
 
 	public SystemDNDTransferRunnable(Object target, ArrayList srcObjects, Viewer originatingViewer, int sourceType)
 	{
@@ -99,6 +114,7 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 		_resultTgtObjects = new ArrayList();
 		_setList = new ArrayList();
 		this.setUser(true);
+		_shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();	
 	}
 	
 	protected SystemRemoteResourceSet getSetFor(ISubSystem subSystem, ISystemDragDropAdapter adapter)
@@ -309,6 +325,10 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 	
 	protected boolean transferRSEResourcesToEclipseResource(IResource target, ISubSystem targetSubSystem, IProgressMonitor monitor)
 	{
+		boolean alwaysOverwrite = false;
+		
+		List resourcesToCopy = new ArrayList();
+		IWorkspaceRoot root = target.getWorkspace().getRoot();
 		for (int i = 0; i < _srcObjects.size() && _ok; i++)
 		{
 			Object srcObject = _srcObjects.get(i);
@@ -322,26 +342,125 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 			}
 			else if (srcObject != null)
 			{
+				// find all the files to copy and check that they don't exist first
 				ISystemDragDropAdapter srcAdapter = (ISystemDragDropAdapter) ((IAdaptable) srcObject).getAdapter(ISystemDragDropAdapter.class);
 				Object tempFile = srcAdapter.doDrag(srcObject, true, monitor);
 				if (tempFile instanceof IResource)
 				{
+					boolean canCopy = true;
 					IResource res = (IResource)tempFile;
 					try
-					{
+					{						
 						IPath destPath = target.getFullPath();
 						destPath = destPath.append(res.getName());
-						res.copy(destPath, false, monitor);
+						
+						IResource newResource = root.findMember(destPath);				
+						
+						// check for existing files
+						if (!alwaysOverwrite){				
+							if (newResource != null && newResource.exists()){
+								int result = checkOverwrite(res, newResource);
+								if (result != IDialogConstants.OK_ID){
+									canCopy = false;							
+									if (result == IDialogConstants.CANCEL_ID){
+										// cancel the whole operation
+										monitor.setCanceled(true);
+										return false;
+									}
+									
+									_resultSrcObjects.remove(srcObject);
+								}
+							}
+						}
+						
+						// add to the list of files to copy
+						if (canCopy){
+							resourcesToCopy.add(res);
+						}
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						operationFailed(monitor);
+						SystemBasePlugin.logError(e.getMessage(), e);
 					}
 				}
 			}
 		}
+	
+		// now doing the actual copy 
+		if (!resourcesToCopy.isEmpty()) {
+			IResource[] resources = (IResource[])resourcesToCopy.toArray(new IResource[resourcesToCopy.size()]);
+			IPath destinationPath = target.getFullPath();	
+			CopyResourcesOperation op = new CopyResourcesOperation(resources, destinationPath,
+					SystemResources.RESID_COPY_TITLE);
+			
+				
+			IAdaptable adaptable = WorkspaceUndoUtil.getUIInfoAdapter(_shell);
+			try {
+				PlatformUI.getWorkbench().getOperationSupport()
+						.getOperationHistory().execute(op, monitor,adaptable);
+			} catch (ExecutionException e) {
+				if (e.getCause() instanceof CoreException) {
+					SystemBasePlugin.logError(e.getMessage(), e);
+					displayError(e.getCause().getMessage());
+				} else {
+					SystemBasePlugin.logError(e.getMessage(), e);		
+					displayError(e.getMessage());
+				}
+				
+				operationFailed(monitor);
+				return false;
+			}
+		}
 		
 		return true;
+	}
+	
+	private void displayError(final String message) {
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+		public void run() {
+			Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+			MessageDialog.openError(shell, IDEWorkbenchMessages.CopyFilesAndFoldersOperation_copyFailedTitle,
+				message);
+			}
+		});
+	}
+	
+	
+	private int checkOverwrite(final IResource source, final IResource destination) {
+		final int[] result = new int[1]; // using array since you can't change a final int
+
+		Runnable query = new Runnable() {
+			public void run() {
+				
+				int resultId[] = { 
+						IDialogConstants.OK_ID, 
+						IDialogConstants.CANCEL_ID };
+				
+				String labels[] = new String[] { 
+						IDialogConstants.OK_LABEL,
+						IDialogConstants.CANCEL_LABEL };
+				
+				String title = SystemResources.RESID_COLLISION_RENAME_TITLE;
+				String correctedVerbiage = SystemResources.RESID_COLLISION_RENAME_VERBIAGE.replace("&1" , "{0}");  //$NON-NLS-1$//$NON-NLS-2$
+				String msg = NLS.bind(correctedVerbiage, destination.getFullPath().makeRelative());			
+					
+				MessageDialog dialog = new MessageDialog(
+						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+						title,
+						null, msg, MessageDialog.QUESTION, labels, 0);
+				dialog.open();
+				if (dialog.getReturnCode() == SWT.DEFAULT) {
+					// A window close returns SWT.DEFAULT - mapped to a cancel
+					result[0] = IDialogConstants.CANCEL_ID;
+				} else {
+					result[0] = resultId[dialog.getReturnCode()];
+				}
+			}
+		};
+	
+		PlatformUI.getWorkbench().getDisplay().syncExec(query);
+		return result[0];
 	}
 	
 	protected boolean transferNonRSEResources(Object target, ISubSystem targetSubSystem, ISystemDragDropAdapter targetAdapter, IProgressMonitor monitor)
