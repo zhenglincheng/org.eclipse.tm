@@ -30,7 +30,8 @@
  * David McKnight    (IBM)  - [233494] Show in Table Action should be removed from promptable filters
  * David McKnight   (IBM)        - [238507] Promptable Filters refreshed after modifying filter strings
  * David McKnight   (IBM)        - [244824] filter not refreshed if child is "empty list" or system message node
- * David McKnight   (IBM)        - [252368] Backport not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc. 
+ * David McKnight   (IBM)        - [252368] Backport not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc.
+ * David McKnight   (IBM)        - [254641] Backport Promptable filter's shouldn't require supportsCommands on the subsystem to be false 
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -316,7 +317,7 @@ public class SystemViewFilterReferenceAdapter
 		final ISubSystemConfiguration ssf = SubSystemHelpers.getParentSubSystemConfiguration(referencedFilter);
 
 		// PROMPTING FILTER?...
-		if (promptable && !ssf.supportsCommands())
+		if (promptable)
 		{
 			final Object[] pchildren = new SystemMessageObject[1];
 			final Object pelement = element;
