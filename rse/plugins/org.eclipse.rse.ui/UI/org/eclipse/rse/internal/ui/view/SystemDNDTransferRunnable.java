@@ -61,6 +61,7 @@ import org.eclipse.rse.core.subsystems.ISubSystemConfiguration;
 import org.eclipse.rse.core.subsystems.ISystemDragDropAdapter;
 import org.eclipse.rse.internal.ui.GenericMessages;
 import org.eclipse.rse.internal.ui.SystemResources;
+import org.eclipse.rse.services.clientserver.messages.SimpleSystemMessage;
 import org.eclipse.rse.services.clientserver.messages.SystemMessage;
 import org.eclipse.rse.ui.ISystemMessages;
 import org.eclipse.rse.ui.RSEUIPlugin;
@@ -400,14 +401,16 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 				PlatformUI.getWorkbench().getOperationSupport()
 						.getOperationHistory().execute(op, monitor,adaptable);
 			} catch (ExecutionException e) {
+				SystemMessage errorMessage = RSEUIPlugin.getPluginMessage(ISystemMessages.MSG_EXCEPTION_OCCURRED);
 				if (e.getCause() instanceof CoreException) {
-					SystemBasePlugin.logError(e.getMessage(), e);
-					displayError(e.getCause().getMessage());
+					SystemBasePlugin.logError(e.getMessage(), e);					
+					errorMessage.makeSubstitution(e.getCause().getMessage());
 				} else {
 					SystemBasePlugin.logError(e.getMessage(), e);		
-					displayError(e.getMessage());
+					errorMessage.makeSubstitution(e.getMessage());					
 				}
 				
+				showErrorMessage(errorMessage);
 				operationFailed(monitor);
 				return false;
 			}
@@ -416,15 +419,6 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 		return true;
 	}
 	
-	private void displayError(final String message) {
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-		public void run() {
-			Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-			MessageDialog.openError(shell, IDEWorkbenchMessages.CopyFilesAndFoldersOperation_copyFailedTitle,
-				message);
-			}
-		});
-	}
 	
 	
 	private int checkOverwrite(final IResource source, final IResource destination) {
