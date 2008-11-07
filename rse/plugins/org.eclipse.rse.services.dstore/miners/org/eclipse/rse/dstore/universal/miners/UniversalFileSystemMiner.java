@@ -37,6 +37,8 @@
  * David McKnight  (IBM)  - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight  (IBM)  - [244277] [dstore] NPE on file save from old client
  * David McKnight  (IBM)  - [246234] Change of file permissions changes the file owner
+ * David McKnight  (IBM)  - [250458] handleCommand should not blindly set the status to "done"
+ * David McKnight  (IBM)  - [251744] Backport [dstore] problems querying symbolic link folder
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -62,6 +64,7 @@ import org.eclipse.rse.internal.dstore.universal.miners.filesystem.CopySingleThr
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.CreateFileThread;
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.CreateFolderThread;
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.DeleteThread;
+import org.eclipse.rse.internal.dstore.universal.miners.filesystem.FileClassifier;
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.FileDescriptors;
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.FileQueryThread;
 import org.eclipse.rse.internal.dstore.universal.miners.filesystem.RenameThread;
@@ -234,7 +237,8 @@ public class UniversalFileSystemMiner extends Miner {
 			UniversalServerUtilities.logError(CLASSNAME,
 					"Invalid query to handlecommand", null, _dataStore); //$NON-NLS-1$
 		}
-		return statusDone(status);
+		//return statusDone(status);
+		return status; // can't assume operation is done since it could be done via a thread
 	}
 
 	private DataElement handleCopyBatch(DataElement targetFolder, DataElement theElement, DataElement status)
@@ -315,7 +319,7 @@ public class UniversalFileSystemMiner extends Miner {
 			//return status;
 		}
 
-		return statusDone(status);
+		return status; // search is in the thread, so it's not done yet
 	}
 
 	public DataElement handleCancel(DataElement subject, DataElement status) {
@@ -894,6 +898,7 @@ public class UniversalFileSystemMiner extends Miner {
 	 */
 	public DataElement handleQueryGetRemoteObject(DataElement subject,
 			DataElement status, String queryType) throws SystemMessageException {
+		
 		File fileobj = null;
 		boolean isVirtual = false;
 		boolean isFilter = false;
@@ -911,11 +916,20 @@ public class UniversalFileSystemMiner extends Miner {
 				}
 				else {
 					filterValue = System.getProperty("user.home"); //$NON-NLS-1$
+				}				
+				try {
+					// "." needs canonical file
+					fileobj = new File(filterValue).getCanonicalFile();
 				}
+				catch (Exception e){
+					fileobj = new File(filterValue);
+				}
+				
 				subject.setAttribute(DE.A_VALUE, filterValue);
 			}
-			if (!isVirtual)
+			else if (!isVirtual){
 				fileobj = new File(filterValue);
+			}
 		}
 		else if (queryType.equals(IUniversalDataStoreConstants.UNIVERSAL_FILE_DESCRIPTOR))
 		{
@@ -947,19 +961,26 @@ public class UniversalFileSystemMiner extends Miner {
 		}
 
 		if (!isVirtual && fileobj != null && fileobj.exists()) {
-
-			// Get the canonical path name so that we preserve case for Windows
-			// systems.
-			// Even though Windows is case insensitive, we still want to
-			// preserve case
-			// when we show the path as a property to the user
-			try {
-				fullName = fileobj.getCanonicalPath();
-
-			} catch (IOException e) {
-				return statusDone(status);
+			
+			String oldProperties = subject.getAttribute(DE.A_SOURCE);
+			boolean isSymlink = oldProperties != null && (oldProperties.indexOf("symbolic link") > 0);//$NON-NLS-1$
+			fullName = fileobj.getAbsolutePath();
+			
+			/* should not need canonical path here.  It causes bug 251729
+			{
+				// Get the canonical path name so that we preserve case for Windows
+				// systems.
+				// Even though Windows is case insensitive, we still want to
+				// preserve case
+				// when we show the path as a property to the user
+				try {
+					fullName = fileobj.getCanonicalPath();
+				} catch (IOException e) {
+					return statusDone(status);
+				}
 			}
-
+			 */
+			
 			if (fileobj.isFile())
 			{
 				if (_archiveHandlerManager.isArchive(fileobj)) {
@@ -993,22 +1014,20 @@ public class UniversalFileSystemMiner extends Miner {
 			subject.setAttribute(DE.A_NAME, name);
 			subject.setAttribute(DE.A_VALUE, path);
 
-
-
-			// DKM - do basic property stuff here
-			subject.setAttribute(DE.A_SOURCE, setProperties(fileobj));
-
-
-			/*
-			// classify the file too
-			if (fileobj.isFile()) {
-				subject.setAttribute(DE.A_SOURCE, subject
-						.getAttribute(DE.A_SOURCE)
-						+ "|" + FileClassifier.classifyFile(fileobj));
+			String properties = setProperties(fileobj);
+			
+			// if this is a symbolic link or a file, reclassify
+			if (fileobj.isFile() || isSymlink){								 //$NON-NLS-1$
+				// classify the file too
+				FileClassifier classifier = new FileClassifier(subject);
+				subject.setAttribute(DE.A_SOURCE, properties + "|" + classifier.classifyFile(fileobj)); //$NON-NLS-1$
 			}
-			*/
+			else {
+				subject.setAttribute(DE.A_SOURCE, properties + "|" + "directory");  //$NON-NLS-1$//$NON-NLS-2$
+			}
 
 			status.setAttribute(DE.A_SOURCE, IServiceConstants.SUCCESS);
+
 		} else if (isVirtual) {
 			try {
 				String goodFullPath = ArchiveHandlerManager
@@ -1101,16 +1120,14 @@ public class UniversalFileSystemMiner extends Miner {
 
 
 	/**
-	 * Method to obtain the classificatoin string of file or folder.
+	 * Method to obtain the classification string of file or folder.
 	 */
 	protected String getClassificationString(String s) {
 
-		//StringTokenizer tokenizer = new StringTokenizer(s, IServiceConstants.TOKEN_SEPARATOR);
 		String[] str = s.split("\\"+IServiceConstants.TOKEN_SEPARATOR); //$NON-NLS-1$
 		int tokens = str.length;
 		if (tokens < 10)
 		    return null;
-
 
 		return (str[10]);
 	}
@@ -1901,11 +1918,55 @@ public class UniversalFileSystemMiner extends Miner {
 	private DataElement handleQueryFilePermissions(DataElement subject, DataElement status)
 	{
 		File file = getFileFor(subject);
-
+		if (file == null){
+			// subject may have been a filter pointing to a virtual
+			return statusCancelled(status);
+		}
+	
+		
 		String result = getFilePermission(file, PERMISSION_ALL);
         status.setAttribute(DE.A_SOURCE, result);
-    	statusDone(status);
-
+ 
+    	
+    	// for z/os, also need to update the classification if this is a symbolic link
+    	String theOS = System.getProperty("os.name"); //$NON-NLS-1$
+    	boolean isZ = theOS.toLowerCase().startsWith("z");//$NON-NLS-1$	
+    	if (isZ){
+			String path = file.getAbsolutePath();
+			try {
+				String canonical = file.getCanonicalPath();
+				if (!path.equals(canonical)){
+					// reset the properties    					
+					String properties = setProperties(file, false);
+					
+					// fileType
+					String fileType = file.isFile() ? "file" : "directory";  //$NON-NLS-1$//$NON-NLS-2$
+					
+					// classification
+					StringBuffer type = new StringBuffer(FileClassifier.STR_SYMBOLIC_LINK);
+					type.append('(');
+	                type.append(fileType);
+	                type.append(')');
+	                type.append(':');
+	                type.append(canonical);
+	                
+				    StringBuffer classifiedProperties = new StringBuffer(properties);
+				    classifiedProperties.append('|');
+                    classifiedProperties.append(type);
+					    					    					
+	                subject.setAttribute(DE.A_SOURCE, classifiedProperties.toString());
+	                _dataStore.refresh(subject);
+				}
+			}
+			catch (SystemMessageException e)
+			{    				
+			}
+			catch (IOException e)
+			{    				
+			}
+    	}
+    	
+       	statusDone(status);
 		return status;
 	}
 	
