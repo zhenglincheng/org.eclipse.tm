@@ -16,24 +16,30 @@
  * Martin Oberhuber (Wind River) - [186640] Add IRSESystemType.testProperty() 
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * David McKnight (IBM) 		 - [225747] [dstore] Trying to connect to an "Offline" system throws an NPE
+ * David McKnight (IBM)          - [251163] Backport Work Offline requires being selected twice to turn on Offline Mode
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.actions;
+
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.ISystemRegistry;
+import org.eclipse.rse.core.subsystems.IConnectorService;
 import org.eclipse.rse.core.subsystems.ISubSystem;
 import org.eclipse.rse.internal.ui.SystemResources;
+import org.eclipse.rse.services.clientserver.messages.CommonMessages;
 import org.eclipse.rse.ui.ISystemContextMenuConstants;
 import org.eclipse.rse.ui.RSEUIPlugin;
 import org.eclipse.rse.ui.SystemBasePlugin;
 import org.eclipse.rse.ui.actions.SystemBaseAction;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 
@@ -69,6 +75,7 @@ public class SystemWorkOfflineAction extends SystemBaseAction
 		  return false;
 	}
 	
+	
 	/**
 	 * Called when this action is selection from the popup menu.
 	 */
@@ -89,40 +96,66 @@ public class SystemWorkOfflineAction extends SystemBaseAction
 			// to collapse 
 			sr.setHostOffline(conn, true);
 			setChecked(true);
-						
-			// online going offline, disconnect all subsystems
-			ISubSystem[] subsystems = sr.getSubSystems(conn);
-			if (subsystems != null)
-			{
-				boolean cancelled = false;				
-				for (int i = 0; i < subsystems.length && !cancelled; i++)
-				{
-					try 
-					{
-						subsystems[i].disconnect(false);
-					} catch (InterruptedException e) {
-						// user cancelled disconnect
-						cancelled = true;
-					} catch (Exception e) {
-						SystemBasePlugin.logError("SystemWorkOfflineAction.run", e); //$NON-NLS-1$
-					}
-				}
-			}
 			
-			Job job = new Job("Ensure Disconnected")
-			{
+			// online going offline, disconnect all subsystems
+			final Display display = Display.getCurrent();
+			String jobName =  NLS.bind(CommonMessages.MSG_DISCONNECT_PROGRESS, conn.getName());
+			Job disconnectJob = new Job(jobName) 
+			{										
 				public IStatus run(IProgressMonitor monitor){
-						// check that everything was disconnedted okay and this is not the local connection
-						if(sr.isAnySubSystemConnected(conn) && !conn.getSystemType().isLocal())
-						{
-							// backout changes, likely because user cancelled the disconnect
+					ISubSystem[] subsystems = sr.getSubSystems(conn);
+					if (subsystems != null && subsystems.length > 0){
+						boolean cancelled = false;
+						// disconnect each connector service associated with the host
+						for (int i = 0; i < subsystems.length && !cancelled; i++){
+																					
+							final ISubSystem subSystem = subsystems[i];
+							
+							if(subSystem.getSubSystemConfiguration().supportsSubSystemConnect()){
+								if (subSystem.isConnected()){
+									// should always have a connector service
+									IConnectorService cs = subSystem.getConnectorService();
+									if (cs.isConnected()){
+										try {
+											cs.disconnect(monitor);
+										}
+										catch (Exception e){					
+											SystemBasePlugin.logError(e.getMessage());
+										}
+										
+										// failed to disconnect?
+										if (cs.isConnected()){
+											cancelled = true;
+										}								
+										else {
+											cs.reset();
+											display.asyncExec(new Runnable(){
+												public void run(){
+													// this will take care of updating all subsystems
+													sr.connectedStatusChange(subSystem, false, true, false);
+												}
+											});
+										}
+									}
+								}
+							}
+							if (monitor.isCanceled()){
+								cancelled = true;
+							}
+						}					
+						
+						if (cancelled){ // either monitor got cancelled or disconnect failed
 							setChecked(false);
 							sr.setHostOffline(conn, false);
+							return Status.CANCEL_STATUS;
 						}
-						return Status.OK_STATUS;
 					}
-			};
-			job.schedule();
+					return Status.OK_STATUS;
+				}
+				
+				};
+									
+			disconnectJob.schedule();
 		}
 	}
 
