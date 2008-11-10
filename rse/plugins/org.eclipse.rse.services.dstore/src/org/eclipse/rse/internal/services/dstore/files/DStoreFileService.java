@@ -48,6 +48,9 @@
  * Martin Oberhuber (Wind River) - [235463][ftp][dstore] Incorrect case sensitivity reported on windows-remote
  * David McKnight   (IBM)        - [236039][dstore][efs] DStoreInputStream can report EOF too early - clean up how it waits for the local temp file to be created
  * David McKnight   (IBM)        - [240710] [dstore] DStoreFileService.getFile() fails with NPE for valid root files
+ * David McKnight   (IBM)        - [250140] backport of Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [250368] Backport  [dstore] Remote search doesn't find the right result
+ * David McKnight   (IBM)        - [251551] Backport [dstore] Pasting local folder to remote does not work in some case
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -74,6 +77,7 @@ import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStore;
 import org.eclipse.dstore.core.model.DataStoreAttributes;
 import org.eclipse.dstore.core.model.DataStoreResources;
+import org.eclipse.dstore.core.model.DataStoreSchema;
 import org.eclipse.dstore.core.model.IDataStoreProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.dstore.universal.miners.IUniversalDataStoreConstants;
@@ -195,8 +199,31 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		return IUniversalDataStoreConstants.UNIVERSAL_FILESYSTEM_MINER_ID;
 	}
 
-	protected String getByteStreamHandlerId()
+	protected DataElement getMinerElement()
 	{
+		super.getMinerElement();
+		if (_minerElement == null){
+			// could be back-level version
+			_minerElement = getMinerElement("com.ibm.etools.systems.universal.miners.UniversalFileSystemMiner"); //$NON-NLS-1$
+		}
+		return _minerElement;
+	}
+
+	private boolean isOldIBMMiner()
+	{
+		if (_minerElement != null){
+			return _minerElement.getSource().equals("com.ibm.etools.systems.universal.miners.UniversalFileSystemMiner"); //$NON-NLS-1$
+		}
+		return false;
+	}
+	
+	protected String getByteStreamHandlerId()
+	{	
+		if (isOldIBMMiner())
+		{
+			// if so, use the old id
+			return "com.ibm.etools.systems.universal.miners.UniversalByteStreamHandler"; //$NON-NLS-1$
+		}
 		return UniversalByteStreamHandler.class.getName();
 	}
 
@@ -457,11 +484,27 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		boolean transferSuccessful = false;
 
 		long totalBytes = file.length();
+		
+		DataElement uploadLog = findUploadLog();
+		String remotePath = remoteParent + getSeparator(remoteParent) + remoteFile;
+		
+		DataStore ds = getDataStore();
+		DataElement result = ds.find(uploadLog, DE.A_NAME, remotePath,1);
+		if (result == null) 
+		{
+			result = ds.createObject(uploadLog, "uploadstatus", remotePath);
+			result.setAttribute(DE.A_SOURCE, "running");
+			result.setAttribute(DE.A_VALUE, "");
+			
+			DataElement cmd = getDataStore().findCommandDescriptor(DataStoreSchema.C_SET);
+			
+			DataElement setstatus = ds.command(cmd, uploadLog, true);
+		}
 
 		try
 		{
 			String byteStreamHandlerId = getByteStreamHandlerId();
-			String remotePath = remoteParent + getSeparator(remoteParent) + remoteFile;
+
 
 			// create an empty file and append data to it later
 			// this handles the case of uploading empty files as well
@@ -473,9 +516,6 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 				//subMonitor = new SubProgressMonitor(monitor, (int)totalBytes);
 			}
 
-
-//			DataElement uploadLog = findUploadLog();
-			findUploadLog();
 //			listener = new FileTransferStatusListener(remotePath, shell, monitor, getConnectorService(), ds, uploadLog);
 	//		ds.getDomainNotifier().addDomainListener(listener);
 
@@ -583,6 +623,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 				available = bufInputStream.available();
 			}
+			
 	//		if (listener.uploadHasFailed())
 		//	{
 		//		showUploadFailedMessage(listener, source);
@@ -639,26 +680,18 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			{
 			    if (transferSuccessful)
 			    {
-
-
-//					try
-//					{
-//						listener.waitForUpdate(null, 2);
-//
-//					}
-//					catch (InterruptedException e)
-//					{
-//						UniversalSystemPlugin.logError(CLASSNAME + " InterruptedException while waiting for command", e);
-//					}
-
+			    	String resultStr = result.getSource();
+			    	while (!resultStr.equals("success"))
+			    	{
+			    		// sleep until the upload is complete
+			    		try {
+			    			Thread.sleep(200);
+			    		}
+			    		catch (InterruptedException e){			    			
+			    		}
+			    		resultStr = result.getSource();
+			    	}
 			    }
-
-				//ds.getDomainNotifier().removeDomainListener(listener);
-
-//				if (listener.uploadHasFailed())
-//				{
-//					showUploadFailedMessage(listener, source);
-//				}
 			}
 		}
 	}
@@ -1130,8 +1163,25 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			de = getElementFor(name);
 		}
 		
+		
 		// with 207095, it's possible to get here unconnected such that there is no element
 		if (de != null) {
+			if (isOldIBMMiner()){
+				// only accepts filters for file queries
+				if (!de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
+					StringBuffer buf = new StringBuffer(remoteParent);
+					String sep = getSeparator(remoteParent);
+					if (sep.length()>0 && !remoteParent.endsWith(sep)) {
+					    buf.append(sep);
+					}
+					buf.append(name);
+					String fullPath = buf.toString();
+					de.setAttribute(DE.A_NAME, fullPath);
+					de.setAttribute(DE.A_VALUE, fullPath);
+					de.setAttribute(DE.A_TYPE, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR);
+				}
+			}
+			
 			dsQueryCommand(de, null,  IUniversalDataStoreConstants.C_QUERY_GET_REMOTE_OBJECT, monitor);
 			//getFile call should also need to convert this DataElement into a HostFile using
 			//convertToHostFile() call.  This way, this DataElement will be put into _fileMap.
@@ -1152,9 +1202,25 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 		// construct default array of commands
 		String[] queryStrings = new String[remoteParents.length];
+		boolean oldMiner = isOldIBMMiner();
+		
 		for (int i = 0; i < queryStrings.length; i++)
 		{
 			queryStrings[i] = IUniversalDataStoreConstants.C_QUERY_GET_REMOTE_OBJECT;
+			if (oldMiner){
+				if (!subjects[i].getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
+					StringBuffer buf = new StringBuffer(remoteParents[i]);
+					String sep = getSeparator(remoteParents[i]);
+					if (sep.length()>0 && !remoteParents[i].endsWith(sep)) {
+					    buf.append(sep);
+					}
+					buf.append(names[i]);
+					String fullPath = buf.toString();
+					subjects[i].setAttribute(DE.A_NAME, fullPath);
+					subjects[i].setAttribute(DE.A_VALUE, fullPath);
+					subjects[i].setAttribute(DE.A_TYPE, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR);
+				}
+			}
 		}
 
 		dsQueryCommandMulti(subjects, null, queryStrings, monitor);
@@ -1914,6 +1980,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		return results;
 	}
 
+
 	protected DataElement getElementFor(String path)
 	{
 		if (!isInitialized())
@@ -1930,10 +1997,25 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 		String normalizedPath = PathUtility.normalizeUnknown(path);
 		DataElement element = (DataElement)_fileElementMap.get(normalizedPath);
-		if (element != null && element.isDeleted())
+		if (element != null)
 		{
-			_fileElementMap.remove(normalizedPath);
-			element = null;
+			if (element.isDeleted()){
+				_fileElementMap.remove(normalizedPath);
+				element = null;
+			}
+			else {
+				// make sure the mapping is still correct
+				// the file could have been renamed before as in bug 251429
+				String fparent = element.getValue();
+				StringBuffer pathBuf = new StringBuffer(fparent);
+				String sep = PathUtility.getSeparator(fparent);
+				pathBuf.append(sep);
+				pathBuf.append(element.getName());
+				if (!normalizedPath.equals(pathBuf.toString())){
+					_fileElementMap.remove(normalizedPath);
+					element = null;
+				}
+			}
 		}
 		if (element == null || element.isDeleted())
 		{
@@ -1942,7 +2024,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 		return element;
 	}
-
+	
 
 	/**
 	 * Get a dstore IHostFile object for the given absolute path, provided
