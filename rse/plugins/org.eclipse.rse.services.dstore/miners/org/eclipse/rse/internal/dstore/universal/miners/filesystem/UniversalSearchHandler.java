@@ -132,12 +132,9 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 			_miner.statusCancelled(_status);
 		}
 		else {
-			// NOTE: do not call miner statusDone() method since we want to
-			// update the status immediately.
-			// Otherwise we don't get an event on the client corresponding
-			// to status refresh. As a result client thinks
-			// search isn't finished.
-			// _miner.statusDone(_status);
+			// previously, the status would be set to done immediately because search results were sent
+			// back to the client as they arrived.  Now, the search handler wait until the search has
+			// completed before setting the status to done
 			_status.setAttribute(DE.A_NAME, "done"); //$NON-NLS-1$
 	        _dataStore.refresh(_status);	// true indicates refresh immediately
 
@@ -169,7 +166,8 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				result = _alreadySearched.contains(canonicalFile);
 			}
 		}
-		catch (Exception e){				
+		catch (Exception e){			
+			_dataStore.trace(e);
 		}
 		return result;
 	}
@@ -184,6 +182,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				}
 				catch (Exception e){
 					_alreadySearched.add(theFile);
+					_dataStore.trace(e);
 				}
 			}
 	
