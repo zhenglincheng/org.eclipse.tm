@@ -61,7 +61,6 @@ import org.eclipse.rse.core.subsystems.ISubSystemConfiguration;
 import org.eclipse.rse.core.subsystems.ISystemDragDropAdapter;
 import org.eclipse.rse.internal.ui.GenericMessages;
 import org.eclipse.rse.internal.ui.SystemResources;
-import org.eclipse.rse.services.clientserver.messages.SimpleSystemMessage;
 import org.eclipse.rse.services.clientserver.messages.SystemMessage;
 import org.eclipse.rse.ui.ISystemMessages;
 import org.eclipse.rse.ui.RSEUIPlugin;
@@ -74,7 +73,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CopyResourcesOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.progress.UIJob;
 
 
@@ -114,7 +112,7 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 		_resultTgtObjects = new ArrayList();
 		_setList = new ArrayList();
 		this.setUser(true);
-		_shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();	
+		_shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 	}
 	
 	protected SystemRemoteResourceSet getSetFor(ISubSystem subSystem, ISystemDragDropAdapter adapter)
@@ -414,18 +412,16 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
-	
-	
+
+
 	private int checkOverwrite(final IResource source, final IResource destination) {
 		final int[] result = new int[1]; // using array since you can't change a final int
 
 		Runnable query = new Runnable() {
 			public void run() {
-				
 				int resultId[] = { 
 						IDialogConstants.OK_ID, 
 						IDialogConstants.CANCEL_ID };
