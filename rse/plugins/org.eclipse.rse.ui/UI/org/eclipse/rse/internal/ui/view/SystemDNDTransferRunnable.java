@@ -22,7 +22,7 @@
  * David McKnight   (IBM)        - [228587] [dnd] NPE From Refresh on Copy/Paste
  * David McKnight   (IBM)        - [232889] Dragging and dropping files from a remote unix system to a local project does not work
  * David McKnight   (IBM)        - [234721] [dnd] When dragging a file from windows file explorer into RSE, a refresh error is given.
- * David McKnight   (IBM(        - [250139] backport of bug 248922 - [dnd] Remote to local overwrite copy does not work          
+ * David McKnight   (IBM)        - [248922]  [dnd] Remote to local overwrite copy does not work
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -101,8 +101,7 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 	private int _sourceType;
 	private Viewer _originatingViewer;
 	private boolean _ok;
-    private Shell _shell;
-	
+	private Shell _shell;
 
 	public SystemDNDTransferRunnable(Object target, ArrayList srcObjects, Viewer originatingViewer, int sourceType)
 	{

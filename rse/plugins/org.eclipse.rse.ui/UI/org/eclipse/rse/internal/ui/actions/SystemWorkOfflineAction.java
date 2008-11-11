@@ -16,11 +16,10 @@
  * Martin Oberhuber (Wind River) - [186640] Add IRSESystemType.testProperty() 
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * David McKnight (IBM) 		 - [225747] [dstore] Trying to connect to an "Offline" system throws an NPE
- * David McKnight (IBM)          - [251163] Backport Work Offline requires being selected twice to turn on Offline Mode
+ * David McKnight (IBM)          - [251026] Work Offline requires being selected twice to turn on Offline Mode
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.actions;
-
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -74,7 +73,6 @@ public class SystemWorkOfflineAction extends SystemBaseAction
 		else 
 		  return false;
 	}
-	
 	
 	/**
 	 * Called when this action is selection from the popup menu.

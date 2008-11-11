@@ -63,7 +63,7 @@
  * David McKnight   (IBM)        - [241722] New -> File doesn't select the newly created file
  * David McKnight   (IBM)        - [187739] [refresh] Sub Directories are collapsed when Parent Directory is Refreshed on Remote Systems
  * David Dykstal (IBM) - [233530] Not Prompted on Promptable Filters after using once by double click
- * David McKnight   (IBM)        - [251268] Backport not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc. 
+ * David McKnight   (IBM)        - [249245] not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc. 
  * David McKnight   (IBM)        - [251851] Backport Widget disposed exception when renaming/pasting a folder
  ********************************************************************************/
 

@@ -15,7 +15,7 @@
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * Martin Oberhuber (Wind River) - [202866] Fix exceptions in RSE browse dialog when SystemRegistry is not yet fully initialized
  * David McKnight   (IBM)        - [225506] [api][breaking] RSE UI leaks non-API types
- * David McKnight   (IBM)        - [253769] Backport SystemRemoteFileDialog shows Local contents even when specifying a SystemType
+ * David McKnight   (IBM)        - [252912] SystemRemoteFileDialog shows Local contents even when specifying a SystemType
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
