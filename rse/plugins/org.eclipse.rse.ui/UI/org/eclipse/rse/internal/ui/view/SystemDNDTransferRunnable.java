@@ -435,7 +435,7 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 						IDialogConstants.CANCEL_LABEL };
 				
 				String title = SystemResources.RESID_COLLISION_RENAME_TITLE;
-				String correctedVerbiage = SystemResources.RESID_COLLISION_RENAME_VERBIAGE.replace("&1" , "{0}");  //$NON-NLS-1$//$NON-NLS-2$
+				String correctedVerbiage = SystemResources.RESID_COLLISION_RENAME_VERBIAGE.replaceAll("&1" , "{0}");  //$NON-NLS-1$//$NON-NLS-2$
 				String msg = NLS.bind(correctedVerbiage, destination.getFullPath().makeRelative());			
 					
 				MessageDialog dialog = new MessageDialog(
