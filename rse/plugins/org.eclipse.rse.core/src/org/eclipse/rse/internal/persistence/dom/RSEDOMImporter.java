@@ -23,7 +23,7 @@
  * David Dykstal (IBM) - [232126] retrieve persisted filter type attribute
  * David Dykstal (IBM) - [233876] filters lost after restart
  * David Dykstal (IBM) - [236516] Bug in user code causes failure in RSE initialization
- * David McKnight (IBM) - [252019] Backport [dstore] ServerLauncherProperties not restored
+ * David McKnight (IBM) - [245198] [dstore] ServerLauncherProperties not restored
  ********************************************************************************/
 
 package org.eclipse.rse.internal.persistence.dom;
@@ -196,7 +196,7 @@ public class RSEDOMImporter {
 		//		String group = connectorServiceNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_GROUP).getValue();
 		boolean useSSL = getBooleanValue(connectorServiceNode, IRSEDOMConstants.ATTRIBUTE_USE_SSL);
 		int port = getIntegerValue(connectorServiceNode, IRSEDOMConstants.ATTRIBUTE_PORT);
-
+		
 		boolean setServerLauncherProperties = false;
 		
 		// first restore subsystems (since right now we need subsystem to get at service

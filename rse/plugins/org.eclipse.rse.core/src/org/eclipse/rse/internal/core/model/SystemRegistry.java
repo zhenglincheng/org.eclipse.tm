@@ -56,7 +56,7 @@
  * David McKnight   (IBM)        - [238673] Expansion icon (plus sign) disappears from Work With Libraries entry
  * David McKnight   (IBM)        - [240991] RSE startup creates display on worker thread before workbench.
  * David Dykstal (IBM) - [236516] Bug in user code causes failure in RSE initialization
- * David McKnight   (IBM)        - [249247] Backport Expand New Connections
+ * David McKnight   (IBM)        - [249247] Expand New Connections
  ********************************************************************************/
 
 package org.eclipse.rse.internal.core.model;

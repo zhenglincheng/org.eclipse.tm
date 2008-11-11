@@ -21,7 +21,7 @@
  * Martin Oberhuber (Wind River) - [cleanup] Add API "since" Javadoc tags
  * David Dykstal (IBM) - [168976][api] move ISystemNewConnectionWizardPage from core to UI
  * Martin Oberhuber (Wind River) - [226574][api] Add ISubSystemConfiguration#supportsEncoding()
- * David McKinght   (IBM)        - [251268] Backport Go Into on a filter then back brings up prompt of any expanded promptable filter
+ * David McKinght   (IBM)        - [249245] Go Into on a filter then back brings up prompt of any expanded promptable filter
  ********************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
