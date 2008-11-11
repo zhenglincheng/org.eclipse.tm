@@ -105,7 +105,7 @@ elif [ ${TYPE} = testSigned ]; then
       cp -R ${SITE}/../testPatchUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
-        result=`jarsigner -verify ${x}`
+        result=`jarsigner -verify ${x} | head -1`
         if [ "$result" != "jar verified." ]; then
           # do not sign Orbit bundles again since they are signed already 
           echo "signing feature: ${x}"
@@ -117,7 +117,7 @@ elif [ ${TYPE} = testSigned ]; then
         sleep 30
         echo "TRIES to go: ${TRIES}"
         for x in `ls *.jar | grep -v '^temp[_.]'`; do
-          result=`jarsigner -verify ${x}`
+          result=`jarsigner -verify ${x} | head -1`
           if [ "$result" = "jar verified." ]; then
             echo "${result}: ${x}"
             cp ${x} ${SITE}/features.${stamp}
@@ -144,7 +144,7 @@ elif [ ${TYPE} = testSigned ]; then
         cp ${SITE}/../testPatchUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
-          result=`jarsigner -verify ${x}`
+          result=`jarsigner -verify ${x} | head -1`
           if [ "$result" != "jar verified." ]; then
             # do not sign Orbit bundles again since they are signed already 
             echo "signing plugin: ${x}"
@@ -156,7 +156,7 @@ elif [ ${TYPE} = testSigned ]; then
           sleep 30
           echo "TRIES to go: ${TRIES}"
           for x in `ls *.jar | grep -v '^temp[_.]'`; do
-            result=`jarsigner -verify ${x}`
+            result=`jarsigner -verify ${x} | head -1`
             if [ "$result" = "jar verified." ]; then
               echo "${result}: ${x}"
               cp ${x} ${SITE}/plugins.${stamp}
