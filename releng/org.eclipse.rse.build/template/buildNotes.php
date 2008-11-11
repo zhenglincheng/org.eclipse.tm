@@ -32,38 +32,20 @@
   the fix also requires 3.4 at runtime, but the code contains a backward 
   compatibility fallback to also run on Eclipse 3.3 if that particular fix
   is not required.</li>
-<li>Highlights of Bugs fixed since TM 3.0:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/buildNotes.php">TM 3.0.1</a>:
 <ul>
-  <li><b>RSE Startup</b>: Some critical issues with initialization during early RSE startup were fixed
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=240991">240991</a>,
-     <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=244454">244454</a>]</li>
-  <li>The <b>Shell Processes Subsystem</b> can now be used correctly also on top of a Terminals subsystem only
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=239159">239159</a>,
-     <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247011">247011</a>]</li>
-  <li><b>Refresh of a parent node</b> in the RSE SystemView now re-expands subnodes to the same
-    state they were in before the refresh (with updated status, or course)
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=187739">187739</a>]</li>
-  <li><b>Performance</b> of the RSE SystemView was drastically improved for certain situations
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=238363">238363</a>]</li>
+  <li><b>Performance</b> of the RSE Save Job was drastically improved for certain situations involving property sets - before the fix, the context menu could be frozen for up to 30 seconds in user actions
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=254842">254842</a>]</li>
   <li><b>RSE Useractions</b> received some important fixes
     [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=useraction&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
-  <li><b>DStore</b> received some important fixes
-    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=dstore&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
-  <li><b>RSE Drag and Drop</b> received some fixes to be more pervasive
-    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=drag&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
-  <li><b>Terminals</b> can now be shared in multiple perspectives, similar to
-    what the Eclipse Console provides
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=172483">172483</a>]</li>
-  <li><b>Terminal Paste</b> is now possible by pressing the middle mouse button
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=240097">240097</a>]</li>
 </ul></li>
-<li>At least 118 bugs were fixed in total: Use 
+<li>At least 18 bugs were fixed in total: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-06-20&chfieldto=2008-09-17&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.0%20M%5B345%5D"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
   this query</a> to show the list of bugs fixed since <!-- the last milestone, -->
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0-200806202130/">
-  TM 3.0</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0-200806202130/buildNotes.php">build notes</a>].</li>
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/">
+  TM 3.0.1</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see
   <a href="http://www.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
