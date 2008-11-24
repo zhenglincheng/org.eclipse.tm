@@ -33,6 +33,7 @@
  * David Dykstal (IBM) - [216858] Need the ability to Import/Export RSE connections for sharing
  * Kevin Doyle 	 (IBM) - [186769] Enable Contributions to Drop Down menu of Remote Systems view -> Preferences
  * David McKnight (IBM)  - [244807] System view does not handle restore from cache
+ * Li Ding        (IBM)          - [256135] Subsystem not restored in system view tree if subsystem configuration does not support filter
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -1316,6 +1317,12 @@ public class SystemViewPart
 					break;
 					// filter pool or filter (depends on showFilterPools)
 				case 3 :
+					
+					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+						remoteObject = new RemoteObject(token, subsystem, null, null);
+						break;
+					}
+					
 					if (showFilterPools)
 					{
 						if (subsystem != null)
@@ -1360,6 +1367,12 @@ public class SystemViewPart
 					break;
 					// filter or filter string (depends on showFilterPools) or remote object (depends on showFilterStrings)
 				case 4 :
+					
+					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+						remoteObject = new RemoteObject(token, subsystem, null, null);
+						break;
+					}
+					
 					if (showFilterPools) // definitely a filter
 					{
 						index = token.indexOf('=');
@@ -1396,6 +1409,12 @@ public class SystemViewPart
 					break;
 					// filter string (depends on showFilterStrings) or remote object
 				case 5 :
+					
+					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+						remoteObject = new RemoteObject(token, subsystem, null, null);
+						break;
+					}
+					
 					if (showFilterPools && showFilterStrings) // definitely a filter string
 					{
 						// at this point we know the parent filter reference as that was parsed in case 4
@@ -1416,6 +1435,12 @@ public class SystemViewPart
 
 					break;
 				default : // definitely a remote object
+					
+					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+						remoteObject = new RemoteObject(token, subsystem, null, null);
+						break;
+					}
+				
 					if ((subsystem != null) && (fRef != null))
 						remoteObject = new RemoteObject(token, subsystem, fRef, fsRef);
 			}
