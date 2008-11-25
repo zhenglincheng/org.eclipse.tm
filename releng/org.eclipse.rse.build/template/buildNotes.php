@@ -36,10 +36,16 @@
 <ul>
   <li><b>Performance</b> of the RSE Save Job was drastically improved for certain situations involving property sets - before the fix, the context menu could be frozen for up to 30 seconds in user actions
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=254842">254842</a>]</li>
+  <li><b>Symbolic Link Handling</b> for dstore was fixed, especially for remote search
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=250458">250458</a>]
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251713">251713</a>]
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251744">251744</a>]</li>
+  <li><b>Offline Mode</b> is now better supported
+    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=offline&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
   <li><b>RSE Useractions</b> received some important fixes
-    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=useraction&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.1&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
+    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=useraction&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
 </ul></li>
-<li>At least 18 bugs were fixed in total: Use 
+<li>At least 27 bugs were fixed in total: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-06-20&chfieldto=2008-09-17&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.0%20M%5B345%5D"> -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
   this query</a> to show the list of bugs fixed since <!-- the last milestone, -->
@@ -119,6 +125,10 @@ More information can be found in the associated bugzilla items.
 
 <ul>
 <li>TM @buildId@ API Specification Updates
+<ul>
+  <li>None.</li>
+</ul></li>
+<li>TM 3.0.1 API Specification Updates
 <ul>
 <li><b><a href="http://dsdp.eclipse.org/help/latest/topic/org.eclipse.rse.doc.isv/reference/api/org/eclipse/rse/services/files/IFileService.html#createFolder(java.lang.String,%20java.lang.String,%20org.eclipse.core.runtime.IProgressMonitor)">
    IFileService#createFolder()</a></b>
