@@ -170,16 +170,15 @@ public class OutputHandler extends Handler {
 
 			// re-determine available if none available now
 			if (available == 0) {
-				
 				if (!_isStdError && !_isTerminal){
 					long lastInput = _timeOfLastInput;
-					while (lastInput == _timeOfLastInput && _keepRunning){	// once there's something new, we can stop waiting
+					while (lastInput == _timeOfLastInput && _keepRunning && available == 0){	// once there's something new, we can stop waiting
 						Thread.sleep(500); // wait in case there is something
+						available = checkAvailable();
 					}
-					// it's possible that there is no output for something
-					// in the non-TTY case we need to prompt									
-					available = checkAvailable();
 					if (available == 0){
+						// it's possible that there is no output for something
+						// in the non-TTY case we need to prompt									
 						return new String[0];
 					}
 				}
