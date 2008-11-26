@@ -232,8 +232,8 @@ elif [ ${TYPE} = testSigned ]; then
       fi
     done
     echo "VERIFYING VERSION CORRECTNESS: Plugins"
-    ls plugins/*.jar | sed -e 's,^.*/plugins/,,' | sort > p1.$$.txt
-    ls ../updates/3.0/plugins/*.jar | sed -e 's,^.*/plugins/,,' | sort > p2.$$.txt
+    ls plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p1.$$.txt
+    ls ../updates/3.0/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
     diff p2.$$.txt p1.$$.txt | grep '^[>]' \
        | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > p_new.txt
     for p in `cat p_new.txt`; do
