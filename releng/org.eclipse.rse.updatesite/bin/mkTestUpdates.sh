@@ -214,7 +214,7 @@ elif [ ${TYPE} = testSigned ]; then
     mv -f web/site.xsl.new web/site.xsl
     # CHECK VERSION CORRECTNESS for MICRO UPDATES only
     # Minor/major version updates are not allowed.
-    # TODO: update of "qualifier" requires also updating "micro"
+    # Update of "qualifier" requires also updating "micro"
     echo "VERIFYING VERSION CORRECTNESS: Features"
     ls features/*.jar | sed -e 's,^.*features/,,' | sort > f1.$$.txt
     ls ../updates/3.0/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
