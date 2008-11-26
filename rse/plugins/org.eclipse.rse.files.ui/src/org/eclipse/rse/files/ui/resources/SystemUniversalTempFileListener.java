@@ -24,6 +24,7 @@
  * Kevin Doyle 		(IBM)		 - [210389] Display error dialog when setting file not read-only fails when saving
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [250140] Backport [usability] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
  ********************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -137,10 +138,20 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 			// first we need to get the stored timestamp property and the actual remote timestamp
 			SystemIFileProperties properties = new SystemIFileProperties(tempFile);
 			
-			// make sure we're working online - not offline
-			if (fs.isOffline())
+			// also as per bug 256048 - comment#6 if we're not connected we still need to do the same thing
+			if (fs.isOffline() || !fs.isConnected())
 			{			
-				properties.setDirty(true);		
+				// offline mode - make sure the file stays dirty
+				properties.setDirty(true);
+								
+				// try to reset the dirty indicator for the editor if it's open
+				// will only work for lpex right now
+				SystemEditableRemoteFile editable = null;
+				if (properties.getRemoteFileObject() instanceof SystemEditableRemoteFile){
+					editable = (SystemEditableRemoteFile)properties.getRemoteFileObject();						
+					editable.updateDirtyIndicator();
+				}
+
 				return;
 			}
 			else
