@@ -13,6 +13,7 @@
  * Contributors:
  * Martin Oberhuber (Wind River) - [168975] Move RSE Events API to Core
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
+ * David McKnight   (IBM)        - [250169] Problems with extending the menu's of results in Remote Search View
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view.search;
@@ -34,6 +35,7 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
@@ -211,6 +213,38 @@ public class SystemSearchViewPart extends ViewPart
 	}
 
 	/**
+	 * Creates a dummy selection provider.
+	 * @return a dummy selection provider.
+	 */
+	private ISelectionProvider createDummySelectionProvider() {
+		
+		ISelectionProvider provider = new ISelectionProvider() {
+
+			public void addSelectionChangedListener(ISelectionChangedListener listener) {
+			}
+
+			public ISelection getSelection() {
+				if (currentViewer != null){
+					return currentViewer.getSelection();
+				}
+				return null;
+			}
+
+			public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+			}
+
+			public void setSelection(ISelection selection) {
+				if (currentViewer != null){
+						currentViewer.setSelection(selection);
+				}
+			}
+		};
+		
+		return provider;
+	}
+
+	
+	/**
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(Composite)
 	 */
 	public void createPartControl(Composite parent) {
@@ -226,6 +260,9 @@ public class SystemSearchViewPart extends ViewPart
 		// set a dummy selection provider
 		// getSite().setSelectionProvider(createDummySelectionProvider());
 
+		site.setSelectionProvider(createDummySelectionProvider());
+
+		
 		// get action bars
 		actionBars = site.getActionBars();
 
