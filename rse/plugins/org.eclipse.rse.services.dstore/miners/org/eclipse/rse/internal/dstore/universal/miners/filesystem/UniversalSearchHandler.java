@@ -20,7 +20,7 @@
  * Martin Oberhuber (Wind River) - [199854][api] Improve error reporting for archive handlers
  * David McKnight  (IBM)  - [250458] handle malformed binary and always resolve canonical paths
  * David McKnight  (IBM)  - [250458] Backport  [dstore] Remote search doesn't find the right result
- * David McKnight  (IBM)  - [250458] Backport updated
+ * David McKnight  (IBM)  - [255390] checking for memory
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -35,6 +35,7 @@ import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStore;
 import org.eclipse.dstore.core.server.SecuredThread;
+import org.eclipse.dstore.core.server.SystemServiceManager;
 import org.eclipse.dstore.core.util.StringCompare;
 import org.eclipse.rse.dstore.universal.miners.ICancellableHandler;
 import org.eclipse.rse.dstore.universal.miners.IUniversalDataStoreConstants;
@@ -138,8 +139,10 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 			// completed before setting the status to done
 			_status.setAttribute(DE.A_NAME, "done"); //$NON-NLS-1$
 	        _dataStore.refresh(_status);	// true indicates refresh immediately
-
 		}
+		
+		_alreadySearched.clear();
+		_dataStore.disconnectObjects(_status);
 	}
 
 	public boolean isCancelled() {
@@ -276,7 +279,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				}
 	
 				// do a refresh
-				//_dataStore.refresh(_status, true);
+				//_dataStore.refresh(_status);
 			}
 	
 			// if the depth is not 0, then we need to recursively search
@@ -327,7 +330,9 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 
 					if (children != null) {
 
-						for (int i = 0; i < children.length && !_isCancelled; i++) {							
+						for (int i = 0; i < children.length && !_isCancelled; i++) {		
+							
+							checkAndClearupMemory();
 							File child = children[i];
 							internalSearch(child, depth - 1);
 						}
@@ -357,11 +362,14 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				if (simpleSearch(inputStream, size, _stringMatcher)){
 					return true;
 				}
+				
+				bufReader.close();
+				reader.close();
 				return false;
 			}
 			else {
-				SystemSearchStringMatchLocator locator = new SystemSearchStringMatchLocator(bufReader, _stringMatcher);
-						
+				SystemSearchStringMatchLocator locator = new SystemSearchStringMatchLocator(bufReader, _stringMatcher);						
+				
 				SystemSearchLineMatch[] matches = locator.locateMatches();									
 				boolean foundMatches = ((matches != null) && (matches.length > 0));
 
@@ -369,8 +377,15 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 					convert(remoteFile, absPath, matches);
 				}
 
+				bufReader.close();
+				reader.close();
 				return foundMatches;
 			}
+		}
+		catch (OutOfMemoryError e){
+			if (SystemServiceManager.getInstance().getSystemService() == null)
+				System.exit(-1);
+			return false;
 		}
 		catch (Exception e) {
 			UniversalServerUtilities.logError(_miner.getName(), "Error occured when trying to locate matches", e, _dataStore); //$NON-NLS-1$
@@ -440,5 +455,37 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 			DataElement obj = _dataStore.createObject(deObj, _deGrep, match.getLine(), absPath);
 			obj.setAttribute(DE.A_SOURCE, obj.getSource() + ':'+ match.getLineNumber());
 		}
+	}
+	
+	public void checkAndClearupMemory()
+	{
+		int count = 0;
+		while(count < 5 && isMemoryThresholdExceeded()) {
+			
+			System.gc();
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+			}
+			count ++;
+		}
+		if(count == 5) { 
+			_dataStore.trace("heap memory low"); //$NON-NLS-1$
+			if (SystemServiceManager.getInstance().getSystemService() == null)
+				System.exit(-1);
+		}				
+	}
+
+	private boolean isMemoryThresholdExceeded(){
+		// trying to avoid using Java 1.5
+		Runtime runtime = Runtime.getRuntime();
+		long freeMem = runtime.freeMemory();
+
+		if (freeMem < 10000){
+
+			return true;
+		}
+		
+		return false;
 	}
 }
