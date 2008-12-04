@@ -23,7 +23,7 @@
  * Kevin Doyle 		(IBM)		 - [204810] Saving file in Eclipse does not update remote file
  * Kevin Doyle 		(IBM)		 - [210389] Display error dialog when setting file not read-only fails when saving
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
- * David McKnight   (IBM)        - [250140] Backport [usability] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
  * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
  ********************************************************************************/
 
@@ -138,6 +138,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 			// first we need to get the stored timestamp property and the actual remote timestamp
 			SystemIFileProperties properties = new SystemIFileProperties(tempFile);
 			
+			// make sure we're working online 
 			// also as per bug 256048 - comment#6 if we're not connected we still need to do the same thing
 			if (fs.isOffline() || !fs.isConnected())
 			{			
@@ -268,7 +269,6 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 
 	}
 
-	
 	/**
 	 * This method attempts to upload a temporary file in the workspace to a corresponding remote file location.  It
 	 * checks whether the timestamp of the remote file has changed since the temporary file was last known to

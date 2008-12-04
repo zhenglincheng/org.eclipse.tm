@@ -21,7 +21,7 @@
  * David McKnight   (IBM)        - [224377] "open with" menu does not have "other" option
  * Xuan Chen        (IBM)        - [225506] [api][breaking] RSE UI leaks non-API types
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
- * David McKnight   (IBM)        - [250140] Backport [usability] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.actions;
@@ -106,7 +106,7 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
                     if (!_saveasFile.exists())
                     {
                         _saveasFile = fs.createFile(_saveasFile, monitor);
-                    }                    
+                    }                        
                 }
                 catch (SystemMessageException e)
                 {
@@ -122,7 +122,7 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
  
                 try
                 {                    	
-					// copy temp file to remote system
+                    // copy temp file to remote system
                     fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _saveasFile, SystemEncodingUtil.ENCODING_UTF_8, monitor);
                  
                     // set original time stamp to 0 so that file will be overwritten next download
@@ -198,12 +198,13 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
             {
             	IRemoteFileSubSystem fs = _remoteFile.getParentRemoteFileSubSystem();
             	SystemIFileProperties properties = new SystemIFileProperties(_tempFile);
-
+            	
             	// making sure we have the same version as is in the cache
             	_remoteFile = fs.getRemoteFileObject(_remoteFile.getAbsolutePath(), monitor);
-            	            	
-            	fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _remoteFile, SystemEncodingUtil.ENCODING_UTF_8, monitor);
+            	
+                fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _remoteFile, SystemEncodingUtil.ENCODING_UTF_8, monitor);
 
+                // wait for timestamp to update before re-fetching remote file
                 _remoteFile.markStale(true);
                 _remoteFile = fs.getRemoteFileObject(_remoteFile.getAbsolutePath(), new NullProgressMonitor());
   
@@ -223,6 +224,7 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
             return Status.OK_STATUS;
 		}
 	}
+		
 
 	/**
 	 * This is the default dialog used to handle upload conflicts

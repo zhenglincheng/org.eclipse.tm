@@ -17,7 +17,7 @@
  * Martin Oberhuber (Wind River) - [189130] Move SystemIFileProperties from UI to Core
  * David McKnight   (IBM) - [195285] mount path mapper changes
  * David McKnight   (IBM)        - [228343] RSE unable to recover after RemoteSystemsTempfiles deletion
- * David McKnight   (IBM)        - [253274] Backport Cache Cleanup is removing .settings directory
+ * David McKnight   (IBM)        - [253262] Cache Cleanup is removing .settings directory
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.resources;

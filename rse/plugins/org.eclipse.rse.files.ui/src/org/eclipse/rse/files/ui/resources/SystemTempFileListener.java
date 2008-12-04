@@ -23,7 +23,7 @@
  * David McKnight   (IBM)        - [216252] [api][nls] Resource Strings specific to subsystems should be moved from rse.ui into files.ui / shells.ui / processes.ui where possible
  * David McKnight (IBM) 		 - [225747] [dstore] Trying to connect to an "Offline" system throws an NPE
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
- * David McKnight   (IBM)        - [252034] Backport NullPointerException in SystemTempFileListener
+ * David McKnight   (IBM)        - [251631] NullPointerException in SystemTempFileListener
  * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
  *******************************************************************************/
 
@@ -148,8 +148,6 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 	{
 		_ignoredFiles.remove(toNotIgnore);
 	}
-	
-
 	
 	public boolean isIgnorable(IFile file)
 	{
@@ -708,7 +706,7 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 						// instead, defer synchronization to later but allow user to edit
 						// set the dirty flag to indicate that this file needs resynchronization
 						properties.setDirty(true);
-
+						
 						// as per bug 256048 - comment#6 if we're not connected follow through to
 						// doResourceSynchronization so we have the change to mark the SystemTextEditor dirty
 					}

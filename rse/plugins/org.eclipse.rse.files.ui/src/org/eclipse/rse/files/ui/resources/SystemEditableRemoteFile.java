@@ -34,7 +34,7 @@
  * David McKnight     (IBM)      - [229610] [api] File transfers should use workspace text file encoding
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [247189] SystemEditableRemoteFile.openEditor() not updating the default editor properly
- * David McKnight   (IBM)        - [250140] Backport [usability] Save conflict dialog appears when saving files in the editor	
+ * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
