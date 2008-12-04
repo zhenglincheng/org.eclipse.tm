@@ -25,6 +25,7 @@
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
  * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
+ * David McKnight   (IBM)        - [249544] updated to match HEAD stream
  ********************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -366,26 +367,27 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 					Display.getDefault().syncExec(msgAction);
 				}
 
+				// requery the file so get the new timestamp
+				remoteFile.markStale(true);
+				remoteFile =fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
 				
 				IRemoteFile parent = remoteFile.getParentRemoteFile();
-	
+
+
+				long ts = remoteFile.getLastModified();
+				
+				// set the stored timestamp to be the same as the remote timestamp
+				properties.setRemoteFileTimeStamp(ts);
+
 				ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
 				// refresh
 				if (parent != null)
 				{
 					registry.fireEvent(new SystemResourceChangeEvent(parent, ISystemResourceChangeEvents.EVENT_REFRESH, null));
 				}
-				
-				// get the remote file object again so that we have a fresh remote timestamp
-				remoteFile.markStale(true);
-				remoteFile = fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
-				
-				registry.fireEvent(new SystemResourceChangeEvent(remoteFile, ISystemResourceChangeEvents.EVENT_PROPERTY_CHANGE, remoteFile));
 			
-				long ts = remoteFile.getLastModified();
-				
-				// set the stored timestamp to be the same as the remote timestamp
-				properties.setRemoteFileTimeStamp(ts);
+				registry.fireEvent(new SystemResourceChangeEvent(remoteFile, ISystemResourceChangeEvents.EVENT_PROPERTY_CHANGE, remoteFile));
+						
 
 				// indicate that the temp file is no longer dirty
 				properties.setDirty(false);
