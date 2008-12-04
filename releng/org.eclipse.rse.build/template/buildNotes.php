@@ -53,6 +53,7 @@
   TM 3.0.1</a>
   [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/buildNotes.php">build notes</a>].</li>
 <li>Following plug-ins were changed compared to TM 3.0.1:<ul>
+  <li>org.eclipse.dstore.core</li>
   <li>org.eclipse.rse.core</li>
   <li>org.eclipse.rse.files.ui</li>
   <li>org.eclipse.rse.services.dstore</li>
