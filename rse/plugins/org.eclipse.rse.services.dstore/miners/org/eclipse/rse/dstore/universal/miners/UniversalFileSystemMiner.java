@@ -37,8 +37,8 @@
  * David McKnight  (IBM)  - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight  (IBM)  - [244277] [dstore] NPE on file save from old client
  * David McKnight  (IBM)  - [246234] Change of file permissions changes the file owner
- * David McKnight  (IBM)  - [250458] handleCommand should not blindly set the status to "done"
- * David McKnight  (IBM)  - [251744] Backport [dstore] problems querying symbolic link folder
+ * David McKnight  (IBM)  - [250168] handleCommand should not blindly set the status to "done"
+ * David McKnight  (IBM)  - [251729][dstore] problems querying symbolic link folder
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -1923,7 +1923,7 @@ public class UniversalFileSystemMiner extends Miner {
 			return statusCancelled(status);
 		}
 	
-		
+
 		String result = getFilePermission(file, PERMISSION_ALL);
         status.setAttribute(DE.A_SOURCE, result);
  

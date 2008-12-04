@@ -17,7 +17,7 @@
  * Xuan Chen        (IBM)        - [191280] [dstore] Expand fails for folder "/folk" with 3361 children
  * Xuan Chen        (IBM)        - [215863]] NPE when Expanding Empty Zip File
  * Martin Oberhuber (Wind River) - [199854][api] Improve error reporting for archive handlers
- * David McKnight   (IBM)        - [251744] Backport [dstore] problems querying symbolic link folder
+ * David McKnight   (IBM)        - [251729][dstore] problems querying symbolic link folder
  * Noriaki Takatsu  (IBM)        - [256724] thread-level security is not established
  *******************************************************************************/
 

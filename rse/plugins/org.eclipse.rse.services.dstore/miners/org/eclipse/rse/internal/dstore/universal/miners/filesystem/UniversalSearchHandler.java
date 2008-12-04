@@ -18,7 +18,7 @@
  * David McKnight   (IBM)  - [214378] canonical path not required - problem is in the client
  * Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  * Martin Oberhuber (Wind River) - [199854][api] Improve error reporting for archive handlers
- * David McKnight  (IBM)  - [250458] handle malformed binary and always resolve canonical paths
+ * David McKnight  (IBM)  - [250168] handle malformed binary and always resolve canonical paths
  * David McKnight  (IBM)  - [250458] Backport  [dstore] Remote search doesn't find the right result
  * David McKnight  (IBM)  - [255390] checking for memory
  ********************************************************************************/

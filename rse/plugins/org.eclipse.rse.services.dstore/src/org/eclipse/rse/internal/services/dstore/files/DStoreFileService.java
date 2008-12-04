@@ -48,9 +48,9 @@
  * Martin Oberhuber (Wind River) - [235463][ftp][dstore] Incorrect case sensitivity reported on windows-remote
  * David McKnight   (IBM)        - [236039][dstore][efs] DStoreInputStream can report EOF too early - clean up how it waits for the local temp file to be created
  * David McKnight   (IBM)        - [240710] [dstore] DStoreFileService.getFile() fails with NPE for valid root files
- * David McKnight   (IBM)        - [250140] backport of Save conflict dialog appears when saving files in the editor
- * David McKnight   (IBM)        - [250368] Backport  [dstore] Remote search doesn't find the right result
- * David McKnight   (IBM)        - [251551] Backport [dstore] Pasting local folder to remote does not work in some case
+ * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [250168] some backward compatibility issues with old IBM dstore server
+ * David McKnight   (IBM)        - [251429] Pasting local folder to remote does not work in some case
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -1980,7 +1980,6 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		return results;
 	}
 
-
 	protected DataElement getElementFor(String path)
 	{
 		if (!isInitialized())
@@ -2024,7 +2023,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 		return element;
 	}
-	
+
 
 	/**
 	 * Get a dstore IHostFile object for the given absolute path, provided

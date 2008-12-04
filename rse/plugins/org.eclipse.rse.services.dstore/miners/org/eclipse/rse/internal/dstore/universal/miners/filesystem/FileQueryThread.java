@@ -13,7 +13,7 @@
  * David McKnight (IBM) - [192884] Should not use filter to determine previous query results
  * David McKnight (IBM) - [209387] Should not delete elements for files that still exist (but are filtered out)
  * Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
- * David McKnight  (IBM)  - [251713] Backport [dstore] Multiple copies of symbolic link file show in Table view
+ * David McKnight  (IBM)  - [251650] [dstore] Multiple copies of symbolic link file show in Table view
  *******************************************************************************/
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
 
