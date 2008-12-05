@@ -325,7 +325,7 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4).' \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0_2 -->/,/<!-- END_3_0_2 -->/d' \
+    sed -e '/<!-- BEGIN_3_0_3 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml.new1 > site.xml.new2
     sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml.new2 > site.xml.new
