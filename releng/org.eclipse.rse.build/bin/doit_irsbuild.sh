@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
@@ -32,14 +32,15 @@ echo ${mydir}
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
-export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+export PATH=${HOME}/ws_30x/IBMJava2-ppc-142/bin:$PATH
 
 #Get parameters
 mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR|xM) ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xM|xR) mapTag=R3_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ "$3" != "" ]; then
@@ -53,7 +54,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_30x
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -66,7 +67,13 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-${buildType}$stamp.txt
+CHANGES=`cvs -nq update -r ${mapTag} | head -1`
+if [ "${CHANGES}" = "" ]; then
+  echo "Build ${buildType}${buildId} : ${mapTag} : ${stamp}"
+  echo "Build canceled, no mapfile or config changed in org.eclipse.rse.build."
+  exit 0
+fi
+log=$HOME/ws_30x/log-${buildType}$stamp.txt
 touch $log
 #cvs -q update -RPd >> $log 2>&1
 cvs -q update -r ${mapTag} -RPd >> $log 2>&1
@@ -92,7 +99,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws_30x/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -127,14 +134,14 @@ if [ -f package.count -a "$FILES" != "" ]; then
   fi
 
   if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the testPatchUpdates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/testPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signedPatchUpdates site
+      echo "Refreshing signedPatchUpdates site"
+      cd $HOME/downloads-tm/signedPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
   fi

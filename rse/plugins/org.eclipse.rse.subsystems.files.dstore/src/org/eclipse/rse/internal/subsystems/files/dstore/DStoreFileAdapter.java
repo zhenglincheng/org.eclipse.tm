@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight   (IBM)        - [207178] changing list APIs for file service and subsystems
  * Martin Oberhuber (Wind River) - [235363][api][breaking] IHostFileToRemoteFileAdapter methods should return AbstractRemoteFile
+ * David McKnight   (IBM)        - [255699] NPE when filter string doesn't return result in FileServiceSubSystem.list
  *******************************************************************************/
 
 package org.eclipse.rse.internal.subsystems.files.dstore;
@@ -57,20 +58,21 @@ public class DStoreFileAdapter implements IHostFileToRemoteFileAdapter
 		for (int i = 0; i < nodes.length; i++)
 		{
 			DStoreHostFile node = (DStoreHostFile)nodes[i];
-
-			DStoreFile lfile = null;
-
-			if (node instanceof DStoreVirtualHostFile)
-			{
-				lfile = new DStoreVirtualFile(ss, context, parent, (DStoreVirtualHostFile) node);
+			if (node != null){
+				DStoreFile lfile = null;
+				
+				if (node instanceof DStoreVirtualHostFile)
+				{
+					lfile = new DStoreVirtualFile(ss, context, parent, (DStoreVirtualHostFile) node);
+				}
+				else
+				{
+					lfile = new DStoreFile(ss, context, parent, node);
+				}
+	
+				results.add(lfile);
+				ss.cacheRemoteFile(lfile);
 			}
-			else
-			{
-				lfile = new DStoreFile(ss, context, parent, node);
-			}
-
-			results.add(lfile);
-			ss.cacheRemoteFile(lfile);
 		}
 
 		return (DStoreFile[]) results.toArray(new DStoreFile[results.size()]);

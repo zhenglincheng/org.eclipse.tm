@@ -88,6 +88,7 @@
 
 	<target name="assemble.org.eclipse.rse.ftp">
 		<property name="archiveName" value="RSE-runtime-ftp-${buildId}.zip"/>
+		<property name="copyOrbit" value="true"/>
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
 		<antcall target="unpackUpdateJarsForPackaging" />
 	</target>
@@ -106,12 +107,15 @@
 
 	<target name="assemble.org.eclipse.rse.telnet">
 		<property name="archiveName" value="RSE-runtime-telnet-${buildId}.zip"/>
+		<property name="copyOrbit" value="true"/>
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
 		<antcall target="unpackUpdateJarsForPackaging" />
 	</target>
 
 	<target name="assemble.org.eclipse.rse.sdk">
 		<property name="archiveName" value="RSE-SDK-${buildId}.zip"/>
+		<property name="copyOrbit" value="true"/>
+		<property name="copyOrbitSrc" value="true"/>
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
 		<antcall target="unpackUpdateJarsForPackaging" />
 	</target>
@@ -171,6 +175,8 @@
 		<exec executable="unzip" dir="${buildDirectory}/${buildLabel}">
 			<arg line="-q ${archiveName} -d ${tmpsite}" />
 		</exec>
+		<property name="orbitDest" value="${tmpsite}/eclipse"/>
+		<antcall target="copyOrbitBundlesToUpdateSite"/>
 		<copy todir="${buildUpdateSitePath}">
 		    <fileset dir="${tmpsite}/eclipse"/>
 		</copy>
@@ -181,6 +187,27 @@
 			basedir="${tmpsite}/new"
 	  	/>
 		<delete dir="${tmpsite}"/>
+	</target>
+
+	<target name="copyOrbitBundlesToUpdateSite" depends="copyOrbit,copyOrbitSrc">
+	</target>
+
+	<target name="copyOrbit" if="copyOrbit">
+		<copy todir="${orbitDest}/plugins">
+			<fileset dir="${buildDirectory}/plugins">
+				<include name="org.apache.commons.net_*.jar"/>
+				<include name="org.apache.oro_*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copyOrbitSrc" if="copyOrbitSrc">
+		<copy todir="${orbitDest}/plugins">
+			<fileset dir="${buildDirectory}/plugins">
+				<include name="org.apache.commons.net.source_*.jar"/>
+				<include name="org.apache.oro.source_*.jar"/>
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="packageLicenseFiles">
@@ -239,6 +266,10 @@
 			<or>
 				<equals arg1="${buildType}" arg2="S"/>
 				<equals arg1="${buildType}" arg2="R"/>
+				<and>
+					<equals arg1="${buildType}" arg2="M"/>
+					<not><matches pattern="M[0-9-]*" string="${buildId}"/></not>
+				</and>
 			</or>
 		</condition>
 		<property name="buildUpdateSitePath" value="${packageDirectory}/${dropDir}/updates"/>
@@ -291,7 +322,38 @@
 		</ant>
 	</target>
 
-	<target name="preFetch" depends="preFetchOrbitBundles">
+	<target name="preFetchOrbitSource" depends="myInit">
+		<!-- fetch Orbit stuff since I'm not sure how to get sources -->
+		<mkdir dir="${buildDirectory}/plugins"/>
+		<eclipse.fetch
+			elements="plugin@org.apache.oro.source"
+			buildDirectory="${buildDirectory}"
+			directory="${buildDirectory}/directory.txt"
+			fetchTag=""
+			configInfo="*,*,*"
+			baseLocation="${baseLocation}"
+		/>
+		<!-- Run generated fetch script -->
+		<ant antfile="${buildDirectory}/fetch_org.apache.oro.source.xml">
+			<property name="featureOnly" value="true"/>
+			<property name="featureAndPlugins" value="true"/>
+		</ant>
+		<eclipse.fetch
+			elements="plugin@org.apache.commons.net.source"
+			buildDirectory="${buildDirectory}"
+			directory="${buildDirectory}/directory.txt"
+			fetchTag=""
+			configInfo="*,*,*"
+			baseLocation="${baseLocation}"
+		/>
+		<!-- Run generated fetch script -->
+		<ant antfile="${buildDirectory}/fetch_org.apache.commons.net.source.xml">
+			<property name="featureOnly" value="true"/>
+			<property name="featureAndPlugins" value="true"/>
+		</ant>
+	</target>
+
+	<target name="preFetch" depends="preFetchOrbitBundles,preFetchOrbitSource">
 	</target>
 
 	<!-- ===================================================================== -->

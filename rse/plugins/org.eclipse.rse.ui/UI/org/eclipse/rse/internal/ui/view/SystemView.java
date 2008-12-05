@@ -63,6 +63,8 @@
  * David McKnight   (IBM)        - [241722] New -> File doesn't select the newly created file
  * David McKnight   (IBM)        - [187739] [refresh] Sub Directories are collapsed when Parent Directory is Refreshed on Remote Systems
  * David Dykstal (IBM) - [233530] Not Prompted on Promptable Filters after using once by double click
+ * David McKnight   (IBM)        - [249245] not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc. 
+ * David McKnight   (IBM)        - [251851] Backport Widget disposed exception when renaming/pasting a folder
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -183,6 +185,7 @@ import org.eclipse.rse.ui.view.ISystemTree;
 import org.eclipse.rse.ui.view.ISystemViewElementAdapter;
 import org.eclipse.rse.ui.view.SystemAdapterHelpers;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -1016,7 +1019,7 @@ public class SystemView extends SafeTreeViewer
 					if (singleSelection) {
 						// dkm - first find out if the selection will have children
 						//      only add this action if there are children
-						if (hasChildren)
+						if (hasChildren && showOpenViewActions())
 						{
 							menu.appendToGroup(ISystemContextMenuConstants.GROUP_GOTO, goIntoAction);
 						}
@@ -6241,7 +6244,17 @@ public class SystemView extends SafeTreeViewer
 				for (int i = 0; i < matches.size(); i++)
 				{
 					Widget match = (Widget) matches.get(i);
-					Object data = match.getData();
+					Object data = null;
+					try {
+						data = match.getData(); 
+					}
+					catch (SWTException e){
+						// not sure why this occurs -logging it for now
+						// this is reported in bug 251625
+						SystemBasePlugin.logError("Exception in SystemView.add() with " + match); //$NON-NLS-1$
+						SystemBasePlugin.logError(e.getMessage());
+					}		
+
 					if (data instanceof IAdaptable)
 					{
 						ISystemViewElementAdapter madapter = (ISystemViewElementAdapter)((IAdaptable)data).getAdapter(ISystemViewElementAdapter.class);

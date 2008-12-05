@@ -23,6 +23,8 @@
  * David McKnight   (IBM)        - [216252] [api][nls] Resource Strings specific to subsystems should be moved from rse.ui into files.ui / shells.ui / processes.ui where possible
  * David McKnight (IBM) 		 - [225747] [dstore] Trying to connect to an "Offline" system throws an NPE
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
+ * David McKnight   (IBM)        - [251631] NullPointerException in SystemTempFileListener
+ * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -155,20 +157,30 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 	    }
 	    else
 	    {
-	        String path = file.getLocation().toString().toLowerCase();
+	    	IPath location = file.getLocation();
+	    
+	    	if (location == null){
+	    		// linked into remote file system -- ignore in tempfile listener 
+	    		return true;
+	    	}
+	    	else {
+	    		String path = location.toString().toLowerCase();
 	        
-	        for (int i = 0; i < _ignoredFiles.size(); i++)
-	        {
-	            IFile cfile = (IFile)_ignoredFiles.get(i);
-	            String cpath = cfile.getLocation().toString().toLowerCase();
-	            if (path.equals(cpath))
-	            {
-	                return true;
-	            }
-	        }
+	    		for (int i = 0; i < _ignoredFiles.size(); i++)
+	    		{
+	    			IFile cfile = (IFile)_ignoredFiles.get(i);
+	    			String cpath = cfile.getLocation().toString().toLowerCase();
+	    			if (path.equals(cpath))
+	    			{
+	    				return true;
+	    			}
+	    		}
+	    	}
 	    }
 	    return false;
 	}
+
+
 	
 	/**
 	 * @see IResourceChangeListener#resourceChanged(IResourceChangeEvent)
@@ -673,28 +685,33 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 			}
 
 			// attempt the remote file synchronization      
-			if (doesHandle(fs) && !fs.isOffline())
+			if (doesHandle(fs))
 			{
-				// see if we're connected
-				try
-				{
-					// check that the remote file system is connected
-					// if not, attempt to connect to it
-					if (!fs.isConnected())
+				if (!fs.isOffline()){				
+					// see if we're connected
+					try
 					{
-						fs.connect(false, null);
+						// check that the remote file system is connected
+						// if not, attempt to connect to it
+						if (!fs.isConnected())
+						{
+							// make sure we connect synchronously from here
+							fs.connect(monitor, false);
+						}
+					}
+					catch (Exception e)
+					{
+						// unable to connect to the remote server
+						// do not attempt synchronization
+						// instead, defer synchronization to later but allow user to edit
+						// set the dirty flag to indicate that this file needs resynchronization
+						properties.setDirty(true);
+						
+						// as per bug 256048 - comment#6 if we're not connected follow through to
+						// doResourceSynchronization so we have the change to mark the SystemTextEditor dirty
 					}
 				}
-				catch (Exception e)
-				{
-					// unable to connect to the remote server
-					// do not attempt synchronization
-					// instead, defer synchronization to later but allow user to edit
-					// set the dirty flag to indicate that this file needs resynchronization
-					properties.setDirty(true);
-					return;
-				}
-				doResourceSynchronization(fs, file, uploadPath, monitor);
+				doResourceSynchronization(fs, file, uploadPath, monitor);		
 			}
 		}
 	}

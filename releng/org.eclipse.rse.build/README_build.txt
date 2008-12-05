@@ -7,9 +7,9 @@ ssh build.eclipse.org
 cd /shared/dsdp/tm/
 mkdir ws2_user
 cd ws2_user
-ln -s `pws` $HOME/ws2
+ln -s `pws` $HOME/ws_30x
 ln -s /home/data/httpd/download.eclipse.org/dsdp/tm $HOME/downloads-tm
-cp -R ../ws2/IBMJava2-ppc-142 .
+cp -R ../ws_30x/IBMJava2-ppc-142 .
 wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 chmod a+x setup.sh
 ./setup.sh
@@ -17,7 +17,7 @@ chmod a+x setup.sh
 
 2. Do an N-build
 ----------------
-cd $HOME/ws2
+cd $HOME/ws_30x
 ./doit_nightly.sh
 
 
@@ -31,7 +31,7 @@ Right-click > Team > Release...
 Select Mapfile "org.eclipse.rse.build"
 Press next ... tag and commit the Mapfiles
 ssh build.eclipse.org
-cd ws2
+cd ws_30x
 ./doit_irsbuild.sh I
 When build worked ok, tag org.eclipse.rse.build: e.g. I20070605-1200
 
@@ -40,14 +40,14 @@ When build worked ok, tag org.eclipse.rse.build: e.g. I20070605-1200
 Just like I-build, but also update 
    org.eclipse.rse.build/template/buildNotes.php
 ssh build.eclipse.org
-cd ws2
+cd ws_30x
 ./doit_irsbuild.sh S 2.0RC3
 
 3b) Promote an S-build to official
 ----------------------------------
 After testing the "invisible" S-build:
 ssh build.eclipse.org
-cd ws2/publish/S-2.0RC3*
+cd ws_30x/publish/S-2.0RC3*
 mv package.count.orig package.count
 
 3c) Promote an S-build to Europa

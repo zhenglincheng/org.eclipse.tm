@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others.
+ * Copyright (c) 2006, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,11 +12,12 @@
  * Emily Bruner, Mazen Faraj, Adrian Storisteanu, Li Ding, and Kent Hawley.
  * 
  * Contributors:
- * {Name} (company) - description of contribution.
+ * David McKnight   (IBM)  [251619] [dstore] shell output readers not cleaned up on disconnect
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.shells;
 
+import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStore;
 import org.eclipse.rse.services.dstore.util.DStoreStatusMonitor;
@@ -66,12 +67,11 @@ public class DStoreHostShell extends AbstractHostShell implements IHostShell
 	{
 		return _status;
 	}
-
 	
-
 	public void exit()
 	{
-		writeToShell("exit"); //$NON-NLS-1$
+		writeToShell("exit"); //$NON-NLS-1$		
+		_status.setAttribute(DE.A_VALUE, "done"); //$NON-NLS-1$
 		_stdoutHandler.finish();
 		_stderrHandler.finish();
 	}

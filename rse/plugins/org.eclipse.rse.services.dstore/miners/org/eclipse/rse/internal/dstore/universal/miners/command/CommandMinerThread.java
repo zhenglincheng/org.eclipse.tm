@@ -17,6 +17,7 @@
  *  David McKnight   (IBM)        - [196624] dstore miner IDs should be String constants rather than dynamic lookup
  *  Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  *  David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
+ *  David McKnight     (IBM)   [249715] [dstore][shells] Unix shell does not echo command
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -611,7 +612,6 @@ public class CommandMinerThread extends MinerThread
 				writer.write(input);
 				writer.newLine();
 				writer.flush();
-				
 
 				if (!_isWindows && (input.startsWith("cd ") || input.equals("cd"))) //$NON-NLS-1$ //$NON-NLS-2$
 				{
@@ -623,25 +623,12 @@ public class CommandMinerThread extends MinerThread
 				}
 				if (!_isWindows && !_isTTY)
 				{
-					// special case for pattern interpretting
-					// if cwd is not set, then files aren't resolved
-					// create mock prompt to ensure that they do get resolved
-					if (input.startsWith("cd ") || input.equals("cd")) //$NON-NLS-1$ //$NON-NLS-2$
-					{
-						writer.write("echo $PWD'>'"); //$NON-NLS-1$
-						writer.newLine(); 
-						writer.flush();
-
-						// sleep to allow reader to interpret before going on
-						try
-						{
-							Thread.sleep(100);
-						}
-						catch (InterruptedException e)
-						{
-						}
-					}
+					// always prompt after the command
+					writer.write("echo $PWD'>'"); //$NON-NLS-1$
+					writer.newLine(); 
+					writer.flush();		
 				}
+
 			}
 			catch (IOException e)
 			{
