@@ -22,7 +22,7 @@
 		  <a href="buildNotes.php">New and Noteworthy / Build Notes</a>
 -->
 		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.0/tm-news-3.0.html">TM 3.0 New and Noteworthy</a></p>
-		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.0/readme_tm_3.0.html">TM 3.0.1 Readme / Release Notes</a></p>
+		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.0/readme_tm_3.0.html">TM 3.0.2 Readme / Release Notes</a></p>
 		  <p><a href="buildNotes.php">Build Notes</a></p>
 		</strong></font></p>
 		

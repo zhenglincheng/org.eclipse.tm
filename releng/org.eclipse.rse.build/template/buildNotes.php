@@ -40,6 +40,9 @@
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=250458">250458</a>]
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251713">251713</a>]
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251744">251744</a>]</li>
+  <li><b>The Editor</b> received an important fix where saving would lead to an invalid
+    save conflict dialog
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=250140">250140</a>]</li>
   <li><b>Offline Mode</b> is now better supported
     [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=offline&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
   <li><b>RSE Useractions</b> received some important fixes
