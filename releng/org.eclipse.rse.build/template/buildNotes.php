@@ -32,39 +32,21 @@
   the fix also requires 3.4 at runtime, but the code contains a backward 
   compatibility fallback to also run on Eclipse 3.3 if that particular fix
   is not required.</li>
-<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/buildNotes.php">TM 3.0.1</a>:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">TM 3.0.2</a>:
 <ul>
   <li><b>Performance</b> of the RSE Save Job was drastically improved for certain situations involving property sets - before the fix, the context menu could be frozen for up to 30 seconds in user actions
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=254842">254842</a>]</li>
-  <li><b>Symbolic Link Handling</b> for dstore was fixed, especially for remote search
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=250458">250458</a>]
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251713">251713</a>]
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=251744">251744</a>]</li>
-  <li><b>The Editor</b> received an important fix where saving would lead to an invalid
-    save conflict dialog
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=250140">250140</a>]</li>
-  <li><b>Offline Mode</b> is now better supported
-    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=offline&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
-  <li><b>RSE Useractions</b> received some important fixes
-    [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=useraction&classification=DSDP&product=Target+Management&component=RSE&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cmdtype=doit">query</a>]</li>    
 </ul></li>
-<li>At least 30 bugs were fixed in total: Use 
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-06-20&chfieldto=2008-09-17&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.0%20M%5B345%5D"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
+<li>At least __??__ bugs were fixed in total: Use 
+  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-12-05&chfieldto=2009-02-27&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.0%20M%5B345%5D"> -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.3&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
   this query</a> to show the list of bugs fixed since <!-- the last milestone, -->
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/">
-  TM 3.0.1</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.1-200809181400/buildNotes.php">build notes</a>].</li>
-<li>Following plug-ins were changed compared to TM 3.0.1:<ul>
-  <li>org.eclipse.dstore.core</li>
-  <li>org.eclipse.rse.core</li>
-  <li>org.eclipse.rse.files.ui</li>
-  <li>org.eclipse.rse.services.dstore</li>
-  <li>org.eclipse.rse.subsystems.files.dstore</li>
-  <li>org.eclipse.rse.ui</li>
-  <li>org.eclipse.rse.useractions</li>
-  <li>org.eclipse.tm.terminal.ssh</li>
-</ul></li>
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/">
+  TM 3.0.2</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">build notes</a>].</li>
+<li>Following plug-ins were changed compared to TM 3.0.2:<ul>
+  <li>none</li>
+  ul></li>
 <li>For details on checkins, see
   <a href="http://www.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
@@ -138,6 +120,10 @@ More information can be found in the associated bugzilla items.
 
 <ul>
 <li>TM @buildId@ API Specification Updates
+<ul>
+  <li>None.</li>
+</ul></li>
+<li>TM 3.0.2 API Specification Updates
 <ul>
   <li>None.</li>
 </ul></li>
