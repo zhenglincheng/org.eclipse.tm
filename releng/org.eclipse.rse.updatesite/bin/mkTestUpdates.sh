@@ -51,7 +51,7 @@ case ${SITEDIR} in
 esac
 if [ ${TYPE} = test ]; then
     echo "Working on test patch update site"
-    TPTYPE="3.0.2 Test Patch"
+    TPTYPE="3.0.3 Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     REL=`ls $HOME/ws_30x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
@@ -65,6 +65,47 @@ if [ ${TYPE} = test ]; then
         cp -R $DIR/plugins .
       fi
     fi
+    # CHECK VERSION CORRECTNESS for MICRO UPDATES only
+    # Minor/major version updates are not allowed.
+    # Update of "qualifier" requires also updating "micro"
+    echo "VERIFYING VERSION CORRECTNESS: Features"
+    ls features/*.jar | sed -e 's,^.*features/,,' | sort > f1.$$.txt
+    ls ../updates/3.0/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
+    diff f2.$$.txt f1.$$.txt | grep '^[>]' \
+       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > f_new.txt
+    for f in `cat f_new.txt`; do
+      fold=`grep ${f} f2.$$.txt`
+      if [ "${fold}" != "" ]; then
+        echo "PROBLEM: QUALIFIER update without MICRO: ${f}"
+      fi
+      fbase=`echo $f | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
+      fold=`grep ${fbase} f2.$$.txt`
+      if [ "${fold}" = "" ]; then
+        echo "PROBLEM: MAJOR or MINOR update : ${f}"
+      fi
+    done
+    echo "VERIFYING VERSION CORRECTNESS: Plugins"
+    ls plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p1.$$.txt
+    ls ../updates/3.0/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
+    diff p2.$$.txt p1.$$.txt | grep '^[>]' \
+       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > p_new.txt
+    for p in `cat p_new.txt`; do
+      pold=`grep ${p} p2.$$.txt`
+      if [ "${pold}" != "" ]; then
+        echo "PROBLEM: QUALIFIER update without MICRO: ${p}"
+      fi
+      pbase=`echo $p | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
+      pold=`grep ${pbase} p2.$$.txt`
+      if [ "${pold}" = "" ]; then
+        echo "PROBLEM: MAJOR or MINOR update : ${p}"
+      fi
+    done
+    #rm f_new.txt p_new.txt
+    mv -f f1.$$.txt fversions.txt
+    mv -f p1.$$.txt pversions.txt
+    mv -f f2.$$.txt f30versions.txt
+    mv -f p2.$$.txt p30versions.txt
+    ## rm f1.$$.txt f2.$$.txt p1.$$.txt p2.$$.txt    
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
@@ -74,7 +115,7 @@ if [ ${TYPE} = test ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -93,7 +134,7 @@ if [ ${TYPE} = test ]; then
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
     echo "Working on signed patch update site"
-    TPTYPE="3.0.2 Signed Test Patch"
+    TPTYPE="3.0.3 Signed Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
@@ -206,53 +247,12 @@ elif [ ${TYPE} = testSigned ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
-    # CHECK VERSION CORRECTNESS for MICRO UPDATES only
-    # Minor/major version updates are not allowed.
-    # Update of "qualifier" requires also updating "micro"
-    echo "VERIFYING VERSION CORRECTNESS: Features"
-    ls features/*.jar | sed -e 's,^.*features/,,' | sort > f1.$$.txt
-    ls ../updates/3.0/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
-    diff f2.$$.txt f1.$$.txt | grep '^[>]' \
-       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > f_new.txt
-    for f in `cat f_new.txt`; do
-      fold=`grep ${f} f2.$$.txt`
-      if [ "${fold}" != "" ]; then
-        echo "PROBLEM: QUALIFIER update without MICRO: ${f}"
-      fi
-      fbase=`echo $f | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
-      fold=`grep ${fbase} f2.$$.txt`
-      if [ "${fold}" = "" ]; then
-        echo "PROBLEM: MAJOR or MINOR update : ${f}"
-      fi
-    done
-    echo "VERIFYING VERSION CORRECTNESS: Plugins"
-    ls plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p1.$$.txt
-    ls ../updates/3.0/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
-    diff p2.$$.txt p1.$$.txt | grep '^[>]' \
-       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > p_new.txt
-    for p in `cat p_new.txt`; do
-      pold=`grep ${p} p2.$$.txt`
-      if [ "${pold}" != "" ]; then
-        echo "PROBLEM: QUALIFIER update without MICRO: ${p}"
-      fi
-      pbase=`echo $p | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
-      pold=`grep ${pbase} p2.$$.txt`
-      if [ "${pold}" = "" ]; then
-        echo "PROBLEM: MAJOR or MINOR update : ${p}"
-      fi
-    done
-    #rm f_new.txt p_new.txt
-    mv -f f1.$$.txt fversions.txt
-    mv -f p1.$$.txt pversions.txt
-    mv -f f2.$$.txt f30versions.txt
-    mv -f p2.$$.txt p30versions.txt
-    ## rm f1.$$.txt f2.$$.txt p1.$$.txt p2.$$.txt    
 elif [ ${TYPE} = milestone ]; then
     echo "Working on milestone update site"
     TPTYPE="3.0 Milestone"
@@ -343,7 +343,7 @@ else
     cvs -q update -dPR
     sed -e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0_2 -->/,/<!-- END_3_0_2 -->/d' \
+    sed -e '/<!-- BEGIN_3_0_3 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml.new1 > site.xml.new2
     sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml.new2 > site.xml.new
