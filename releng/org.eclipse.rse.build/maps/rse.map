@@ -1,7 +1,7 @@
 !***************  PROJECT CONTRIBUTION  ******************************************************** 
 !*** Project's plugins, features and fragments
 feature@org.eclipse.rse=v200901071723,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/features/org.eclipse.rse-feature
-feature@org.eclipse.rse.core=v200812041720,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/features/org.eclipse.rse.core-feature
+feature@org.eclipse.rse.core=v200901082133,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/features/org.eclipse.rse.core-feature
 feature@org.eclipse.rse.dstore=v200901071723,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/features/org.eclipse.rse.dstore-feature
 feature@org.eclipse.rse.examples=v20080604,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/examples/org.eclipse.rse.examples-feature
 feature@org.eclipse.rse.ftp=v200809171630,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/features/org.eclipse.rse.ftp-feature
@@ -63,5 +63,5 @@ plugin@org.eclipse.rse.subsystems.terminals.ssh=v20080604,:pserver:anonymous:non
 plugin@org.eclipse.rse.terminals.ui=v200809161200,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/plugins/org.eclipse.rse.terminals.ui
 plugin@org.eclipse.rse.tests=v20080825,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/tests/org.eclipse.rse.tests
 plugin@org.eclipse.rse.tests.framework=v20080604,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/tests/org.eclipse.rse.tests.framework
-plugin@org.eclipse.rse.ui=v200812041720,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/plugins/org.eclipse.rse.ui
+plugin@org.eclipse.rse.ui=v200901082133,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/plugins/org.eclipse.rse.ui
 plugin@org.eclipse.rse.useractions=v200812041720,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/dsdp,,org.eclipse.tm.rse/plugins/org.eclipse.rse.useractions
