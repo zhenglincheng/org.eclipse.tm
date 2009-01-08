@@ -34,6 +34,7 @@
  * Kevin Doyle 	 (IBM) - [186769] Enable Contributions to Drop Down menu of Remote Systems view -> Preferences
  * David McKnight (IBM)  - [244807] System view does not handle restore from cache
  * Li Ding        (IBM)          - [256135] Subsystem not restored in system view tree if subsystem configuration does not support filter
+ * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -59,8 +60,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -381,11 +380,6 @@ public class SystemViewPart
 		//hook the part focus to the viewer's control focus.
 		//hookFocus(systemView.getControl());
 
-		systemView.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				handleDoubleClick(event);
-			}
-		});
 
 		//prime the selection
 		//selectionChanged(null, getSite().getDesktopWindow().getSelectionService().getSelection());
@@ -473,23 +467,6 @@ public class SystemViewPart
 		}
 	}
 
-	/**
-	 * Handles double clicks in viewer.
-	 * Opens editor if file double-clicked.
-	 */
-	protected void handleDoubleClick(DoubleClickEvent event) {
-		if (!systemView.enabledMode) {
-			//event.doit = false;
-			return;
-		}
-		IStructuredSelection s = (IStructuredSelection) event.getSelection();
-		Object element = s.getFirstElement();
-		if (element == null) return;
-		ISystemViewElementAdapter adapter = systemView.getViewAdapter(element);
-		if (adapter != null)
-			adapter.handleDoubleClick(element);
-
-	}
 
 	/**
 	 * Creates the frame source and frame list, and connects them.
