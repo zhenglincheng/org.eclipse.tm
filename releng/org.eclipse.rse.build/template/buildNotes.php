@@ -34,11 +34,11 @@
   is not required.</li>
 <li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">TM 3.0.2</a>:
 <ul>
-  <li><b>Performance</b> of the RSE Save Job was drastically improved for certain situations involving property sets - before the fix, the context menu could be frozen for up to 30 seconds in user actions
-    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=254842">254842</a>]</li>
+  <li><b>DStore based Products</b> can now use their own Keystores with their own kind of encryption algorithm
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=260256">260256</a>]</li>
 </ul></li>
-<li>At least __??__ bugs were fixed in total: Use 
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-12-05&chfieldto=2009-02-27&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.0%20M%5B345%5D"> -->
+<li>At least 3 bugs were fixed in total: Use 
+  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-12-05&chfieldto=2009-02-27&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.1%20M%5B234567%5D"> -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.3&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
   this query</a> to show the list of bugs fixed since <!-- the last milestone, -->
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/">
@@ -48,7 +48,7 @@
   <li>none</li>
   ul></li>
 <li>For details on checkins, see
-  <a href="http://www.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
+  <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
   RSE CVS changelog</a>, and the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/core/index.html">
