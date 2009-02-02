@@ -680,7 +680,7 @@ public class SystemTableViewPart extends ViewPart
 		{
 			try {
 				IStatus wstatus = RSECorePlugin.waitForInitCompletion();
-				if (!wstatus.isOK()){
+				if (!wstatus.isOK() && wstatus.getSeverity() == IStatus.ERROR){
 					return wstatus;
 				}
 			}
