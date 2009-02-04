@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -23,7 +24,7 @@
  * Martin Oberhuber (Wind River) - [227516] [regression] Fix ArrayIndexOutOfBoundsException in TableView
  * David McKnight   (IBM)        - [187058] Incorrect Right Click Menu in Remote System Details View with no selection
  * David McKnight   (IBM)        - [260346] RSE view for jobs does not remember resized columns
- ********************************************************************************/
+ *******************************************************************************/
 
 package org.eclipse.rse.ui.view;
 import java.util.ArrayList;

@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -45,7 +46,7 @@
  * David McKnight   (IBM)        - [244270] Explicit check for isOffline and just returning block implementing a cache for Work Offline
  * Don Yantzi       (IBM)        - [244807] Delay connecting if resolving filters while restoring from cache
  * David McKnight   (IBM)        - [262930] Remote System Details view not restoring filter memento input
- ********************************************************************************/
+ *******************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
 import java.lang.reflect.InvocationTargetException;
