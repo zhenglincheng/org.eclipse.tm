@@ -255,7 +255,7 @@ elif [ ${TYPE} = testSigned ]; then
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = milestone ]; then
     echo "Working on milestone update site"
-    TPTYPE="3.0 Milestone"
+    TPTYPE="3.0.x Milestone"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
@@ -273,6 +273,7 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
     	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
@@ -298,7 +299,9 @@ to test them before going live.' \
     ##	-e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_4 -->/d' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
-    	-e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
