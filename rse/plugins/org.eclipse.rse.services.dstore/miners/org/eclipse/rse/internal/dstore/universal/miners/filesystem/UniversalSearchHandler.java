@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others.
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@
  * David McKnight  (IBM)  - [250168] handle malformed binary and always resolve canonical paths
  * David McKnight  (IBM)  - [250458] Backport  [dstore] Remote search doesn't find the right result
  * David McKnight  (IBM)  - [255390] checking for memory
+ * David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -29,7 +30,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
@@ -37,6 +41,7 @@ import org.eclipse.dstore.core.model.DataStore;
 import org.eclipse.dstore.core.server.SecuredThread;
 import org.eclipse.dstore.core.server.SystemServiceManager;
 import org.eclipse.dstore.core.util.StringCompare;
+import org.eclipse.dstore.internal.core.util.MemoryManager;
 import org.eclipse.rse.dstore.universal.miners.ICancellableHandler;
 import org.eclipse.rse.dstore.universal.miners.IUniversalDataStoreConstants;
 import org.eclipse.rse.dstore.universal.miners.UniversalFileSystemMiner;
@@ -78,9 +83,12 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 	protected DataElement _deVirtualFile;
 
 	protected boolean _fsCaseSensitive;
+	private MemoryManager _memoryManager;
 
 	public UniversalSearchHandler(DataStore dataStore, UniversalFileSystemMiner miner, SystemSearchString searchString, boolean fsCaseSensitive, File theFile, DataElement status) {
 		super(dataStore);
+		
+		_memoryManager = MemoryManager.getInstance(dataStore);
 		_miner = miner;
 		_searchString = searchString;
 		_fsCaseSensitive = fsCaseSensitive;
@@ -279,7 +287,8 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				}
 	
 				// do a refresh
-				//_dataStore.refresh(_status);
+				_dataStore.refresh(_status);
+				_dataStore.disconnectObjects(_status);
 			}
 	
 			// if the depth is not 0, then we need to recursively search
@@ -351,15 +360,20 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 		FileInputStream inputStream = null;
 
 		try {
+			long MAX_FILE = Runtime.getRuntime().freeMemory() / 4;
+			long fileLength = theFile.length();
+			
 			inputStream = new FileInputStream(theFile);
 			InputStreamReader reader = new InputStreamReader(inputStream);		
 			BufferedReader bufReader = new BufferedReader(reader);
-			
+
 			// test for unreadable binary
-			if (isUnreadableBinary(bufReader)){
+			if (isUnreadableBinary(bufReader) || fileLength > MAX_FILE){
 				// search some other way?
 				long size = theFile.length();
-				if (simpleSearch(inputStream, size, _stringMatcher)){
+				if (simpleSearch(inputStream, size, _stringMatcher)){			
+					bufReader.close();
+					reader.close();
 					return true;
 				}
 				
@@ -367,20 +381,20 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 				reader.close();
 				return false;
 			}
-			else {
+			else 
+			{
 				SystemSearchStringMatchLocator locator = new SystemSearchStringMatchLocator(bufReader, _stringMatcher);						
 				
 				SystemSearchLineMatch[] matches = locator.locateMatches();									
 				boolean foundMatches = ((matches != null) && (matches.length > 0));
 
 				if (foundMatches) {
-					convert(remoteFile, absPath, matches);
+					if (matches.length * 500 < MAX_FILE){ // only creating match objects if we have enough memory																			
+						convert(remoteFile, absPath, matches);
+					}
 				}
-
-				bufReader.close();
-				reader.close();
 				return foundMatches;
-			}
+			} 
 		}
 		catch (OutOfMemoryError e){
 			if (SystemServiceManager.getInstance().getSystemService() == null)
@@ -417,6 +431,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 		catch (Exception e){
 			return true;
 		}
+		
 		return false;
 	}
 
@@ -449,43 +464,21 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 	protected void convert(DataElement deObj, String absPath, SystemSearchLineMatch[] lineMatches) {
 
 		SystemSearchLineMatch match = null;
-
+		
 		for (int i = 0; i < lineMatches.length; i++) {
 			match = lineMatches[i];
 			DataElement obj = _dataStore.createObject(deObj, _deGrep, match.getLine(), absPath);
 			obj.setAttribute(DE.A_SOURCE, obj.getSource() + ':'+ match.getLineNumber());
+	
 		}
+		_dataStore.disconnectObjects(deObj);	
 	}
 	
 	public void checkAndClearupMemory()
 	{
-		int count = 0;
-		while(count < 5 && isMemoryThresholdExceeded()) {
-			
-			System.gc();
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-			}
-			count ++;
-		}
-		if(count == 5) { 
-			_dataStore.trace("heap memory low"); //$NON-NLS-1$
-			if (SystemServiceManager.getInstance().getSystemService() == null)
-				System.exit(-1);
-		}				
+		_memoryManager.checkAndClearupMemory();			
 	}
 
-	private boolean isMemoryThresholdExceeded(){
-		// trying to avoid using Java 1.5
-		Runtime runtime = Runtime.getRuntime();
-		long freeMem = runtime.freeMemory();
-
-		if (freeMem < 10000){
-
-			return true;
-		}
+	
 		
-		return false;
-	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  *  David McKnight  (IBM)  - [202822] don't need to remove children from map here
  *  David McKnight  (IBM)  - [255390] checking for memory
+ *  David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -44,10 +45,12 @@ public class DataElementRemover extends Handler
 	private int _expiryTime = DEFAULT_EXPIRY_TIME * 10;
 	public static final String EXPIRY_TIME_PROPERTY_NAME = "SPIRIT_EXPIRY_TIME"; //$NON-NLS-1$
 	public static final String INTERVAL_TIME_PROPERTY_NAME = "SPIRIT_INTERVAL_TIME"; //$NON-NLS-1$
+	public MemoryManager _memoryManager;
 	
 	public DataElementRemover(DataStore dataStore)
 	{
 		super();
+		_memoryManager = MemoryManager.getInstance(dataStore);
 		_dataStore = dataStore;
 		_queue = new LinkedList();
 		getTimes();
@@ -120,16 +123,7 @@ public class DataElementRemover extends Handler
 	}
 
 	private boolean isMemoryThresholdExceeded(){
-		// trying to avoid using Java 1.5
-		Runtime runtime = Runtime.getRuntime();
-		long freeMem = runtime.freeMemory();
-
-		if (freeMem < 10000){
-
-			return true;
-		}
-		
-		return false;
+		return _memoryManager.isThresholdExceeded();
 	}
 	
 	public void handle()
