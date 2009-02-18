@@ -45,8 +45,13 @@
   TM 3.0.2</a>
   [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">build notes</a>].</li>
 <li>Following plug-ins were changed compared to TM 3.0.2:<ul>
-  <li>none</li>
-  ul></li>
+  <li>org.eclipse.dstore.core (257666, 259905, 261644)</li>
+  <li>org.eclipse.rse.files.ui (262092)</li>
+  <li>org.eclipse.rse.services.dstore (261375)</li>
+  <li>org.eclipse.rse.subsystems.files.dstore (261644)</li>
+  <li>org.eclipse.rse.terminals.ui</li>
+  <li>org.eclipse.tm.terminal</li>
+  </ul></li>
 <li>For details on checkins, see
   <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
