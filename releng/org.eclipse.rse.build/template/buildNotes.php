@@ -36,21 +36,31 @@
 <ul>
   <li><b>DStore based Products</b> can now use their own Keystores with their own kind of encryption algorithm
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=260256">260256</a>]</li>
+  <li><b>DStore remote search</b> got some big improvements, including performance and scalability
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=261646">261646</a>]</li>
+  <li><b>DStoreHostShell#exit()</b> now also terminates child processes
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=263669">263669</a>]</li>
+  <li><b>Terminal Fonts</b> can now be changed in the RSE-Terminals-View
+    even if the TM Terminal View is not installed. Use the "Remote Shell" font or
+    the "Text Editor" font to customize
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247700">247700</a>]</li>
 </ul></li>
-<li>At least 8 bugs were fixed in total: Use 
+<li>At least 11 bugs were fixed in total: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-12-05&chfieldto=2009-02-27&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.1%20M%5B234567%5D"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.3&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.0.3&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&cmdtype=doit">
   this query</a> to show the list of bugs fixed since <!-- the last milestone, -->
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/">
   TM 3.0.2</a>
   [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">build notes</a>].</li>
 <li>Following plug-ins were changed compared to TM 3.0.2:<ul>
-  <li>org.eclipse.dstore.core (257666, 259905, 261644)</li>
-  <li>org.eclipse.rse.files.ui (262092)</li>
-  <li>org.eclipse.rse.services.dstore (261375)</li>
-  <li>org.eclipse.rse.subsystems.files.dstore (261644)</li>
-  <li>org.eclipse.rse.terminals.ui</li>
-  <li>org.eclipse.tm.terminal</li>
+  <li>org.eclipse.dstore.core (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=260256%2C258993%2C260256%2C261646">258993,260256,261646</a>)</li>
+  <li>org.eclipse.rse.files.ui (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=262775">262775</a>)</li>
+  <li>org.eclipse.rse.services.dstore (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=261376">261376</a>)</li>
+  <li>org.eclipse.rse.subsystems.files.dstore (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=261646">261646</a>)</li>
+  <li>org.eclipse.rse.subsystems.processes.core (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=262931">262931</a>)</li>
+  <li>org.eclipse.rse.terminals.ui (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247700">247700</a>)</li>
+  <li>org.eclipse.rse.ui (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=260331%2C260414%2C261053%2C262931">260331,260414,261053,262931</a>)</li>
+  <li>org.eclipse.tm.terminal (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247700">247700</a>)</li>
   </ul></li>
 <li>For details on checkins, see
   <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
@@ -176,9 +186,7 @@ Use
 The following critical or major bugs are currently known.
 We'll strive to fix these as soon as possible.
 <ul>
-  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247059">bug 247059</a> - maj - [dstore] RSE AIX:SSL Connections work with EXPIRED certificate</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=245260">bug 245260</a> - maj - Different user's connections on a single ftp host are mapped to the same temp files cache</li>
-  <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=244070">bug 244070</a> - maj - [dstore] DStoreHostShell#exit() does not terminate child processes</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=238156">bug 238156</a> - maj - Export/Import Connection doesn't create default filters for the specified connection</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=236443">bug 236443</a> - maj - [releng] Using P2 to install "remotecdt" only from update site creates an unusable installation</li>
   <li><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=226564">bug 226564</a> - maj - [efs] Deadlock while starting dirty workspace
