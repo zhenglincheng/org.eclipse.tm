@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * Copyright (c) 2006, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,7 +19,6 @@
  * David McKnight   (IBM)        - [214378] don't mark as finished until we have the results - sleep instead of wait
  * David McKnight   (IBM)        - [216252] use SimpleSystemMessage instead of getMessage()
  * David McKnight  (IBM)         - [255390] don't assume one update means the search is done
- * David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.search;
@@ -95,9 +94,7 @@ public class DStoreSearchService extends AbstractDStoreService implements ISearc
 			{
 				boolean working = true;
 				while (working){
-					// give large wait time for a search
-					int waitThres = -1;
-					getStatusMonitor(ds).waitForUpdate(status, monitor, waitThres);
+					getStatusMonitor(ds).waitForUpdate(status, monitor);
 					String statusStr = status.getName();
 					if (statusStr.equals("done")) //$NON-NLS-1$
 					{
