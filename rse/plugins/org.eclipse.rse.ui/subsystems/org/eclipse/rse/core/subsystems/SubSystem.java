@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -44,7 +45,8 @@
  * David McKnight   (IBM)        - [237970]  Subsystem.connect( ) fails for substituting host name when isOffline( ) is true
  * David McKnight   (IBM)        - [244270] Explicit check for isOffline and just returning block implementing a cache for Work Offline
  * Don Yantzi       (IBM)        - [244807] Delay connecting if resolving filters while restoring from cache
- ********************************************************************************/
+ * David McKnight   (IBM)        - [262930] Remote System Details view not restoring filter memento input
+ *******************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
 import java.lang.reflect.InvocationTargetException;
@@ -922,22 +924,45 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 		try
 		{
 			ISystemFilterPoolReferenceManager filterMgr = getFilterPoolReferenceManager();
+			String modString = filterID.replace('.', ',');
+			
+			String[] segments = modString.split(",");
 
-			int indexOfDot = filterID.indexOf('.');
-			if (indexOfDot > 0)
+			if (segments.length > 0)
 			{
-				String mgrName = filterID.substring(0, indexOfDot);
+				// this is the profile
+				String mgrName = segments[0];
 
+				// this is the filter pool manager for the profile
 				ISystemFilterPoolManager mgr = parentSubSystemConfiguration.getSystemFilterPoolManager(mgrName);
 
-				int indexOfDot2 = filterID.indexOf('.', indexOfDot + 1);
-				if (mgr != null && indexOfDot2 > 0)
-				{
-					String filterPoolName = filterID.substring(indexOfDot + 1, indexOfDot2);
+				if (mgr != null && segments.length > 1){
+					// name of the filter is the last segment
+					String filterName = segments[segments.length - 1];
+					
+					ISystemFilterPool filterPool = null;
+					ISystemFilterPool[] filterPools = mgr.getSystemFilterPools();
+					for (int p = 0; p < filterPools.length && filterPool == null; p++){
+						ISystemFilterPool pool = filterPools[p];
+						String realPoolName = pool.getName();
+						
+						// check for match
+						String filterPoolName = segments[segments.length - 2];
+						for (int s = 3; s < segments.length && filterPool == null; s++){
+							if (filterPoolName.equals(realPoolName)){
+								filterPool = pool;
+							}
+							else if (realPoolName.endsWith(filterPoolName)){
+								filterPoolName = segments[segments.length - s] + '.' + filterPoolName;
+							}
+							else {
+								// no match
+								break;								
+							}
+						}						
+					}
 
-					ISystemFilterPool filterPool = mgr.getSystemFilterPool(filterPoolName);
 
-					String filterName = filterID.substring(indexOfDot2 + 1, filterID.length());
 					if (filterPool != null)
 					{
 						ISystemFilter filter = filterPool.getSystemFilter(filterName);

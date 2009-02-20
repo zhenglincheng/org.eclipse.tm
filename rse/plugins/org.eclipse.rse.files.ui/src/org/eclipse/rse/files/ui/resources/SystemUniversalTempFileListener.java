@@ -23,6 +23,9 @@
  * Kevin Doyle 		(IBM)		 - [204810] Saving file in Eclipse does not update remote file
  * Kevin Doyle 		(IBM)		 - [210389] Display error dialog when setting file not read-only fails when saving
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
+ * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
+ * David McKnight   (IBM)        - [249544] updated to match HEAD stream
  ********************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -136,10 +139,21 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 			// first we need to get the stored timestamp property and the actual remote timestamp
 			SystemIFileProperties properties = new SystemIFileProperties(tempFile);
 			
-			// make sure we're working online - not offline
-			if (fs.isOffline())
+			// make sure we're working online 
+			// also as per bug 256048 - comment#6 if we're not connected we still need to do the same thing
+			if (fs.isOffline() || !fs.isConnected())
 			{			
-				properties.setDirty(true);		
+				// offline mode - make sure the file stays dirty
+				properties.setDirty(true);
+								
+				// try to reset the dirty indicator for the editor if it's open
+				// will only work for lpex right now
+				SystemEditableRemoteFile editable = null;
+				if (properties.getRemoteFileObject() instanceof SystemEditableRemoteFile){
+					editable = (SystemEditableRemoteFile)properties.getRemoteFileObject();						
+					editable.updateDirtyIndicator();
+				}
+
 				return;
 			}
 			else
@@ -190,6 +204,8 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 								remoteFile, false, new NullProgressMonitor());
 					}	
 					
+					boolean openEditorAfterUpload = false;
+					
 					// get associated editable
 					SystemEditableRemoteFile editable = getEditedFile(remoteFile);
 					if (editable != null && storedModifiedStamp == 0)
@@ -208,7 +224,15 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 						{
 							editable = new SystemEditableRemoteFile(remoteFile);
 						}
+						
+						openEditorAfterUpload = true;
+						editable.setLocalResourceProperties();
+					}
 
+					upload(fs, remoteFile, tempFile, properties, storedModifiedStamp, editable, monitor);	
+					
+					if (openEditorAfterUpload){ 
+						// moving this to after the upload because otherwise it queries the remote file and that messes up the timestamps needed by upload						
 						final SystemEditableRemoteFile fEditable = editable;
 						Display.getDefault().asyncExec(new Runnable() {
 							public void run() {
@@ -222,7 +246,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 									if (fEditable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN)
 									{
 										try {
-											fEditable.openEditor();
+											fEditable.openEditor(); // open e
 										}
 										catch (PartInitException e) {
 										}
@@ -231,10 +255,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 									fEditable.addAsListener();
 								} 				
 						});
-						editable.setLocalResourceProperties();
 					}
-
-					upload(fs, remoteFile, tempFile, properties, storedModifiedStamp, editable, monitor);				
 				}
 			} 
 			catch (SystemMessageException e) {
@@ -249,6 +270,60 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 
 	}
 
+	/**
+	 * This method attempts to upload a temporary file in the workspace to a corresponding remote file location.  It
+	 * checks whether the timestamp of the remote file has changed since the temporary file was last known to
+	 * be in synch with the remote file.  If the timestamp has not changed, then it is assumed that the remote
+	 * file has not changed and therefore it is safe to do an upload.  If the timestamp has changed, then the remote
+	 * file must have changed independently and there is a conflict and the upload conflict action is invoked.
+	 * 
+	 * <p>
+	 * <b>Warning</b> It is important to make sure that the remoteFile that gets passed in is up-to-date AND is the 
+	 * current cached version.  If the remoteFile is not up-to-date then the timestamp of the actual remote file may 
+	 * be wrong and lead to the following problems:
+	 * 
+	 * <ul>
+	 *   <li> If the detected remote timestamp is not the actual remote timestamp but it is the same as the storedModifiedStamp, an 
+	 *   upload without detecting a conflict will cause lost data on the remote side!
+	 *   <li> If the detected remote timestamp is not the actual remote timestamp and the actual timestamp is the same as the 
+	 *   storedModifiedStamp, a conflict will be indicated that doesn't actually exist
+	 * </ul>
+	 * 
+	 * If the remoteFile is not the current cached version then the following problem occurs.  After the upload, the remote file is
+	 * marked stale so that the up-to-date remote file can be retrieved with the updated actual timestamp.  Because the remoteFile 
+	 * that was passed into this method is not the cached version, marking it stale will not mark the cached version stale and 
+	 * thus, when a re-query of the file is done after the upload, the original cached version gets returned as opposed to a fresh
+	 * version with the correct timestamp. 
+	 * 
+	 * <p>
+	 * Because of these problems, it is recommended that, before calling upload(), the remoteFile is retrieved from the cache and is
+	 * marked stale like the following example:
+	 * 
+	 * <code>
+	 *    ...
+	 *    // get the remote file from the cache
+	 *    IRemoteFile remoteFile = fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
+	 *    
+	 *    // mark it stale
+	 *    remoteFile.markStale(true);
+	 *    
+	 *    // re-query the remote file to make sure you have the latest
+	 *    remoteFile = fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
+	 *    
+	 *    // call upload
+	 *    upload(fs, remoteFile, ...);
+	 *    .... 
+	 * </code>
+	 * 
+	 * 
+	 * @param fs the file subsystem that corresponds with the file to upload
+	 * @param remoteFile the remote file location to upload to 
+	 * @param tempFile the source temp file to upload
+	 * @param properties the remote file properties of the file to upload
+	 * @param storedModifiedStamp the last timestamp of the remote file for which a temp file was in synch with the remote file
+	 * @param editable the wrapper that associates the remote file, temp file and editor together
+	 * @param monitor the progress monitor
+	 */
 	public void upload(IRemoteFileSubSystem fs, IRemoteFile remoteFile, IFile tempFile, SystemIFileProperties properties, 
 				long storedModifiedStamp, SystemEditableRemoteFile editable, IProgressMonitor monitor)
 	{
@@ -256,6 +331,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 		{
 			// get the remote modified timestamp
 			long remoteModifiedStamp = remoteFile.getLastModified();
+			
 
 			boolean remoteFileDeleted = !remoteFile.exists();
 			// compare timestamps
@@ -275,7 +351,7 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 				}
 
 				catch (RemoteFileSecurityException e)
-				{
+				{				
 					DisplaySystemMessageAction msgAction = new DisplaySystemMessageAction(e.getSystemMessage());
 					Display.getDefault().syncExec(msgAction);
 				}
@@ -291,29 +367,27 @@ public class SystemUniversalTempFileListener extends SystemTempFileListener
 					Display.getDefault().syncExec(msgAction);
 				}
 
+				// requery the file so get the new timestamp
+				remoteFile.markStale(true);
+				remoteFile =fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
 				
 				IRemoteFile parent = remoteFile.getParentRemoteFile();
-	
+
+
+				long ts = remoteFile.getLastModified();
+				
+				// set the stored timestamp to be the same as the remote timestamp
+				properties.setRemoteFileTimeStamp(ts);
+
 				ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
 				// refresh
 				if (parent != null)
 				{
 					registry.fireEvent(new SystemResourceChangeEvent(parent, ISystemResourceChangeEvents.EVENT_REFRESH, null));
 				}
-
-				// waiting to make sure the file's timestamp is uptodate
-				Thread.sleep(1000);
-				
-				// get the remote file object again so that we have a fresh remote timestamp
-				remoteFile.markStale(true);
-				remoteFile = fs.getRemoteFileObject(remoteFile.getAbsolutePath(), monitor);
-				
-				registry.fireEvent(new SystemResourceChangeEvent(remoteFile, ISystemResourceChangeEvents.EVENT_PROPERTY_CHANGE, remoteFile));
 			
-				long ts = remoteFile.getLastModified();
-				
-				// set the stored timestamp to be the same as the remote timestamp
-				properties.setRemoteFileTimeStamp(ts);
+				registry.fireEvent(new SystemResourceChangeEvent(remoteFile, ISystemResourceChangeEvents.EVENT_PROPERTY_CHANGE, remoteFile));
+						
 
 				// indicate that the temp file is no longer dirty
 				properties.setDirty(false);

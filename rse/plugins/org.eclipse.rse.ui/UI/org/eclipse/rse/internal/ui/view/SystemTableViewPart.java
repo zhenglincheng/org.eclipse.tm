@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -39,7 +40,7 @@
  * David McKnight   (IBM)        - [232320] remote system details view restore problem
  * David McKnight   (IBM)        - [233578] Promptable Filter Displayed 3 times when clicking cancel
  * David Dykstal (IBM) - [233678] title string is constructed by concatenation, should be substituted
-*******************************************************/
+ *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
 
@@ -680,7 +681,7 @@ public class SystemTableViewPart extends ViewPart
 		{
 			try {
 				IStatus wstatus = RSECorePlugin.waitForInitCompletion();
-				if (!wstatus.isOK()){
+				if (!wstatus.isOK() && wstatus.getSeverity() == IStatus.ERROR){
 					return wstatus;
 				}
 			}

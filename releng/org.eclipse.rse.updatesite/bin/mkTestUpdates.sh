@@ -9,10 +9,10 @@
 # Contributors: 
 # Martin Oberhuber - initial API and implementation 
 #*******************************************************************************
-# Convert normal "site.xml" to "testUpdates"
+# Convert normal "site.xml" to "testPatchUpdates"
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws_30x/eclipse
 # - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -23,7 +23,32 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+#basebuilder=${HOME}/ws_30x/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/org.eclipse.releng.basebuilder
+baseBuilderTag=R35_M4
+
+# checkout the basebuilder
+if [ ! -f "${basebuilder}/plugins/org.eclipse.pde.core_3.5.0.v20081210-1800.jar" \
+  -o ! -f "${basebuilder}/plugins/org.eclipse.pde.build_3.5.0.v20081210/pdebuild.jar" \
+  -o ! -f "${basebuilder}/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20081208-2132.jar" ]; then
+  if [ -d "${basebuilder}" ]; then
+    echo "Re-getting basebuilder from CVS..."
+    rm -rf "${basebuilder}"
+  else
+    echo "Getting basebuilder from CVS..."
+  fi
+  bb_base=`dirname "${basebuilder}"`
+  if [ ! -d "${bb_base}" ]; then
+    mkdir -p "${bb_base}"
+    if [ ! -d "${bb_base}" ]; then
+      echo "ERROR: could not create ${bb_base}"
+      exit 1
+    fi
+  fi
+  cd "${bb_base}"
+  cvs -Q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/eclipse co -r ${baseBuilderTag} org.eclipse.releng.basebuilder
+  cd "${mydir}"
+fi
 
 # patch site.xml
 cd ..
@@ -39,14 +64,24 @@ if [ -f web/site.xsl.new ]; then
 fi
 
 # get newest plugins and features: to be done manually on real update site
+TPVERSION="Target Management"
 TYPE=none
-if [ `basename $SITE` = testUpdates ]; then
-    echo "Working on test update site"
-    TYPE=test
-    REL=`ls $HOME/ws2/working/package | sort | tail -1`
+SITEDIR=`basename ${SITE}`
+case ${SITEDIR} in
+  test*Updates)   TYPE=test ;;
+  signed*Updates) TYPE=testSigned ;;
+  *milestones)    TYPE=milestone ;;
+  *interim)       TYPE=interim ;;
+  *)              TYPE=unknown ;;
+esac
+if [ ${TYPE} = test ]; then
+    echo "Working on test patch update site"
+    TPTYPE="3.0.3 Test Patch"
+    TPVERSION="${TPVERSION} ${TPTYPE}"
+    REL=`ls $HOME/ws_30x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
-      DIR="$HOME/ws2/working/package/$REL/updates"
+      DIR="$HOME/ws_30x/working/package/$REL/updates"
       if [ -d "$DIR/features" ]; then
         echo "Copying new plugins and features from $DIR"
         rm -rf features
@@ -55,54 +90,100 @@ if [ `basename $SITE` = testUpdates ]; then
         cp -R $DIR/plugins .
       fi
     fi
+    # CHECK VERSION CORRECTNESS for MICRO UPDATES only
+    # Minor/major version updates are not allowed.
+    # Update of "qualifier" requires also updating "micro"
+    echo "VERIFYING VERSION CORRECTNESS: Features"
+    ls features/*.jar | sed -e 's,^.*features/,,' | sort > f1.$$.txt
+    ls ../updates/3.0/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
+    diff f2.$$.txt f1.$$.txt | grep '^[>]' \
+       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > f_new.txt
+    for f in `cat f_new.txt`; do
+      fold=`grep ${f} f2.$$.txt`
+      if [ "${fold}" != "" ]; then
+        echo "PROBLEM: QUALIFIER update without MICRO: ${f}"
+      fi
+      fbase=`echo $f | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
+      fold=`grep ${fbase} f2.$$.txt`
+      if [ "${fold}" = "" ]; then
+        echo "PROBLEM: MAJOR or MINOR update : ${f}"
+      fi
+    done
+    echo "VERIFYING VERSION CORRECTNESS: Plugins"
+    ls plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p1.$$.txt
+    ls ../updates/3.0/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
+    diff p2.$$.txt p1.$$.txt | grep '^[>]' \
+       | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > p_new.txt
+    for p in `cat p_new.txt`; do
+      pold=`grep ${p} p2.$$.txt`
+      if [ "${pold}" != "" ]; then
+        echo "PROBLEM: QUALIFIER update without MICRO: ${p}"
+      fi
+      pbase=`echo $p | sed -e 's,\(.*_[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,'`
+      pold=`grep ${pbase} p2.$$.txt`
+      if [ "${pold}" = "" ]; then
+        echo "PROBLEM: MAJOR or MINOR update : ${p}"
+      fi
+    done
+    #rm f_new.txt p_new.txt
+    mv -f f1.$$.txt fversions.txt
+    mv -f p1.$$.txt pversions.txt
+    mv -f f2.$$.txt f30versions.txt
+    mv -f p2.$$.txt p30versions.txt
+    ## rm f1.$$.txt f2.$$.txt p1.$$.txt p2.$$.txt    
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testUpdates,g' \
-    	-e 's,Project 2.0 Update,Project Test Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
+    	-e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/testUpdates,g' \
-        -e 's,Project 2.0 Update,Project Test Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
+        -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Test Update,g' \
+    sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #java -jar $HOME/ws2/eclipse/startup.jar \
+    #java -jar $HOME/ws_30x/eclipse/startup.jar \
     java \
         -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
         -application org.eclipse.update.core.siteOptimizer \
         -jarProcessor -outputDir $SITE \
         -processAll -repack $SITE
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #	$HOME/ws2/jarprocessor/jarprocessor.jar \
+    #	$HOME/ws_30x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
-elif [ `basename $SITE` = signedUpdates ]; then
-    echo "Working on signed update site"
-    TYPE=testSigned
-    echo "Signing jars from test update site (expecting conditioned jars)..."
+elif [ ${TYPE} = testSigned ]; then
+    echo "Working on signed patch update site"
+    TPTYPE="3.0.3 Signed Test Patch"
+    TPVERSION="${TPVERSION} ${TPTYPE}"
+    echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
-    if [ -d ${STAGING} -a -d ${SITE}/../testUpdates ]; then
-      #get jars from testUpdates, sign them and put them here
+    if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
+      #get jars from testPatchUpdates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
-      cp -R ${SITE}/../testUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
+      cp -R ${SITE}/../testPatchUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
-        echo "signing feature: ${x}"
-        sign ${x} nomail >/dev/null
+        result=`jarsigner -verify ${x} | head -1`
+        if [ "$result" != "jar verified." ]; then
+          # do not sign Orbit bundles again since they are signed already 
+          echo "signing feature: ${x}"
+          sign ${x} nomail >/dev/null
+        fi
       done
       TRIES=10
       while [ $TRIES -gt 0 ]; do
         sleep 30
         echo "TRIES to go: ${TRIES}"
         for x in `ls *.jar | grep -v '^temp[_.]'`; do
-          result=`jarsigner -verify ${x}`
+          result=`jarsigner -verify ${x} | head -1`
           if [ "$result" = "jar verified." ]; then
             echo "${result}: ${x}"
             cp ${x} ${SITE}/features.${stamp}
@@ -126,18 +207,22 @@ elif [ `basename $SITE` = signedUpdates ]; then
         rmdir ${STAGING}/updates.${stamp}/features
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
-        cp ${SITE}/../testUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
+        cp ${SITE}/../testPatchUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
-          echo "signing plugin: ${x}"
-          sign ${x} nomail >/dev/null
+          result=`jarsigner -verify ${x} | head -1`
+          if [ "$result" != "jar verified." ]; then
+            # do not sign Orbit bundles again since they are signed already 
+            echo "signing plugin: ${x}"
+            sign ${x} nomail >/dev/null
+          fi
         done
         TRIES=10
         while [ $TRIES -gt 0 ]; do
           sleep 30
           echo "TRIES to go: ${TRIES}"
           for x in `ls *.jar | grep -v '^temp[_.]'`; do
-            result=`jarsigner -verify ${x}`
+            result=`jarsigner -verify ${x} | head -1`
             if [ "$result" = "jar verified." ]; then
               echo "${result}: ${x}"
               cp ${x} ${SITE}/plugins.${stamp}
@@ -164,6 +249,7 @@ elif [ `basename $SITE` = signedUpdates ]; then
         rmdir ${STAGING}/updates.${stamp}
         #mv features features.old.${stamp}
         #mv plugins plugins.old.${stamp}
+        rm fversions.txt pversions.txt f30versions.txt p30versions.txt f_new.txt p_new.txt 2>/dev/null
         rm -rf features plugins
         mv features.${stamp} features
         mv plugins.${stamp} plugins
@@ -173,71 +259,62 @@ elif [ `basename $SITE` = signedUpdates ]; then
         exit 1
       fi
     else
-      echo "staging or testUpdates not found:"
+      echo "staging or testPatchUpdates not found:"
       echo "please fix your pathes"
       exit 1
     fi
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedUpdates,g' \
-    	-e 's,Project 2.0 Update,Project Signed Test Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
+    	-e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/signedUpdates,g' \
-        -e 's,Project 2.0 Update,Project Signed Test Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
+        -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Signed Test Update,g' \
+    sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
-    ## CHECK VERSION CORRECTNESS for 2.0.1
-    echo "VERIFYING VERSION CORRECNESS: Features"
-    ls features | grep -v '_[12]\.0\.1\.v' | sort > f1.$$.txt
-    ls ../updates/2.0/features | sort > f2.$$.txt
-    echo "wc old-features:"
-    wc f1.$$.txt
-    diff f1.$$.txt f2.$$.txt | grep -v '^[>]'
-    echo "VERIFYING VERSION CORRECNESS: Plugins"
-    ls plugins | grep -v '_[12]\.0\.1\.v' | sort > p1.$$.txt
-    ls ../updates/2.0/plugins | sort > p2.$$.txt
-    echo "wc old-plugins:"
-    wc p1.$$.txt
-    diff p1.$$.txt p2.$$.txt | grep -v '^[>]'
-    rm f1.$$.txt f2.$$.txt p1.$$.txt p2.$$.txt    
-elif [ `basename $SITE` = milestones ]; then
+elif [ ${TYPE} = milestone ]; then
     echo "Working on milestone update site"
-    TYPE=milestone
+    TPTYPE="3.0.x Milestone"
+    TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
-    	-e 's,Project 2.0 Update,Project Milestone Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+    	-e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '\,</h1>,a\
 This site contains Target Management Milestones (I-, S- and M- builds) which are \
-being contributed to the Europa coordinated release train (Eclipse 3.3).' \
+being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    ## keep 2.0.x features in site.xml
+    ## keep 3.0.x features in site.xml
     ##	-e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_4 -->/d' \
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/milestones,g' \
-        -e 's,Project 2.0 Update,Project Milestone Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+        -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Milestone Update,g' \
+    sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
-elif [ `basename $SITE` = interim ]; then
+elif [ ${TYPE} = interim ]; then
     echo "Working on interim update site"
-    TYPE=interim
+    TPTYPE="3.0 Interim"
+    TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
-    	-e 's,Project 2.0 Update,Project Interim Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+    	-e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '\,</h1>,a\
 This site contains Target Management Interim Maintenance builds (I-, S-, and M-builds) in order \
 to test them before going live.' \
@@ -245,37 +322,44 @@ to test them before going live.' \
     mv -f index.html.new index.html
     ## keep 2.0.x features in site.xml
     ##	-e '/<!-- BEGIN_2_0_1 -->/,/<!-- END_2_0_4 -->/d' \
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/interim,g' \
-        -e 's,Project 2.0 Update,Project Interim Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+        -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
+    	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
-    sed -e 's,Project 2.0 Update,Project Interim Update,g' \
+    sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = 3.0 ]; then
     echo "Working on 3.0 update site"
-    TYPE=milestone
+    TPTYPE="3.0"
+    TPVERSION="${TPVERSION} ${TPTYPE}"
+    TYPE=official
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
     cvs -q update -dPR
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/3.0,g' \
-    	-e 's,Project 2.0 Update,Project 3.0 Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+    	-e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '\,</h1>,a\
 This site contains Target Management 3.0 Releases and Updates (R- builds) which are \
-being contributed to the Ganymede coordinated release train (Eclipse 3.4).' \
+being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
     ## dont keep 2.0.x features in site.xml
-    sed -e 's,/dsdp/tm/updates/2.0,/dsdp/tm/updates/3.0,g' \
-        -e 's,Project 2.0 Update,Project 3.0 Update,g' \
+    sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
+        -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0_1 -->/,/<!-- END_3_0_1 -->/d' \
-        site.xml.new1 > site.xml.new
+    sed -e '/<!-- BEGIN_3_0_4 -->/,/<!-- END_3_0_4 -->/d' \
+        site.xml.new1 > site.xml.new2
+    sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
+        site.xml.new2 > site.xml.new
     mv -f site.xml.new site.xml
-    rm site.xml.new1
-    sed -e 's,Project 2.0 Update,Project 3.0 Update,g' \
+    rm site.xml.new1 site.xml.new2
+    sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 else
@@ -287,9 +371,9 @@ else
     cvs -q update -dPR
     sed -e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0 -->/d' \
+    sed -e '/<!-- BEGIN_3_0_3 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml.new1 > site.xml.new2
-    sed -e '/<!-- BEGIN_3_0_1 -->/,/<!-- END_3_0_1 -->/d' \
+    sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml.new2 > site.xml.new
     mv -f site.xml.new site.xml
     rm site.xml.new1 site.xml.new2
@@ -325,20 +409,20 @@ case ${TYPE} in test*)
   # Workaround for downgrading effort of pack200 to avoid VM bug
   # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #java -jar $HOME/ws2/eclipse/startup.jar \
+  #java -jar $HOME/ws_30x/eclipse/startup.jar \
   java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -jarProcessor -outputDir $SITE \
     -processAll -pack $SITE
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #    $HOME/ws2/jarprocessor/jarprocessor.jar \
+  #    $HOME/ws_30x/jarprocessor/jarprocessor.jar \
   #    -outputDir $SITE -processAll -pack $SITE
   ;;
 esac
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws_30x/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \
@@ -357,9 +441,9 @@ java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -updateSite ${SITE}/ \
     -site file:${SITE}/site.xml \
     -metadataRepository file:${SITE}/ \
-    -metadataRepositoryName "Target Management 3.0 Update Site" \
+    -metadataRepositoryName "${TPVERSION} Update Site" \
     -artifactRepository file:${SITE}/ \
-    -artifactRepositoryName "Target Management 3.0 Artifacts" \
+    -artifactRepositoryName "${TPVERSION} Artifacts" \
     -compress \
     -reusePack200Files \
     -noDefaultIUs \

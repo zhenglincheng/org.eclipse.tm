@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * Initial Contributors:
+ * Contributors:
  * The following IBM employees contributed to the Remote System Explorer
  * component that contains this file: David McKnight, Kushal Munir,
  * Michael Berger, David Dykstal, Phil Coulthard, Don Yantzi, Eric Simpson,
@@ -15,10 +15,13 @@
  * David McKnight   (IBM) - [225507][api][breaking] RSE dstore API leaks non-API types
  * Noriaki Takatsu  (IBM) - [227905] prevent double invocations of finished in ConncetionEstablisher
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
+ * Noriaki Takatsu  (IBM) - [257666] [multithread] TCP/IP socket connection is not closed
+ * David McKnight   (IBM) - [257666] modified original patch to simplify
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
 
+import java.io.IOException;
 import java.net.Socket;
 
 import org.eclipse.dstore.core.model.DataElement;
@@ -82,6 +85,13 @@ public class ServerReceiver extends Receiver
 		_dataStore.setConnected(false);
 	    super.finish();
 	    _connection.finished(this);
+	    try
+	    {
+	    	socket().close();
+	    }
+	    catch (IOException e){
+	    	System.out.println(e);
+	    }
 	}
 
 	/**
@@ -93,6 +103,13 @@ public class ServerReceiver extends Receiver
 		e.printStackTrace();
 		System.out.println(e);
 		_connection.finished(this);
+		try
+	    {
+	    	socket().close();
+	    }
+	    catch (IOException IOe){
+	    	System.out.println(IOe);
+	    }
 	}
 
 }

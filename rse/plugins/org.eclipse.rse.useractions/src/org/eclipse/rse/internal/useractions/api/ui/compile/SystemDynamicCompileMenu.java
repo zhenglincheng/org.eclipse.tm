@@ -7,6 +7,7 @@
  * Contributors:
  * Xuan Chen (IBM) - [222470] initial contribution.
  * Kevin Doyle (IBM) - [239805] User Action/Compile menu's shouldn't be tied to IRemoteFile
+ * Kevin Doyle (IBM) - [253037] ClassCastException in SystemDynamicUserActionMenu, SystemDynamicCompileMenu
  *********************************************************************************/
 package org.eclipse.rse.internal.useractions.api.ui.compile;
 
@@ -72,7 +73,9 @@ public class SystemDynamicCompileMenu extends CompoundContributionItem
 		ISystemProfile[] activeProfiles = RSECorePlugin.getTheSystemRegistry().getActiveSystemProfiles();
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		ISelection selection = window.getSelectionService().getSelection();
-		Object firstSelection = ((IStructuredSelection) selection).getFirstElement();
+		Object firstSelection = null;
+		if (selection instanceof IStructuredSelection)
+			firstSelection = ((IStructuredSelection) selection).getFirstElement();
 		if (firstSelection == null)
 		{
 			return new IContributionItem[0];

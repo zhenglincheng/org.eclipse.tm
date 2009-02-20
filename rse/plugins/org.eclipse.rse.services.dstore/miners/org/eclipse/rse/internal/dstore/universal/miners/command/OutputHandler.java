@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others.
+ * Copyright (c) 2006, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight   (IBM)        - [207178] changing list APIs for file service and subsystems
  * David McKnight   (IBM)        - [243699] [dstore] Loop in OutputHandler
+ * David McKnight     (IBM)   [249715] [dstore][shells] Unix shell does not echo command
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -53,7 +54,7 @@ public class OutputHandler extends Handler {
 	private boolean _endOfStream = false;
 
 	private List _encodings;
-
+	
 	public OutputHandler(DataInputStream reader, String qualifier,
 			boolean isTerminal, boolean isStdError, boolean isShell,
 			CommandMinerThread commandThread) {
@@ -99,8 +100,9 @@ public class OutputHandler extends Handler {
 				_commandThread.interpretLine(line, _isStdError);
 			}
 
-			if (!_isTerminal)
+			if (!_isTerminal){
 				doPrompt();
+			}
 
 			_commandThread.refreshStatus();
 		} else {
@@ -113,12 +115,11 @@ public class OutputHandler extends Handler {
 			if ((_reader.available() == 0) && !_isStdError && _isShell) {
 				if (!_isTerminal) {
 					try {
-						Thread.sleep(500);
+						Thread.sleep(200);
 						if (_reader.available() == 0) {
 							// create fake prompt
-							_commandThread.createPrompt(
-									_commandThread.getCWD() + '>',
-									_commandThread.getCWD());
+							String cwd = _commandThread.getCWD();
+							_commandThread.createPrompt(cwd + '>', cwd);							
 						}
 					} catch (Exception e) {
 					}
@@ -161,7 +162,7 @@ public class OutputHandler extends Handler {
 
 			int lookahead = 0;
 
-			// redetermine available if none available now
+			// re-determine available if none available now
 			if (available == 0) {
 				lookahead = _reader.read();
 				if (lookahead == -1) {
@@ -203,7 +204,7 @@ public class OutputHandler extends Handler {
 				try {
 					String fullOutput = new String(readBytes, 0, numRead,
 							encoding);
-
+					
 					// if output is not null, we assume the encoding was correct
 					// and process the output
 					if (fullOutput != null) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2007 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,9 @@
  * Emily Bruner, Mazen Faraj, Adrian Storisteanu, Li Ding, and Kent Hawley.
  * 
  * Contributors:
- * {Name} (company) - description of contribution.
  *  David McKnight  (IBM)  - [202822] don't need to remove children from map here
+ *  David McKnight  (IBM)  - [255390] checking for memory
+ *  David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -44,10 +45,12 @@ public class DataElementRemover extends Handler
 	private int _expiryTime = DEFAULT_EXPIRY_TIME * 10;
 	public static final String EXPIRY_TIME_PROPERTY_NAME = "SPIRIT_EXPIRY_TIME"; //$NON-NLS-1$
 	public static final String INTERVAL_TIME_PROPERTY_NAME = "SPIRIT_INTERVAL_TIME"; //$NON-NLS-1$
+	public MemoryManager _memoryManager;
 	
 	public DataElementRemover(DataStore dataStore)
 	{
 		super();
+		_memoryManager = MemoryManager.getInstance(dataStore);
 		_dataStore = dataStore;
 		_queue = new LinkedList();
 		getTimes();
@@ -96,25 +99,39 @@ public class DataElementRemover extends Handler
 		numGCed++;
 	}
 
+	
 	public synchronized void addToQueueForRemoval(DataElement element)
-	{		
+	{
 		synchronized (_queue) 
 		{
-			
+			if(isMemoryThresholdExceeded()) {
+				if(element.isSpirit()) {
+					unmap(element);
+				}
+				
+				// do immediate clearing of queue since we're low on memory
+				clearQueue(true);
+				return;
+			}
 			if (_dataStore.isDoSpirit() && _dataStore == element.getDataStore())
 			{
 				QueueItem item = new QueueItem(element, System.currentTimeMillis());
 				_queue.add(item);
 			}
 		}
+		notifyInput();
+	}
+
+	private boolean isMemoryThresholdExceeded(){
+		return _memoryManager.isThresholdExceeded();
 	}
 	
 	public void handle()
 	{
-		clearQueue();
+		clearQueue(false);
 	}
 	
-	public synchronized void clearQueue()
+	public synchronized void clearQueue(boolean force)
 	{
 		synchronized (_queue)
 		{
@@ -139,7 +156,7 @@ public class DataElementRemover extends Handler
 			_dataStore.memLog("Size of queue: " + _queue.size()); //$NON-NLS-1$
 			
 			ArrayList toRefresh = new ArrayList();
-			while (_queue.size() > 0 && System.currentTimeMillis() - ((QueueItem) _queue.getFirst()).timeStamp > _expiryTime)
+			while (_queue.size() > 0 && (force || System.currentTimeMillis() - ((QueueItem) _queue.getFirst()).timeStamp > _expiryTime))
 			{
 				DataElement toBeDisconnected = ((QueueItem) _queue.removeFirst()).dataElement;
 				if (!toBeDisconnected.isSpirit()) 
@@ -149,6 +166,7 @@ public class DataElementRemover extends Handler
 					DataElement parent = toBeDisconnected.getParent();
 					if (!toRefresh.contains(parent))
 					{
+						//System.out.println("disconnect parent:"+parent.getName());
 						toRefresh.add(toBeDisconnected.getParent());
 					}
 						//_dataStore.refresh(toBeDisconnected);
@@ -169,6 +187,7 @@ public class DataElementRemover extends Handler
 			_dataStore.memLog("Elements disconnected so far: " + numDisconnected); //$NON-NLS-1$
 			_dataStore.memLog("Spirit elements cleaned so far: " + numRemoved); //$NON-NLS-1$
 			_dataStore.memLog("DataElements GCed so far: " + numGCed); //$NON-NLS-1$
+			System.gc();
 		}
 	}
 	

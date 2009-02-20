@@ -14,14 +14,20 @@
 # Works on build.eclipse.org -- may need to be adjusted
 # for other hosts.
 #
-# This must be run in $HOME/ws2 in order for the mkTestUpdateSite.sh
+# This must be run in $HOME/ws_30x in order for the mkTestUpdateSite.sh
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
+# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
+# cvs co -r R3_0_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
+# sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
+#
+# - OR -
+#
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testUpdates/bin
+# cd testPatchUpdates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -107,12 +113,12 @@ else
   DROPUP=../..
 fi
 
-# EMF 2.4.0
-EMFBRANCH=2.4.0
+# EMF 2.4.1
+EMFBRANCH=2.4.1
 EMFREL=R
-EMFDATE=200806091234
-EMFVER=2.4.0
-if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_2.4.0.v${EMFDATE}.jar ]; then
+EMFDATE=200808251517
+EMFVER=2.4.1
+if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_${EMFVER}.v${EMFDATE}.jar ]; then
   # Need EMF 2.4 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
   cd ${DROPIN}
@@ -137,13 +143,16 @@ if [ ! -f ${DROPIN}/eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
   cd ${DROPUP}
 fi
 
-# CDT 5.0 Runtime
-CDTVER=200806171202
-#CDTNAME=cdt-master-5.0.0-I${CDTVER}.zip
-#CDTLOC=builds/5.0.0/I.I${CDTVER}/${CDTNAME}
-CDTNAME=cdt-master-5.0.0.zip
-CDTLOC=releases/ganymede/dist/${CDTNAME}
-if [ ! -f eclipse/plugins/org.eclipse.cdt.core_5.0.0.${CDTVER}.jar ]; then
+# CDT Runtime
+#CDTREL=5.0.0
+#CDTVER=200806171202
+#CDTNAME=cdt-master-5.0.0.zip
+#CDTLOC=releases/ganymede/dist/${CDTNAME}
+CDTREL=5.0.1
+CDTVER=200808290803
+CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
+CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
+if [ ! -f eclipse/plugins/org.eclipse.cdt.core_${CDTREL}.${CDTVER}.jar ]; then
   echo "Getting CDT Runtime..."
   wget "http://download.eclipse.org/tools/cdt/${CDTLOC}"
   CDTTMP=`pwd`/tmp.$$
@@ -157,13 +166,13 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_5.0.0.${CDTVER}.jar ]; then
     -command install \
     -from file://${CDTTMP} \
     -featureId org.eclipse.cdt.platform \
-    -version 5.0.0.${CDTVER}
+    -version ${CDTREL}.${CDTVER}
   java -jar eclipse/plugins/org.eclipse.equinox.launcher_1.0.*.jar \
     -application org.eclipse.update.core.standaloneUpdate \
     -command install \
     -from file://${CDTTMP} \
     -featureId org.eclipse.cdt \
-    -version 5.0.0.${CDTVER}
+    -version ${CDTREL}.${CDTVER}
   rm -rf ${CDTTMP}
   rm ${CDTNAME}
 fi
@@ -201,7 +210,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -dPR
+  cvs -q update -r R3_0_maintenance -dPR 
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -210,7 +219,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_0_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -225,9 +234,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testUpdates
-  if [ -d ${D} ]; then ln -s ${D} testUpdates; else mkdir testUpdates; fi
+if [ ! -d testPatchUpdates ]; then
+  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testPatchUpdates
+  if [ -d ${D} ]; then ln -s ${D} testPatchUpdates; else mkdir testPatchUpdates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
@@ -247,7 +256,7 @@ if [ ! -h doit_nightly.sh ]; then
 fi
 if [ ! -h setup.sh ]; then
   if [ -f setup.sh ]; then rm -f setup.sh; fi
-  ln -s org.eclipse.rse.build/bin/setup.sh .
+  ln -s org.eclipse.rse.build/setup.sh .
 fi
 chmod a+x doit_irsbuild.sh doit_nightly.sh
 cd org.eclipse.rse.build
@@ -258,11 +267,11 @@ echo "Your build environment is now created."
 echo ""
 echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
 echo ""
-echo "Test the testUpdates, then copy them to updates:"
+echo "Test the testPatchUpdates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testUpdates/plugins ."
-echo "cp -R ../testUpdates/features ."
+echo "cp -R ../testPatchUpdates/plugins ."
+echo "cp -R ../testPatchUpdates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"

@@ -15,7 +15,7 @@
 # sign.sh a.jar featurs/b.jar `ls plugins/*.jar`
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws_30x/eclipse
 # - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -26,7 +26,7 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/ws_30x/org.eclipse.releng.basebuilder
 
 FILES=$*
 
@@ -106,7 +106,7 @@ fi
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws_30x/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \

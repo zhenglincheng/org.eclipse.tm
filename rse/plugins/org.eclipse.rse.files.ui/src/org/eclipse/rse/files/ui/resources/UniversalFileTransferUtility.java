@@ -1,8 +1,9 @@
-/********************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the terms
- * of the Eclipse Public License v1.0 which accompanies this distribution, and is
- * available at http://www.eclipse.org/legal/epl-v10.html
+/*******************************************************************************
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Initial Contributors:
  * The following IBM employees contributed to the Remote System Explorer
@@ -49,7 +50,8 @@
  * Kevin Doyle		  (IBM)		 - [227391] Saving file in Eclipse does not update remote file
  * David McKnight     (IBM)      - [234924] [ftp][dnd][Refresh] Copy/Paste file from Package Explorer doesn't refresh folder
  * David McKnight     (IBM)      - [236723] UniversalFileTransferUtility..uploadResourcesFromWorkspace should query remote folder encoding
- ********************************************************************************/
+ * David McKnight     (IBM)      - [262092] Special characters are missing when pasting a file on a different connection
+ *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
 
@@ -1575,7 +1577,7 @@ public class UniversalFileTransferUtility
 							srcCharSet = ((IFile)srcFileOrFolder).getCharset(false);
 							if (srcCharSet == null || srcCharSet.length() == 0)
 							{
-								srcCharSet = SystemEncodingUtil.ENCODING_UTF_8;
+								srcCharSet = srcFileOrFolder.getWorkspace().getRoot().getDefaultCharset();
 							}
 						}
 						catch (CoreException e)
@@ -1798,7 +1800,7 @@ public class UniversalFileTransferUtility
 						srcCharSet = ((IFile)srcFileOrFolder).getCharset(false);
 						if (srcCharSet == null || srcCharSet.length() == 0)
 						{
-							srcCharSet = SystemEncodingUtil.ENCODING_UTF_8;
+							srcCharSet = srcFileOrFolder.getWorkspace().getRoot().getDefaultCharset();
 						}
 					}
 					catch (CoreException e)
