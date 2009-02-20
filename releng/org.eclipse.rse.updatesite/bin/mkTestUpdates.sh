@@ -23,7 +23,32 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws_30x/org.eclipse.releng.basebuilder
+#basebuilder=${HOME}/ws_30x/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/org.eclipse.releng.basebuilder
+baseBuilderTag=R35_M4
+
+# checkout the basebuilder
+if [ ! -f "${basebuilder}/plugins/org.eclipse.pde.core_3.5.0.v20081210-1800.jar" \
+  -o ! -f "${basebuilder}/plugins/org.eclipse.pde.build_3.5.0.v20081210/pdebuild.jar" \
+  -o ! -f "${basebuilder}/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20081208-2132.jar" ]; then
+  if [ -d "${basebuilder}" ]; then
+    echo "Re-getting basebuilder from CVS..."
+    rm -rf "${basebuilder}"
+  else
+    echo "Getting basebuilder from CVS..."
+  fi
+  bb_base=`dirname "${basebuilder}"`
+  if [ ! -d "${bb_base}" ]; then
+    mkdir -p "${bb_base}"
+    if [ ! -d "${bb_base}" ]; then
+      echo "ERROR: could not create ${bb_base}"
+      exit 1
+    fi
+  fi
+  cd "${bb_base}"
+  cvs -Q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/eclipse co -r ${baseBuilderTag} org.eclipse.releng.basebuilder
+  cd "${mydir}"
+fi
 
 # patch site.xml
 cd ..
