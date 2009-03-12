@@ -44,6 +44,9 @@
     even if the TM Terminal View is not installed. Use the "Remote Shell" font or
     the "Text Editor" font to customize
     [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=247700">247700</a>]</li>
+  <li><b>Source encoding</b> The workstation encoding rather than UTF-8 is now 
+    used as the source encoding when uploading from an editor save
+    [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=268218">268218</a>][/li>
 </ul></li>
 <li>At least 11 bugs were fixed in total: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&chfieldfrom=2008-12-05&chfieldto=2009-02-27&chfield=resolution&cmdtype=doit&negate0=1&field0-0-0=target_milestone&type0-0-0=substring&value0-0-0=2.0&field0-0-1=target_milestone&type0-0-1=regexp&value0-0-1=3.1%20M%5B234567%5D"> -->
@@ -54,7 +57,7 @@
   [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.0.2-200812050230/buildNotes.php">build notes</a>].</li>
 <li>Following plug-ins were changed compared to TM 3.0.2:<ul>
   <li>org.eclipse.dstore.core (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=260256%2C258993%2C260256%2C261646">258993,260256,261646</a>)</li>
-  <li>org.eclipse.rse.files.ui (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=262775">262775</a>)</li>
+  <li>org.eclipse.rse.files.ui (<a href="https://bugs.eclipse.org/bugs/buglist.cgi?quicksearch=262775%2C268218">262775,268218</a>)</li>
   <li>org.eclipse.rse.services.dstore (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=261376">261376</a>)</li>
   <li>org.eclipse.rse.subsystems.files.dstore (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=261646">261646</a>)</li>
   <li>org.eclipse.rse.subsystems.processes.core (<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=262931">262931</a>)</li>
