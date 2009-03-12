@@ -35,6 +35,7 @@
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [247189] SystemEditableRemoteFile.openEditor() not updating the default editor properly
  * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [267247] Wrong encoding
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -730,11 +731,24 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 				subsystem.connect(false, null);
 			}
 		}
-
-		subsystem.upload(localPath, remoteFile, SystemEncodingUtil.ENCODING_UTF_8, null);
+		
+		IFile file = getLocalResource();
+		String srcEncoding = null;
+		
+		try {
+			srcEncoding = file.getCharset(true);
+			if (srcEncoding == null || srcEncoding.length() == 0)
+			{
+				srcEncoding = file.getWorkspace().getRoot().getDefaultCharset();
+			}
+		}
+		catch (CoreException e){			
+			srcEncoding = SystemEncodingUtil.ENCODING_UTF_8;
+		}
+		
+		subsystem.upload(localPath, remoteFile, srcEncoding, null);
 
 		// update timestamp
-		IFile file = getLocalResource();
 		SystemIFileProperties properties = new SystemIFileProperties(file);
 
 		//DKM- saveAS fix

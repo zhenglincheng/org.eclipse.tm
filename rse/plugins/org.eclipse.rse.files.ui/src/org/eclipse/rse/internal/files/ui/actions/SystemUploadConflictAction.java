@@ -22,12 +22,14 @@
  * Xuan Chen        (IBM)        - [225506] [api][breaking] RSE UI leaks non-API types
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
+ * David McKnight   (IBM)        - [267247] Wrong encoding
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.actions;
 
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -123,7 +125,21 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
                 try
                 {                    	
                     // copy temp file to remote system
-                    fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _saveasFile, SystemEncodingUtil.ENCODING_UTF_8, monitor);
+                	String srcEncoding = null;
+            		
+            		try {
+            			srcEncoding = _tempFile.getCharset(true);
+            			if (srcEncoding == null || srcEncoding.length() == 0)
+            			{
+            				srcEncoding = _tempFile.getWorkspace().getRoot().getDefaultCharset();
+            			}
+            		}
+            		catch (CoreException e){			
+            			srcEncoding = SystemEncodingUtil.ENCODING_UTF_8;
+            		}
+            		
+                	
+                    fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _saveasFile, srcEncoding, monitor);
                  
                     // set original time stamp to 0 so that file will be overwritten next download
                     SystemIFileProperties properties = new SystemIFileProperties(_tempFile);
@@ -157,8 +173,23 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
 		        IRemoteFileSubSystem fs = _remoteFile.getParentRemoteFileSubSystem();
 	            SystemIFileProperties properties = new SystemIFileProperties(_tempFile);
 	            	
+	            
+	            
+	            String srcEncoding = null;
+	    		
+	    		try {
+	    			srcEncoding = _tempFile.getCharset(true);
+	    			if (srcEncoding == null || srcEncoding.length() == 0)
+	    			{
+	    				srcEncoding = _tempFile.getWorkspace().getRoot().getDefaultCharset();
+	    			}
+	    		}
+	    		catch (CoreException e){			
+	    			srcEncoding = SystemEncodingUtil.ENCODING_UTF_8;
+	    		}
+	    		
                  // download remote version
-                 fs.download(_remoteFile, _tempFile.getLocation().makeAbsolute().toOSString(), SystemEncodingUtil.ENCODING_UTF_8, monitor);
+                 fs.download(_remoteFile, _tempFile.getLocation().makeAbsolute().toOSString(), srcEncoding, monitor);
 
                  properties.setRemoteFileTimeStamp(_remoteFile.getLastModified());
 					//properties.setRemoteFileTimeStamp(-1);                
@@ -202,7 +233,21 @@ public class SystemUploadConflictAction extends SystemBaseAction implements Runn
             	// making sure we have the same version as is in the cache
             	_remoteFile = fs.getRemoteFileObject(_remoteFile.getAbsolutePath(), monitor);
             	
-                fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _remoteFile, SystemEncodingUtil.ENCODING_UTF_8, monitor);
+            	String srcEncoding = null;
+        		
+        		try {
+        			srcEncoding = _tempFile.getCharset(true);
+        			if (srcEncoding == null || srcEncoding.length() == 0)
+        			{
+        				srcEncoding = _tempFile.getWorkspace().getRoot().getDefaultCharset();
+        			}
+        		}
+        		catch (CoreException e){			
+        			srcEncoding = SystemEncodingUtil.ENCODING_UTF_8;
+        		}
+        		
+            	
+                fs.upload(_tempFile.getLocation().makeAbsolute().toOSString(), _remoteFile, srcEncoding, monitor);
 
                 // wait for timestamp to update before re-fetching remote file
                 _remoteFile.markStale(true);
