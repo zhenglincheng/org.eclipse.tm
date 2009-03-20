@@ -11,6 +11,7 @@
  * 
  * Contributors:
  * David McKnight  (IBM)  - [261644] [dstore] remote search improvements
+ * David McKnight  (IBM)  - [268258] [dstore] ClassNotFound Exception is visible when using Java 1.4
  ********************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -90,7 +91,6 @@ public class MemoryManager {
 		}
 		catch (Exception e){
 			// java version to old so no mbean created - will use fallback
-			e.printStackTrace();
 		}
 	}
 	
