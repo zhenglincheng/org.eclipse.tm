@@ -36,6 +36,7 @@
  * David McKnight   (IBM)        - [247189] SystemEditableRemoteFile.openEditor() not updating the default editor properly
  * David McKnight   (IBM)        - [249544] Save conflict dialog appears when saving files in the editor
  * David McKnight   (IBM)        - [267247] Wrong encoding
+ * David McKnight   (IBM)        - [272772] Exception handling in SystemEditableRemoteFile
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -651,6 +652,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		catch (SystemMessageException e)
 		{
 			SystemMessageDialog.displayMessage(e);
+			return false;
 		}
 		if (monitor.isCanceled())
 		{
