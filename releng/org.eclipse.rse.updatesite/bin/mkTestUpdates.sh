@@ -76,7 +76,7 @@ case ${SITEDIR} in
 esac
 if [ ${TYPE} = test ]; then
     echo "Working on test patch update site"
-    TPTYPE="3.0.3 Test Patch"
+    TPTYPE="3.0.3+ Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     REL=`ls $HOME/ws_30x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
@@ -140,7 +140,7 @@ if [ ${TYPE} = test ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -159,7 +159,7 @@ if [ ${TYPE} = test ]; then
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
     echo "Working on signed patch update site"
-    TPTYPE="3.0.3 Signed Test Patch"
+    TPTYPE="3.0.3+ Signed Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
@@ -272,7 +272,7 @@ elif [ ${TYPE} = testSigned ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -298,7 +298,7 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_3 -->/d' \
     	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
@@ -325,7 +325,7 @@ to test them before going live.' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_2 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_0_3 -->/d' \
     	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
