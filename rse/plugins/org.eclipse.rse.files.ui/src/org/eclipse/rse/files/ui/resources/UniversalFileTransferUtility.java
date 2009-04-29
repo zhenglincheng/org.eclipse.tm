@@ -51,6 +51,7 @@
  * David McKnight     (IBM)      - [234924] [ftp][dnd][Refresh] Copy/Paste file from Package Explorer doesn't refresh folder
  * David McKnight     (IBM)      - [236723] UniversalFileTransferUtility..uploadResourcesFromWorkspace should query remote folder encoding
  * David McKnight     (IBM)      - [262092] Special characters are missing when pasting a file on a different connection
+ * David McKnight     (IBM)      - [271831] Set the readonly file attribute when download the file
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -264,12 +265,9 @@ public class UniversalFileTransferUtility
 			}
 			if (tempFile.exists())
 			{
-				// if the file is virtual, set read only if necessary
-				// TODO: why set this here? And why for virtual only??
-				if (srcFileOrFolder instanceof IVirtualRemoteFile)
-				{
-					setReadOnly(tempFile, srcFileOrFolder.canWrite());
-				}
+				// set the appropriate readonly flag
+				boolean readOnly = !srcFileOrFolder.canWrite();
+				setReadOnly(tempFile, readOnly);
 
 				if (remoteEncoding != null)
 				{
@@ -570,12 +568,8 @@ public class UniversalFileTransferUtility
 				{
 					if (tempFile.exists())
 					{
-						// if the file is virtual, set read only if necessary
-						// TODO: why set this here? And why for virtual only??
-						if (srcFileOrFolder instanceof IVirtualRemoteFile)
-						{
-							setReadOnly(tempFile, srcFileOrFolder.canWrite());
-						}
+						boolean readOnly = !srcFileOrFolder.canWrite();
+						setReadOnly(tempFile, readOnly);
 
 						try
 						{
@@ -967,6 +961,10 @@ public class UniversalFileTransferUtility
 				boolean shouldUseBin = RemoteFileUtility.getSystemFileTransferModeRegistry().isBinary(srcFileOrFolder);
 				if (storedModifiedStamp == remoteModifiedStamp && (usedBin == shouldUseBin))
 				{
+					// set the appropriate readonly flag
+					boolean readOnly = !srcFileOrFolder.canWrite();
+					setReadOnly(tempFile, readOnly);
+					
 					return tempFile;
 				}
 			}
@@ -995,6 +993,10 @@ public class UniversalFileTransferUtility
 			}
 			if (tempFile.exists())
 			{
+				// set the appropriate readonly flag
+				boolean readOnly = !srcFileOrFolder.canWrite();
+				setReadOnly(tempFile, readOnly);
+				
 				if (RemoteFileUtility.getSystemFileTransferModeRegistry().isText(srcFileOrFolder))
 				{
 					try
