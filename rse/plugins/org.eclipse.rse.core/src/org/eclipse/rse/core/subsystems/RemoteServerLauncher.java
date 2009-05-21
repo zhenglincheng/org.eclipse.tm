@@ -173,7 +173,7 @@ public class RemoteServerLauncher extends ServerLauncher implements IRemoteServe
 					autoDetectProperty.setEnabled(autoDetect);
 					autoDetectProperty.setLabel(RSECoreMessages.RESID_SUBSYSTEM_AUTODETECT_LABEL);
 				
-					_autoDetectSSL = Boolean.parseBoolean(autoDetectProperty.getValue());
+					_autoDetectSSL = Boolean.valueOf(autoDetectProperty.getValue()).booleanValue();
 				}
 				
 				boolean usingRexec = _serverLaunchType != null && _serverLaunchType.getType() == ServerLaunchType.REXEC;
