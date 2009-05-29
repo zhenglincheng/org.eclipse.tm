@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@
  * Martin Oberhuber (Wind River) - [220020][api][breaking] SystemFileTransferModeRegistry should be internal
  * Martin Oberhuber (Wind River) - [219975] Fix implementations of clone()
  * David McKnight   (IBM)        - [231209] [api][breaking] IRemoteFile.getSystemConnection() should be changed to IRemoteFile.getHost()
+ * David McKnight   (IBM)        - [277911] cached results of remote file query need to be sorted
  *******************************************************************************/
 
 package org.eclipse.rse.subsystems.files.core.subsystems;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -678,7 +680,7 @@ public abstract class RemoteFile implements IRemoteFile,  IAdaptable, Comparable
 	public Object[] getContents(ISystemContentsType contentsType, String filter)
 	{
 		HashMap filters = (HashMap)(_contents.get(contentsType));
-
+		Object[] results = null;
 		if (filters == null || filters.isEmpty())
 		{
 			if (contentsType == RemoteChildrenContentsType.getInstance())
@@ -715,66 +717,59 @@ public abstract class RemoteFile implements IRemoteFile,  IAdaptable, Comparable
 			filter = "*"; //$NON-NLS-1$
 		}
 
-		if (filters.containsKey(filter))
-		{
+		if (filters.containsKey(filter)){
 			Object[] filterResults = (Object[])filters.get(filter);
-			if (contentsType == RemoteChildrenContentsType.getInstance() ||
-			    contentsType == RemoteFileChildrenContentsType.getInstance() ||
-			    contentsType == RemoteFolderChildrenContentsType.getInstance()
-			)
-			{
-				return filterResults;
-			}
-			else
-			{
-				return filterResults;
-			}
+			results = filterResults;			
 		}
-
-		ArrayList calculatedResults = new ArrayList();
-
-		StringComparePatternMatcher fmatcher = new StringComparePatternMatcher(filter);
-
-		// the filter may be a subset of existing filters
-		Object[] keySet = filters.keySet().toArray();
-
-		for (int i = 0; i < keySet.length; i++) {
-
-			String key = (String)keySet[i];
-
-			// KM: we need to match with the key to ensure that the filter is a subset
-			StringComparePatternMatcher matcher = new StringComparePatternMatcher(key);
-
-			if (matcher.stringMatches(filter)) {
-				// get all children, i.e. the superset
-				Object[] all = (Object[]) filters.get(key);
-
-				if (all != null) {
-
-					for (int s = 0; s < all.length; s++) {
-
-						Object subContent = all[s];
-
-						if (!calculatedResults.contains(subContent)) {
-
-							if (subContent instanceof IRemoteFile) {
-
-								IRemoteFile temp = (IRemoteFile) subContent;
-
-								if (temp.isFile()) {
-									String compareTo = null;
-									boolean filterForFileTypes = isFilterForFileTypes(filter);
-
-									if (!filterForFileTypes) {
-										compareTo = temp.getName();
+		else {
+			ArrayList calculatedResults = new ArrayList();
+	
+			StringComparePatternMatcher fmatcher = new StringComparePatternMatcher(filter);
+	
+			// the filter may be a subset of existing filters
+			Object[] keySet = filters.keySet().toArray();
+	
+			for (int i = 0; i < keySet.length; i++) {
+	
+				String key = (String)keySet[i];
+	
+				// KM: we need to match with the key to ensure that the filter is a subset
+				StringComparePatternMatcher matcher = new StringComparePatternMatcher(key);
+	
+				if (matcher.stringMatches(filter)) {
+					// get all children, i.e. the superset
+					Object[] all = (Object[]) filters.get(key);
+	
+					if (all != null) {
+	
+						for (int s = 0; s < all.length; s++) {
+	
+							Object subContent = all[s];
+	
+							if (!calculatedResults.contains(subContent)) {
+	
+								if (subContent instanceof IRemoteFile) {
+	
+									IRemoteFile temp = (IRemoteFile) subContent;
+	
+									if (temp.isFile()) {
+										String compareTo = null;
+										boolean filterForFileTypes = isFilterForFileTypes(filter);
+	
+										if (!filterForFileTypes) {
+											compareTo = temp.getName();
+										}
+										else {
+											compareTo = temp.getExtension();
+										}
+	
+										// match with the filter to take out those
+										// that do not match the filter
+										if (compareTo != null && fmatcher.stringMatches(compareTo)) {
+											calculatedResults.add(subContent);
+										}
 									}
 									else {
-										compareTo = temp.getExtension();
-									}
-
-									// match with the filter to take out those
-									// that do not match the filter
-									if (compareTo != null && fmatcher.stringMatches(compareTo)) {
 										calculatedResults.add(subContent);
 									}
 								}
@@ -782,16 +777,15 @@ public abstract class RemoteFile implements IRemoteFile,  IAdaptable, Comparable
 									calculatedResults.add(subContent);
 								}
 							}
-							else {
-								calculatedResults.add(subContent);
-							}
 						}
 					}
-				}
+				}				
 			}
+			results = calculatedResults.toArray();
 		}
 
-		return calculatedResults.toArray();
+		Arrays.sort(results);
+		return results;
 	}
 
 	/**
