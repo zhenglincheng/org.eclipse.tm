@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others.
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@
  * Martin Oberhuber (Wind River) - [233993] Improve EFS error reporting
  * Martin Oberhuber (Wind River) - [235360][ftp][ssh][local] Return proper "Root" IHostFile
  * David McKnight   (IBM)        - [238367] [regression] Error when deleting Archive Files
+ * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -660,7 +661,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 					throw new SystemOperationCancelledException();
 //					return false;
 				} else if (destinationFile!=null) {
-					destinationFile.setLastModified(localFile.lastModified());
+			//		destinationFile.setLastModified(localFile.lastModified());
 					//TODO check if we want to preserve permissions
 					//if(!localFile.canWrite()) destinationFile.setReadOnly();
 
