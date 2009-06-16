@@ -55,6 +55,7 @@
  * David McKnight   (IBM)        - [256609] [dstore] need to make sure element is resolved properly before finding it's command descriptors
  * David McKnight   (IBM)        - [270468] [dstore] FileServiceSubSystem.list() returns folders when only FILE_TYPE_FILES is requested
  * David McKnight   (IBM)        - [272335] [dstore] not handling case where upload fails
+ * David McKnight   (IBM)        - [279695] [dstore] Connection file encoding is not refreshed from the host
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -157,6 +158,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		_fileElementMap.clear();
 		_dstoreFileMap.clear();
 		_uploadLogElement = null;
+		remoteEncoding = null;
 		super.uninitService(monitor);
 	}
 
