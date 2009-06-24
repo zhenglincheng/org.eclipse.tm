@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2009 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -13,9 +13,12 @@
  * Contributors:
  * Martin Oberhuber (Wind River) - [168975] Move RSE Events API to Core
  * David Dykstal (IBM) - [226561] Add API markup to RSE javadocs for extend / implement
+ * David McKnight   (IBM)        - [276194] cannot open file with '...' in pathname
  ********************************************************************************/
 
 package org.eclipse.rse.core.model;
+
+import java.io.File;
 
 /**
  * This is a utility class used in the construction of file names.
@@ -53,11 +56,13 @@ public class SystemEscapeCharHelper {
 		String fileName = name;
 
 		int i = 0;
+
 		while (i < fileName.length())
-		{
+		{			
+			char currentChar = fileName.charAt(i);
 			for (int j = 0; j < changedChars.length; j++)
-			{
-				if (fileName.charAt(i) == changedChars[j])
+			{				
+				if (currentChar == changedChars[j])
 				{
 					if ((fileName.length()-1) >= i)
 					{
@@ -68,6 +73,14 @@ public class SystemEscapeCharHelper {
 						fileName = fileName.substring(0, i) + escapeString(changedChars[j]);
 					}
 					i = i + escapeStringLength-1;
+				}
+				else if (currentChar == '.'){ // special case for bug 276194
+					if (fileName.length() > i + 1){
+						char nextChar = fileName.charAt(i + 1);
+						if (nextChar == '.' || nextChar == File.separatorChar){
+							fileName = fileName.substring(0, i) + escapeString(currentChar) + fileName.substring(i+1);
+						}
+					}
 				}
 			}
          i++;
