@@ -52,6 +52,7 @@
  * David McKnight     (IBM)      - [236723] UniversalFileTransferUtility..uploadResourcesFromWorkspace should query remote folder encoding
  * David McKnight     (IBM)      - [262092] Special characters are missing when pasting a file on a different connection
  * David McKnight     (IBM)      - [271831] Set the readonly file attribute when download the file
+ * David McKnight     (IBM)      - [282902] Variable was not set properly
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
