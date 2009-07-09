@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site pack200="true" 
-      mirrorsURL="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/updates/2.0/site.xml&amp;format=xml&amp;protocol=http"
+	mirrorsURL="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/updates/2.0/site.xml&amp;format=xml&amp;protocol=http"
 	digestURL="http://download.eclipse.org/dsdp/tm/updates/2.0/">
 <!-- was disabled due to bug 163406 digestURL="http://download.eclipse.org/dsdp/tm/updates/2.0/" -->
    <description url="http://download.eclipse.org/dsdp/tm/updates/2.0/">
       This is the Target Management Project 2.0 Update Site.
    </description>
-   <!-- BEGIN_2_0 -->
+<!-- BEGIN_2_0 -->
    <feature url="features/org.eclipse.rse.sdk_2.0.0.v20070609-7J--E7ZoHIP4RfkXykCt2OjoBujq.jar" id="org.eclipse.rse.sdk" version="2.0.0.v20070609-7J--E7ZoHIP4RfkXykCt2OjoBujq">
       <category name="TM and RSE 2.0"/>
    </feature>
@@ -65,7 +65,7 @@
    <feature url="features/org.eclipse.rse.ftp_2.0.0.v20070706-77378_kE77Y7V9K5G7A.jar" id="org.eclipse.rse.ftp" version="2.0.0.v20070706-77378_kE77Y7V9K5G7A">
       <category name="TM and RSE 2.0 patches (aka 2.0.0.1)"/>
    </feature>
-  <category-def name="TM and RSE 2.0 patches (aka 2.0.0.1)" label="TM and RSE 2.0 patches (aka 2.0.0.1)">
+   <category-def name="TM and RSE 2.0 patches (aka 2.0.0.1)" label="TM and RSE 2.0 patches (aka 2.0.0.1)">
       <description>
          Patches for features and add-ons of the 2.0 release of Target Management / RSE.
       </description>
@@ -111,7 +111,7 @@
    <feature url="features/org.eclipse.rse.tests_2.0.1.v20070926-6-19oA55P5SAG.jar" id="org.eclipse.rse.tests" version="2.0.1.v20070926-6-19oA55P5SAG">
       <category name="TM and RSE 2.0.1"/>
    </feature>
-      <category-def name="TM and RSE 2.0.1" label="TM and RSE 2.0.1">
+   <category-def name="TM and RSE 2.0.1" label="TM and RSE 2.0.1">
       <description>
          Features and add-ons of the 2.0.1 release of Target Management / RSE.
       </description>
@@ -398,7 +398,7 @@
    <feature url="features/org.eclipse.rse.tests_3.0.1.v200809041200-7D3_99oA55S5R7H2311.jar" id="org.eclipse.rse.tests" version="3.0.1.v200809041200-7D3_99oA55S5R7H2311">
       <category name="TM and RSE 3.0.1"/>
    </feature>
-      <category-def name="TM and RSE 3.0.1" label="TM and RSE 3.0.1">
+   <category-def name="TM and RSE 3.0.1" label="TM and RSE 3.0.1">
       <description>
          Features and add-ons of the 3.0.1 release of Target Management / RSE.
       </description>
@@ -524,7 +524,7 @@
    <feature url="features/org.eclipse.rse.ftp_3.0.1.qualifier.jar" id="org.eclipse.rse.ftp" version="3.0.1.qualifier">
       <category name="TM and RSE 3.0.3+"/>
    </feature>
-   <feature url="features/org.eclipse.rse.local_2.1.1.qualifier.jar" id="org.eclipse.rse.local" version="2.1.1.qualifier">
+   <feature url="features/org.eclipse.rse.local_2.1.2.qualifier.jar" id="org.eclipse.rse.local" version="2.1.2.qualifier">
       <category name="TM and RSE 3.0.3+"/>
    </feature>
    <feature url="features/org.eclipse.rse_3.0.4.qualifier.jar" id="org.eclipse.rse" version="3.0.4.qualifier">
