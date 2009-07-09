@@ -13,6 +13,7 @@
  * 
  * Contributors:
  *  David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
+ *  David McKnight     (IBM)   [281712] [dstore] Warning message is needed when disk is full
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -176,8 +177,6 @@ public class ByteStreamHandler implements IByteStreamHandler
 				{
 					FileOutputStream outStream = new FileOutputStream(fileName, true);
 					
-					try
-					{
 					if (binary) 
 					{
 						outStream.write(buffer, 0, size);
@@ -189,11 +188,7 @@ public class ByteStreamHandler implements IByteStreamHandler
 						byte[] convertedBytes = byteConverter.convertClientBytesToHostBytes(buffer, 0, size);
 						outStream.write(convertedBytes, 0, convertedBytes.length);
 					}
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
+
 					
 					outStream.close();
 

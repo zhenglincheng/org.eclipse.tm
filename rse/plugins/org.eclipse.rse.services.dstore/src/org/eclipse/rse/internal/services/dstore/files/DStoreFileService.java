@@ -56,6 +56,7 @@
  * David McKnight   (IBM)        - [270468] [dstore] FileServiceSubSystem.list() returns folders when only FILE_TYPE_FILES is requested
  * David McKnight   (IBM)        - [272335] [dstore] not handling case where upload fails
  * David McKnight   (IBM)        - [279695] [dstore] Connection file encoding is not refreshed from the host
+ * David McKnight   (IBM)        - [281712] [dstore] Warning message is needed when disk is full
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -498,13 +499,13 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		DataElement result = ds.find(uploadLog, DE.A_NAME, remotePath,1);
 		if (result == null) 
 		{
-			result = ds.createObject(uploadLog, "uploadstatus", remotePath);
-			result.setAttribute(DE.A_SOURCE, "running");
-			result.setAttribute(DE.A_VALUE, "");
+			result = ds.createObject(uploadLog, "uploadstatus", remotePath); //$NON-NLS-1$
+			result.setAttribute(DE.A_SOURCE, "running"); //$NON-NLS-1$
+			result.setAttribute(DE.A_VALUE, ""); //$NON-NLS-1$
 			
 			DataElement cmd = getDataStore().findCommandDescriptor(DataStoreSchema.C_SET);
 			
-			DataElement setstatus = ds.command(cmd, uploadLog, true);
+			ds.command(cmd, uploadLog, true);
 		}
 
 		try
@@ -556,7 +557,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			// upload bytes while available
 			while (available > 0 && !isCancelled)
 			{
-
+				result.setAttribute(DE.A_SOURCE, "working"); //$NON-NLS-1$
 				numToRead = (available < buffer_size) ? available : buffer_size;
 
 				int bytesRead = bufInputStream.read(buffer, 0, numToRead);
@@ -689,7 +690,6 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			    	String resultStr = result.getSource();
 			    	while (!resultStr.equals("success")) //$NON-NLS-1$
 			    	{
-
 			    		// sleep until the upload is complete
 			    		try {
 			    			Thread.sleep(200);
