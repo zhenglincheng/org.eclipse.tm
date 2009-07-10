@@ -54,8 +54,6 @@
  * David McKnight     (IBM)      - [262092] Special characters are missing when pasting a file on a different connection
  * David McKnight     (IBM)      - [271831] Set the readonly file attribute when download the file
  * David McKnight     (IBM)      - [251136] Error copying local file to remote system when temp file is readonly
- * David McKnight   (IBM)        - [276103] Files with names in different cases are not handled properly
- * David McKnight     (IBM)      - [276534] Cache Conflict After Synchronization when Browsing Remote System with Case-Differentiated-Only Filenames
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -128,7 +126,6 @@ import org.eclipse.rse.ui.RSEUIPlugin;
 import org.eclipse.rse.ui.SystemBasePlugin;
 import org.eclipse.rse.ui.dialogs.SystemRenameSingleDialog;
 import org.eclipse.rse.ui.messages.SystemMessageDialog;
-import org.eclipse.rse.ui.view.ISystemEditableRemoteObject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
@@ -194,22 +191,12 @@ public class UniversalFileTransferUtility {
 		}
 	}
 
-	private static boolean tempFileAvailable(IFile tempFile, IRemoteFile remoteFile) throws RemoteFileIOException
+	private static boolean tempFileAvailable(IFile tempFile, IRemoteFile remoteFile)
 	{
 		// before we make the transfer to the temp file check whether a temp file already exists
 		if (tempFile.exists() && ((Resource)tempFile).getPropertyManager() != null)
 		{
 			SystemIFileProperties properties = new SystemIFileProperties(tempFile);
-			
-			String replicaRemoteFilePath = properties.getRemoteFilePath();
-			String remoteFilePath = remoteFile.getAbsolutePath();
-			
-			if (!remoteFilePath.equals(replicaRemoteFilePath)){
-				// this temp file is for a file of different case		
-				Exception e = new Exception(FileResources.FILEMSG_CREATE_FILE_FAILED_EXIST);
-				throw new RemoteFileIOException(e);
-			}
-		
 
 			long storedModifiedStamp = properties.getRemoteFileTimeStamp();
 
@@ -253,54 +240,7 @@ public class UniversalFileTransferUtility {
 
 		IFile tempFile = (IFile) tempResource;
 
-		boolean available = true;
-		try {
-			tempFileAvailable(tempFile, srcFileOrFolder);
-		}
-		catch (RemoteFileIOException e){
-			// this is the case where a temp file exists for a file of a different case
-			// bug 276534
-			SystemIFileProperties properties = new SystemIFileProperties(tempFile);
-
-			Object obj = properties.getRemoteFileObject();
-			if (obj != null && obj instanceof SystemEditableRemoteFile)
-			{
-				SystemEditableRemoteFile editable = (SystemEditableRemoteFile) obj;
-				if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN){								
-					// editor open for this file
-					// for now, best we may be able to do is just keep this one and warn
-					String remotePath = editable.getAbsolutePath();
-					String msgTxt = NLS.bind(FileResources.FILEMSG_COPY_FILE_FAILED, remotePath);
-					String msgDetails = FileResources.FILEMSG_COPY_FILE_FAILED_DETAILS;
-
-					final SystemMessage message = new SimpleSystemMessage(Activator.PLUGIN_ID,
-							ISystemFileConstants.MSG_DOWNLOAD_ALREADY_OPEN_IN_EDITOR,
-							IStatus.WARNING, msgTxt, msgDetails);
-
-					runInDisplayThread(new Runnable() {
-						public void run() {
-							SystemMessageDialog dlg = new SystemMessageDialog(SystemBasePlugin.getActiveWorkbenchShell(), message);
-							dlg.open();
-						}});
-					return null;
-				}
-				else {
-					// get rid of the current temp file
-					try {
-						tempFile.delete(true, monitor);
-					}
-					catch (CoreException ex){}
-					tempResource = getTempFileFor(srcFileOrFolder);
-					tempFile = (IFile) tempResource;
-					
-					available = false;				
-				}
-			}	
-			else {
-				// file not being edited, so overwrite it
-				available = false;
-			}
-		}
+		boolean available = tempFileAvailable(tempFile, srcFileOrFolder);
 		if (available){
 			return tempFile;
 		}
@@ -514,54 +454,11 @@ public class UniversalFileTransferUtility {
 
 					IFile tempFile = (IFile) tempResource;
 
-					boolean problem = false;
-					boolean available = true;
-					try {		
-						available =	tempFileAvailable(tempFile, srcFileOrFolder);
-					}
-					catch (RemoteFileIOException e){
-						// this is the case where a temp file exists for a file of a different case
-						// bug 276534
-						SystemIFileProperties properties = new SystemIFileProperties(tempFile);
-
-						Object obj = properties.getRemoteFileObject();
-						if (obj != null && obj instanceof SystemEditableRemoteFile)
-						{
-							SystemEditableRemoteFile editable = (SystemEditableRemoteFile) obj;
-							if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN){								
-								// editor open for this file
-								// for now, best we may be able to do is just keep this one and warn
-								String remotePath = srcFileOrFolder.getAbsolutePath();
-								String msgTxt = NLS.bind(FileResources.FILEMSG_COPY_FILE_FAILED, remotePath);
-								String msgDetails = FileResources.FILEMSG_COPY_FILE_FAILED_DETAILS;
-								SystemMessage message = new SimpleSystemMessage(Activator.PLUGIN_ID,
-										ISystemFileConstants.MSG_DOWNLOAD_ALREADY_OPEN_IN_EDITOR,
-										IStatus.WARNING, msgTxt, msgDetails);
-	
-								resultSet.setMessage(message);
-								problem = true;
-							}
-							else {
-								// get rid of the current temp file
-								try {
-									tempFile.delete(true, monitor);
-								}
-								catch (CoreException ex){}
-								tempResource = getTempFileFor(srcFileOrFolder);
-								tempFile = (IFile) tempResource;
-							}
-							available = false;
-						}	
-						else {
-							// file not being edited, so overwrite it
-							available = false;
-						}
-					}
-					
+					boolean available = tempFileAvailable(tempFile, srcFileOrFolder);
 					if (available){
 						resultSet.addResource(tempFile);
 					}
-					else if (!problem){
+					else {
 						listener.addIgnoreFile(tempFile);
 
 						remoteFilesForDownload.add(srcFileOrFolder);
@@ -1928,17 +1825,6 @@ public class UniversalFileTransferUtility {
 
 							if (targetFS instanceof FileServiceSubSystem)
 							{
-								/*
-								OutputStream outStream = targetFS.getOutputStream(targetFolder.getAbsolutePath(), name, IFileService.NONE, monitor);
-			
-								byte[] buffer = new byte[1024];
-								int readCount;
-								while( (readCount = inStream.read(buffer)) > 0)
-								{
-									outStream.write(buffer, 0, readCount);
-								}
-								outStream.close();
-								*/							
 								IFileService fileService = ((FileServiceSubSystem)targetFS).getFileService();
 
 								// for bug 236723, getting remote encoding for target instead of default for target fs
@@ -2682,22 +2568,6 @@ public class UniversalFileTransferUtility {
 			}
 
 			String fileName = expectedPath.segment(expectedPath.segmentCount() - 1);
-			try {
-				IResource[] resources = container.members();
-				boolean found = false;
-				for (int r = 0; r < resources.length && !found; r++){
-					IResource resource = resources[r];
-					if (resource instanceof IFile){
-						String resourceName = resource.getName();
-						if (resourceName.toLowerCase().equals(fileName.toLowerCase())){
-							found = true;
-							fileName = resourceName;
-						}
-					}
-				}
-			}
-			catch (CoreException e){}
-			
 			actualPath = container.getLocation().append(fileName);
 			return actualPath;
 		}
