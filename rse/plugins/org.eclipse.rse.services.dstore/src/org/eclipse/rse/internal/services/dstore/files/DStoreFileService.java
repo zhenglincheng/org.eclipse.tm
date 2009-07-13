@@ -494,7 +494,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		
 		DataElement uploadLog = findUploadLog();
 		String remotePath = remoteParent + getSeparator(remoteParent) + remoteFile;
-		
+		int numTransfers = 0;
 		DataStore ds = getDataStore();
 		DataElement result = ds.find(uploadLog, DE.A_NAME, remotePath,1);
 		if (result == null) 
@@ -557,7 +557,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			// upload bytes while available
 			while (available > 0 && !isCancelled)
 			{
-				result.setAttribute(DE.A_SOURCE, "working"); //$NON-NLS-1$
+				numTransfers++;
 				numToRead = (available < buffer_size) ? available : buffer_size;
 
 				int bytesRead = bufInputStream.read(buffer, 0, numToRead);
@@ -687,6 +687,14 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			{
 			    if (transferSuccessful)
 			    {
+			    	if (numTransfers > 1){
+			    		// forced sleep to make sure we get the latest status
+			    		try {
+			    			Thread.sleep(200);
+			    		}	
+			    		catch (InterruptedException e){			    			
+			    		}
+			    	}
 			    	String resultStr = result.getSource();
 			    	while (!resultStr.equals("success")) //$NON-NLS-1$
 			    	{
@@ -697,11 +705,11 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			    		catch (InterruptedException e){			    			
 			    		}
 			    		resultStr = result.getSource();
-			    		if (resultStr.equals("failed")){ //$NON-NLS-1$
+			    		if (resultStr.equals("failed") || monitor.isCanceled()){ //$NON-NLS-1$
 			    			String msgTxt = NLS.bind(ServiceResources.FILEMSG_COPY_FILE_FAILED, remotePath);
 			    			SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID, IStatus.ERROR, msgTxt);
 			    			throw new SystemMessageException(msg);
-			    		}
+			    		}	
 			    	}
 			    }
 			}
