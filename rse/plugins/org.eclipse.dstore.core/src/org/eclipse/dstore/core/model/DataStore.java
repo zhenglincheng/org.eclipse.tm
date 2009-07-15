@@ -3576,6 +3576,11 @@ public final class DataStore
   				logDirectory = ".eclipse" + File.separator + "RSE" + File.separator;  //$NON-NLS-1$//$NON-NLS-2$
   			}
   			  			
+  			// append a '/' if not there
+  			if (logDirectory.charAt(logDirectory.length() -1 ) != File.separatorChar ) {
+  				logDirectory = logDirectory + File.separator;
+  			}
+  			
   			_userPreferencesDirectory = _userPreferencesDirectory + logDirectory + clientUserID;  			
   			
 	  		File dirFile = new File(_userPreferencesDirectory);
