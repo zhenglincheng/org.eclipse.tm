@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,6 +39,7 @@
  * David McKnight  (IBM)  - [246234] Change of file permissions changes the file owner
  * David McKnight  (IBM)  - [250168] handleCommand should not blindly set the status to "done"
  * David McKnight  (IBM)  - [251729][dstore] problems querying symbolic link folder
+ * David McKnight  (IBM)  - [283617] [dstore] UniversalFileSystemMiner.handleQueryGetRemoteObject does not return correct result when the queried file does not exist.
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -1090,6 +1091,13 @@ public class UniversalFileSystemMiner extends Miner {
 			// change the file type
 			subject.setAttribute(DE.A_TYPE, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR);
 			subject.setAttribute(DE.A_SOURCE, setProperties(fileobj));
+			
+			if (!subject.getName().equals(subject.getValue())){
+				// need to change this back into full path format
+				subject.setAttribute(DE.A_NAME, fileobj.getAbsolutePath());
+				subject.setAttribute(DE.A_VALUE, subject.getAttribute(DE.A_NAME));
+			}
+			
 			status.setAttribute(DE.A_SOURCE, IServiceConstants.FAILED_WITH_DOES_NOT_EXIST);
 		}
 
