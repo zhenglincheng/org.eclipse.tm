@@ -22,6 +22,7 @@
  * Noriaki Takatsu  (IBM) - [226237] [dstore] Move the place where the ServerLogger instance is made
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * Noriaki Takatsu  (IBM) - [242968] [multithread] serverSocket must be closed when an exception happens in Accept
+ * Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -507,6 +508,9 @@ public class ConnectionEstablisher
 	   	}
 	   	catch (IOException e)
 	   	{
+	   		if (_dataStore.getClient() != null) {
+				_dataStore.getClient().getLogger().logError(this.getClass().toString(), e.toString(), e);
+			}
 	   		System.out.println(e);
 	   	}
 
