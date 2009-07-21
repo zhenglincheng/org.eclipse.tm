@@ -27,6 +27,7 @@
  * Noriaki Takatsu  (IBM) - [239073] [dstore] [multithread] In multithread, the cache jar should be assigned after the client is set
  * Noriaki Takatsu  (IBM) - [245069] [dstore] dstoreTrace has no timestamp
  * David McKnight   (IBM) - [282599] [dstore] log folder that is not a hidden one
+ * David McKnight   (IBM) - [282634] [dstore] IndexOutOfBoundsException on Disconnect
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -2156,9 +2157,11 @@ public final class DataStore
 		}
 
 		// notify that preferences have changed
-		for (int i = 0; i < _dataStorePreferenceListeners.size(); i++){
-			IDataStorePreferenceListener listener = (IDataStorePreferenceListener)_dataStorePreferenceListeners.get(i);
-			listener.preferenceChanged(property, value);
+		synchronized (_dataStorePreferenceListeners){
+			for (int i = 0; i < _dataStorePreferenceListeners.size(); i++){
+				IDataStorePreferenceListener listener = (IDataStorePreferenceListener)_dataStorePreferenceListeners.get(i);
+				listener.preferenceChanged(property, value);
+			}
 		}
 	}
 
@@ -2174,7 +2177,9 @@ public final class DataStore
 	 * @since 3.0
 	 */
 	public void addDataStorePreferenceListener(IDataStorePreferenceListener listener){
-		_dataStorePreferenceListeners.add(listener);
+		synchronized (_dataStorePreferenceListeners){
+			_dataStorePreferenceListeners.add(listener);
+		}
 	}
 
 	/**
@@ -2184,7 +2189,9 @@ public final class DataStore
 	 * @since 3.0
 	 */
 	public void removeDataStorePreferenceListener(IDataStorePreferenceListener listener){
-		_dataStorePreferenceListeners.remove(listener);
+		synchronized (_dataStorePreferenceListeners){
+			_dataStorePreferenceListeners.remove(listener);
+		}
 	}
 
 	/**
@@ -2192,7 +2199,9 @@ public final class DataStore
 	 * @since 3.0
 	 */
 	public void removeAllDataStorePreferenceListeners(){
-		_dataStorePreferenceListeners.clear();
+		synchronized (_dataStorePreferenceListeners){
+			_dataStorePreferenceListeners.clear();
+		}
 	}
 
 	/**
