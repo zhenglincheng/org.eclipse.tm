@@ -46,6 +46,7 @@
  * David McKnight   (IBM)        - [244270] Explicit check for isOffline and just returning block implementing a cache for Work Offline
  * Don Yantzi       (IBM)        - [244807] Delay connecting if resolving filters while restoring from cache
  * David McKnight   (IBM)        - [262930] Remote System Details view not restoring filter memento input
+ * David McKnight   (IBM)        - [284018] concurrent SubSystem.connect() calls can result in double login-prompt
  *******************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
@@ -2452,34 +2453,41 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 
 			final Exception[] exception=new Exception[1];
 			exception[0]=null;
-			Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					try
-					{
-						promptForPassword(promptForPassword);
-					} catch(Exception e) {
-						exception[0]=e;
-					}
-				}
-			});
-			try {
-				Exception e = exception[0];
-				if (e == null) {
-					getConnectorService().connect(monitor);
-					if (isConnected()) {
-						final SubSystem ss = this;
-						//Notify connect status change
-						Display.getDefault().asyncExec(new Runnable() {
-							public void run() {
-								RSECorePlugin.getTheSystemRegistry().connectedStatusChange(ss, true, false);
+			
+			IConnectorService conServ = getConnectorService();
+			synchronized (conServ){
+				if (!conServ.isConnected()){				
+					Display.getDefault().syncExec(new Runnable() {				
+						public void run() {
+							try
+							{
+								promptForPassword(promptForPassword);
+							} catch(Exception e) {
+								exception[0]=e;
 							}
-						});
-					}
-				} else {
-					throw e;
+						}
+					});
 				}
-			} finally {
-				monitor.done();
+										
+				try {
+					Exception e = exception[0];
+					if (e == null) {
+						getConnectorService().connect(monitor);
+						if (isConnected()) {
+							final SubSystem ss = this;
+							//Notify connect status change
+							Display.getDefault().asyncExec(new Runnable() {
+								public void run() {
+									RSECorePlugin.getTheSystemRegistry().connectedStatusChange(ss, true, false);
+								}
+							});
+						}
+					} else {
+						throw e;
+					}
+				} finally {
+					monitor.done();
+				}
 			}
 		}
 	}
