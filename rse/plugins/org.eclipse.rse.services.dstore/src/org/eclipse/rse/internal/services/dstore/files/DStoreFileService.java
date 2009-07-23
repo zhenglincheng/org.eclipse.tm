@@ -57,6 +57,7 @@
  * David McKnight   (IBM)        - [272335] [dstore] not handling case where upload fails
  * David McKnight   (IBM)        - [279695] [dstore] Connection file encoding is not refreshed from the host
  * David McKnight   (IBM)        - [281712] [dstore] Warning message is needed when disk is full
+ * David McKnight   (IBM)        - [284420] nullprogressmonitor is needed
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -705,7 +706,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			    		catch (InterruptedException e){			    			
 			    		}
 			    		resultStr = result.getSource();
-			    		if (resultStr.equals("failed") || monitor.isCanceled()){ //$NON-NLS-1$
+			    		if (resultStr.equals("failed") || (monitor != null && monitor.isCanceled())){ //$NON-NLS-1$
 			    			String msgTxt = NLS.bind(ServiceResources.FILEMSG_COPY_FILE_FAILED, remotePath);
 			    			SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID, IStatus.ERROR, msgTxt);
 			    			throw new SystemMessageException(msg);
