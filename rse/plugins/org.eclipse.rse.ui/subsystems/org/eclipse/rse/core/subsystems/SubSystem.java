@@ -2435,6 +2435,40 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 		_isInitialized = false;
 	}
 
+    private static class ConnectorServicePool {
+		
+		private static List _connectingConnectorServices = new ArrayList();
+		
+		public synchronized void add(IConnectorService cs) {
+			_connectingConnectorServices.add(cs);
+		}
+		
+		public synchronized void remove(IConnectorService cs) {
+			_connectingConnectorServices.remove(cs);
+			notifyAll();
+		}
+		
+		public synchronized boolean contains(IConnectorService cs) {
+			return _connectingConnectorServices.contains(cs);
+		}
+		
+		public synchronized void waitUntilNotContained(IConnectorService cs) {
+			while (contains(cs)){ // wait until the connector service is no longer in the list
+				try {				
+						wait();			
+				}
+				catch (InterruptedException e){			
+					e.printStackTrace();
+				}
+				catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	 private static ConnectorServicePool _connectorServicePool = new ConnectorServicePool();
+	
 	/*
 	 * Connect to a remote system with a monitor.
 	 * Required for Bug 176603
@@ -2454,9 +2488,20 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 			final Exception[] exception=new Exception[1];
 			exception[0]=null;
 			
-			IConnectorService conServ = getConnectorService();
-			synchronized (conServ){
-				if (!conServ.isConnected()){				
+			IConnectorService connectorService = getConnectorService();			
+			// is this connector service already connecting?	
+			boolean alreadyConnecting = _connectorServicePool.contains(connectorService);
+			
+			if (alreadyConnecting){
+				// connector service already attempting connect
+				// need to wait for it to complete
+				// before we can return out of this method
+				_connectorServicePool.waitUntilNotContained(connectorService);
+			}
+			else {
+				_connectorServicePool.add(connectorService);
+								
+				try {
 					Display.getDefault().syncExec(new Runnable() {				
 						public void run() {
 							try
@@ -2467,9 +2512,7 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 							}
 						}
 					});
-				}
-										
-				try {
+
 					Exception e = exception[0];
 					if (e == null) {
 						getConnectorService().connect(monitor);
@@ -2482,12 +2525,13 @@ implements IAdaptable, ISubSystem, ISystemFilterPoolReferenceManagerProvider
 								}
 							});
 						}
-					} else {
+					} else {						
 						throw e;
 					}
 				} finally {
+					_connectorServicePool.remove(connectorService);
 					monitor.done();
-				}
+				}			
 			}
 		}
 	}
