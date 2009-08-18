@@ -67,6 +67,7 @@
  * David McKnight   (IBM)        - [249245] not showing inappropriate popup actions for: Refresh, Show In Table, Go Into, etc. 
  * David McKnight   (IBM)        - [251625] Widget disposed exception when renaming/pasting a folder
  * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
+ * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -6251,33 +6252,58 @@ public class SystemView extends SafeTreeViewer
 			ISystemViewElementAdapter adapter = (ISystemViewElementAdapter)((IAdaptable)parentElementOrTreePath).getAdapter(ISystemViewElementAdapter.class);
 			if (adapter != null)
 			{
-				IHost parentHost = adapter.getSubSystem(parentElementOrTreePath).getHost();
+				ISubSystem subSystem = adapter.getSubSystem(parentElementOrTreePath);
+
+				boolean unexpandContainer = false;
+
+				// if the subsystem is not connected, then need to keep the widget expandable
+				if (childElements.length == 0 && !subSystem.isConnected()){
+					unexpandContainer = true;
+				}		
+
+				IHost parentHost = subSystem.getHost();
+
 				for (int i = 0; i < matches.size(); i++)
 				{
 					Widget match = (Widget) matches.get(i);
-					Object data = null;
-					try {
-						data = match.getData(); 
-					}
-					catch (SWTException e){
-						// not sure why this occurs -logging it for now
-						// this is reported in bug 251625
-						SystemBasePlugin.logError("Exception in SystemView.add() with " + match); //$NON-NLS-1$
-						SystemBasePlugin.logError(e.getMessage());
-					}		
+					
+					// for bug 283793
+					if (match instanceof TreeItem && unexpandContainer){
+						TreeItem titem = ((TreeItem)match);
+						if (titem.getExpanded()){
+							setExpanded(titem, false);
+						}
+					}				
+					else {
+						Object data = null;
+						try {
+							data = match.getData(); 
+						}
+						catch (SWTException e){
+							// not sure why this occurs -logging it for now
+							// this is reported in bug 251625
+							SystemBasePlugin.logError("Exception in SystemView.add() with " + match); //$NON-NLS-1$
+							SystemBasePlugin.logError(e.getMessage());
+						}		
 
-					if (data instanceof IAdaptable)
-					{
-						ISystemViewElementAdapter madapter = (ISystemViewElementAdapter)((IAdaptable)data).getAdapter(ISystemViewElementAdapter.class);
-						if (madapter != null)
+						if (data instanceof IAdaptable)
 						{
-							IHost mHost = madapter.getSubSystem(data).getHost();
-							if (mHost != parentHost)
-							{
-								invalidMatches.add(match);
+							ISystemViewElementAdapter madapter = (ISystemViewElementAdapter)((IAdaptable)data).getAdapter(ISystemViewElementAdapter.class);
+							if (madapter != null)
+							{													
+								IHost mHost = madapter.getSubSystem(data).getHost();
+								if (mHost != parentHost)
+								{
+									invalidMatches.add(match);
+								}
 							}
 						}
 					}
+				}
+				if (unexpandContainer){
+					// brings back the + icon
+					refresh(parentElementOrTreePath);
+					return;
 				}
 			}
 

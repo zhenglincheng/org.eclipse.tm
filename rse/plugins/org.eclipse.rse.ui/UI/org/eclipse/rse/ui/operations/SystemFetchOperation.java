@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@
  * David McKnight   (IBM)        - [244270] Explicit check for isOffline and just returning block implementing a cache for Work Offline
  * David McKnight   (IBM)        - [233160] [dstore] SSL/non-SSL alert are not appropriate
  * David McKnight   (IBM)        - [243263] NPE on expanding a filter
+ * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
  *******************************************************************************/
 
 package org.eclipse.rse.ui.operations;
@@ -263,44 +264,46 @@ public class SystemFetchOperation extends JobChangeAdapter implements IRunnableW
 		
 		synchronized (ss.getConnectorService())
 		{
-		if (!ss.isConnected() && !isPromptable && 
-				!ss.isOffline()) // skip the connect if offline, but still follow through because we need to follow through in the subsystem
-		{
-
-			Display dis = Display.getDefault();
-			PromptForPassword prompter = new PromptForPassword(ss);
-			dis.syncExec(prompter);
-			if (prompter.isCancelled()) {
-				SystemMessage cancelledMessage = RSEUIPlugin.getPluginMessage(ISystemMessages.MSG_EXPAND_CANCELLED);
-				SystemMessageObject cancelledMessageObject = new SystemMessageObject(cancelledMessage, ISystemMessageObject.MSGTYPE_CANCEL, _remoteObject);
-				_collector.add(cancelledMessageObject, monitor);
-				throw new InterruptedException();
-			}
-			try
+			if (!ss.isConnected() && !isPromptable && 
+					!ss.isOffline()) // skip the connect if offline, but still follow through because we need to follow through in the subsystem
 			{
-				ss.getConnectorService().connect(monitor);
-				if (_exc != null)
-				{
-					showOperationErrorMessage(null, _exc, ss);
+	
+				Display dis = Display.getDefault();
+				PromptForPassword prompter = new PromptForPassword(ss);
+				dis.syncExec(prompter);
+				if (prompter.isCancelled()) {
+					SystemMessage cancelledMessage = RSEUIPlugin.getPluginMessage(ISystemMessages.MSG_EXPAND_CANCELLED);
+					SystemMessageObject cancelledMessageObject = new SystemMessageObject(cancelledMessage, ISystemMessageObject.MSGTYPE_CANCEL, _remoteObject);
+					_collector.add(cancelledMessageObject, monitor);
+					throw new InterruptedException();
 				}
-			}
-			catch (InvocationTargetException exc)
-			{
-          	  	showOperationErrorMessage(null, exc, ss);
-          	  	return;
-			}
-			catch (Exception e)
-			{
-				showOperationErrorMessage(null, e, ss);
-				return;
-			}
-
-			dis.asyncExec(new UpdateRegistry(ss));
-
-		}
+				try
+				{
+					ss.getConnectorService().connect(monitor);
+					if (_exc != null)
+					{
+						showOperationErrorMessage(null, _exc, ss);
+					}
+				}
+				catch (InvocationTargetException exc)
+				{
+	          	  	showOperationErrorMessage(null, exc, ss);
+					_collector.add(new Object[0], monitor);
+					return;
+				}
+				catch (Exception e)
+				{
+					showOperationErrorMessage(null, e, ss);
+					_collector.add(new Object[0], monitor);
+					return;
+				}
+	
+	 			dis.asyncExec(new UpdateRegistry(ss));
+	  		}
 		}
 		
 		Object[] children = null;
+		
   	  	// we first test to see if this is an expand-to filter in effect for this
   	  	//  object, and if so use it...
   	  	if ((_part==null || _part instanceof SystemViewPart) && _adapter instanceof ISystemRemoteElementAdapter)
