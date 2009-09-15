@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others.
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@
  * David McKnight   (IBM)        - [209593] [api] check for existing query to avoid duplicates
  * David McKnight   (IBM)        - [225902] [dstore] use C_NOTIFICATION command to wake up the server
  * David McKnight   (IBM)        - [231126] [dstore] status monitor needs to reset WaitThreshold on nudge
+ * David McKnight   (IBM)        - [283157] [dstore] Remote search didn't end when the dstore server crashed
  *******************************************************************************/
 
 package org.eclipse.rse.services.dstore.util;
@@ -276,7 +277,8 @@ public class DStoreStatusMonitor implements IDomainListener
 				}
 				else
 				{
-					if ((monitor != null) && (monitor.isCanceled()))
+					if ((monitor != null && monitor.isCanceled()) || 
+							!status.getDataStore().getStatus().getName().equals("okay")) // datastore not okay?
 					{
 						setCancelled(status);
 						throw new InterruptedException();
