@@ -58,6 +58,7 @@
  * David McKnight   (IBM)        - [279695] [dstore] Connection file encoding is not refreshed from the host
  * David McKnight   (IBM)        - [281712] [dstore] Warning message is needed when disk is full
  * David McKnight   (IBM)        - [284420] nullprogressmonitor is needed
+ * David McKnight   (IBM)        - [284056] Sychronize Cache causes the UI to hang with no way out
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -1010,6 +1011,9 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 						//InterruptedException is used to report user cancellation, so no need to log
 						//This should be reviewed (use OperationCanceledException) with bug #190750
+						if (monitor.isCanceled()){
+							return;
+						}
 					}
 				}
 			}
