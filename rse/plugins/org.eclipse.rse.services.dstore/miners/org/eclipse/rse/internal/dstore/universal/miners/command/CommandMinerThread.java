@@ -19,6 +19,7 @@
  *  David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
  *  David McKnight     (IBM)   [249715] [dstore][shells] Unix shell does not echo command
  *  David McKnight     (IBM)   [284179] [dstore] commands have a hard coded line length limit of 100 characters
+ *  David McKnight     (IBM)   [290743] [dstore][shells] allow bash shells and custom shell invocation
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -196,10 +197,7 @@ public class CommandMinerThread extends MinerThread
 							}
 							else
 							{
-								isBash = true;
-								// no bash!
-								theShell = "sh"; //$NON-NLS-1$
-								
+								isBash = true;								
 							}
 						}
 						else if (theShell.endsWith("sh") && isZ)//$NON-NLS-1$
@@ -218,6 +216,11 @@ public class CommandMinerThread extends MinerThread
 					}
 				}
 			
+				// check for custom shell invocation
+				String customShellInvocation = System.getProperty("DSTORE_SHELL_INVOCATION"); //$NON-NLS-1$
+				if (customShellInvocation != null && customShellInvocation.length() > 0){
+					theShell = customShellInvocation;
+				}
 				
 				if (theShell == null)
 				{
@@ -318,24 +321,30 @@ public class CommandMinerThread extends MinerThread
 						}
 						else
 						{
-							if (isBashonZ)
-							{
-								_theProcess = Runtime.getRuntime().exec(_invocation + " --login", env, theDirectory); //$NON-NLS-1$
-								didLogin = true;
+							if (customShellInvocation != null && customShellInvocation.length() > 0){
+								// all handled in the custom shell invocation
+								_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);								
 							}
-							else if (isBash)
-							{
-								_theProcess = Runtime.getRuntime().exec(_invocation + " -l", env, theDirectory);								 //$NON-NLS-1$
-								didLogin = true;
-							}
-							else if (isSHonZ)
-							{
-								_theProcess = Runtime.getRuntime().exec(_invocation + " -L", env, theDirectory); //$NON-NLS-1$
-								didLogin = true;
-							}
-							else
-							{
-								_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);
+							else {
+								if (isBashonZ)
+								{
+									_theProcess = Runtime.getRuntime().exec(_invocation + " --login", env, theDirectory); //$NON-NLS-1$
+									didLogin = true;
+								}
+								else if (isBash)
+								{
+									_theProcess = Runtime.getRuntime().exec(_invocation + " -l", env, theDirectory);								 //$NON-NLS-1$
+									didLogin = true;
+								}
+								else if (isSHonZ)
+								{
+									_theProcess = Runtime.getRuntime().exec(_invocation + " -L", env, theDirectory); //$NON-NLS-1$
+									didLogin = true;
+								}
+								else
+								{
+									_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);
+								}
 							}
 						}
 					}
