@@ -19,6 +19,7 @@
  * David McKnight   (IBM)        - [225902] [dstore] use C_NOTIFICATION command to wake up the server
  * David McKnight   (IBM)        - [231126] [dstore] status monitor needs to reset WaitThreshold on nudge
  * David McKnight   (IBM)        - [283157] [dstore] Remote search didn't end when the dstore server crashed
+ * David McKnight   (IBM)        - [291612] [dstore] Remote Search looks like it is still going after disconnect
  *******************************************************************************/
 
 package org.eclipse.rse.services.dstore.util;
@@ -227,12 +228,12 @@ public class DStoreStatusMonitor implements IDomainListener
 
 	 public DataElement waitForUpdate(DataElement status) throws InterruptedException
 		{
-	        return waitForUpdate(status, null, 0);
+	        return waitForUpdate(status, null, 1000);
 		}
 
     public DataElement waitForUpdate(DataElement status, IProgressMonitor monitor) throws InterruptedException
 	{
-        return waitForUpdate(status, monitor, 0);
+        return waitForUpdate(status, monitor, 1000);
 	}
 
     public DataElement waitForUpdate(DataElement status, int wait) throws InterruptedException
@@ -286,6 +287,11 @@ public class DStoreStatusMonitor implements IDomainListener
 
 					waitForUpdate();
                     //Thread.sleep(200);
+					if (!status.getDataStore().isConnected()){
+						// not connected anymore!
+						_networkDown = true;
+					}
+					
 
                     if (WaitThreshold > 0) // update timer count if
                         // threshold not reached
