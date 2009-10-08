@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2009 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -21,6 +21,7 @@
  * Martin Oberhuber (Wind River) - [191589] fix Rename by adding putInfo() for RSE EFS, and fetch symlink info
  * Kevin Doyle 		(IBM)		 - [210673] [efs][nls] Externalize Strings in RSEFileStore and RSEFileStoreImpl
  * Timur Shipilov   (Xored)      - [224538] RSEFileStore.getParent() returns null for element which is not root of filesystem
+ * David McKnight  (IBM)         - [291738] [efs] repeated queries to RSEFileStoreImpl.fetchInfo() in short time-span should be reduced
  ********************************************************************************/
 
 package org.eclipse.rse.internal.efs;
@@ -208,6 +209,7 @@ public class RSEFileStore extends FileStore
 	}
 
 	private static Bundle resourcesBundle = null;
+
 	private static boolean isResourcesPluginUp()
 	{
 		if (resourcesBundle==null) {
@@ -215,14 +217,13 @@ public class RSEFileStore extends FileStore
 			Bundle[] bundles = ctx.getBundles();
 			for (int i=0; i<bundles.length; i++) {
 				if ("org.eclipse.core.resources".equals(bundles[i].getSymbolicName())) { //$NON-NLS-1$
-					if (resourcesBundle==null || bundles[i].getState()==Bundle.ACTIVE) {
+					if (resourcesBundle==null && bundles[i].getState()==Bundle.ACTIVE) {
 						resourcesBundle = bundles[i];
 					}
-					//System.out.println(resourcesBundle);
 				}
 			}
 		}
-		return resourcesBundle.getState()==Bundle.ACTIVE;
+		return resourcesBundle != null && resourcesBundle.getState()==Bundle.ACTIVE;
 	}
 
 	/*

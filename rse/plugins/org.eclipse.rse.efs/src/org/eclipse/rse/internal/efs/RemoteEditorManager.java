@@ -11,6 +11,7 @@
  * Contributors:
  * Mike Kucera         (IBM) -[241315] [efs] Cannot restore editors for RSE/EFS-backed resources
  * David McKnight      (IBM) -[241315] [efs] Cannot restore editors for RSE/EFS-backed resources
+ * David McKnight  (IBM)         - [291738] [efs] repeated queries to RSEFileStoreImpl.fetchInfo() in short time-span should be reduced
  ********************************************************************************/
 package org.eclipse.rse.internal.efs;
 
@@ -204,9 +205,11 @@ public class RemoteEditorManager implements ISaveParticipant, IResourceChangeLis
 						if (input instanceof FileEditorInput){
 							IFile file = ((FileEditorInput)input).getFile();
 							URI uri = file.getLocationURI();
-							if ("rse".equals(uri.getScheme())) { //$NON-NLS-1$
-								IEditorPart editor = editorReference.getEditor(false);
-								callback.apply(page, editor, file);																
+							if (uri != null && uri.getScheme() != null){
+								if ("rse".equals(uri.getScheme())) { //$NON-NLS-1$
+									IEditorPart editor = editorReference.getEditor(false);
+									callback.apply(page, editor, file);																
+								}
 							}
 						}
 					} catch (PartInitException e){
@@ -239,11 +242,12 @@ public class RemoteEditorManager implements ISaveParticipant, IResourceChangeLis
 						if (input instanceof FileEditorInput){
 							IFile file = ((FileEditorInput)input).getFile();
 							URI uri = file.getLocationURI();
-							if ("rse".equals(uri.getScheme())) { //$NON-NLS-1$
-								IEditorPart editor = editorReference.getEditor(false);			
-								
-								// close the editor
-								result = page.closeEditor(editor, true);															
+							if (uri != null && uri.getScheme() != null){
+								if ("rse".equals(uri.getScheme())) { //$NON-NLS-1$
+									IEditorPart editor = editorReference.getEditor(false);												
+									// close the editor
+									result = page.closeEditor(editor, true);															
+								}
 							}
 						}
 					} catch (PartInitException e){
