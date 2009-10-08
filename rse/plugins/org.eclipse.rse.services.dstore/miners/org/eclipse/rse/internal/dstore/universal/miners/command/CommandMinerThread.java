@@ -17,9 +17,13 @@
  *  David McKnight   (IBM)        - [196624] dstore miner IDs should be String constants rather than dynamic lookup
  *  Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  *  David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
+ *  David McKnight     (IBM)   [250203] [dstore][shells]%var% is substituted to null in Unix shell
  *  David McKnight     (IBM)   [249715] [dstore][shells] Unix shell does not echo command
+ *  David McKnight     (IBM)   [153275] [dstore-shells] Ctrl+C does not break remote program
  *  David McKnight     (IBM)   [284179] [dstore] commands have a hard coded line length limit of 100 characters
+ *  David McKnight (IBM) - [286671] Dstore shell service interprets &lt; and &gt; sequences
  *  David McKnight     (IBM)   [290743] [dstore][shells] allow bash shells and custom shell invocation
+ *  David McKnight     (IBM)   [287305] [dstore] Need to set proper uid for commands when using SecuredThread and single server for multiple clients[
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -39,6 +43,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.eclipse.dstore.core.miners.MinerThread;
+import org.eclipse.dstore.core.model.Client;
 import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStoreAttributes;
@@ -80,6 +85,7 @@ public class CommandMinerThread extends MinerThread
 	
 	private int _maxLineLength = 4096;
 	
+	
 	private CommandMiner.CommandMinerDescriptors _descriptors;
 	
 	// default
@@ -94,6 +100,7 @@ public class CommandMinerThread extends MinerThread
 		_isDone = false;
 		_status = status;
 		_descriptors = descriptors;
+		boolean isBash = false;
 		
 		_subject = theElement;
 		
@@ -106,8 +113,6 @@ public class CommandMinerThread extends MinerThread
 			catch (NumberFormatException e)
 			{}
 		}
-
-	
 		
 		String theOS = System.getProperty("os.name"); //$NON-NLS-1$
 		
@@ -130,14 +135,23 @@ public class CommandMinerThread extends MinerThread
 		}
 		
 		try
-		{
-			String userHome = null;
-			if (_dataStore.getClient() != null){
-				userHome = _dataStore.getClient().getProperty("user.home");//$NON-NLS-1$
+		{			
+			String suCommand = null;
+			String userHome = null;			
+			Client client = _dataStore.getClient();
+			
+			if (client != null){
+				String clientActualUserId = client.getProperty("user.name");//$NON-NLS-1$
+				String clientUserId = client.getUserid();
+				
+				userHome = client.getProperty("user.home");//$NON-NLS-1$							
+				if (clientUserId != null && !clientActualUserId.equals(clientUserId)){
+					suCommand = "su " + clientUserId + " -c "; //$NON-NLS-1$					
+				}					
 			}
-			else {	
-				userHome = System.getProperty("user.home");//$NON-NLS-1$
-			}
+			else {					
+				userHome = System.getProperty("user.home");//$NON-NLS-1$				
+			}			
 			
 			_cwdStr = theElement.getSource();
 			if (_cwdStr == null || _cwdStr.length() == 0)
@@ -174,12 +188,16 @@ public class CommandMinerThread extends MinerThread
 				{
 					_isTTY = false;
 				}
+				
+			
+
+				
+				
 				_patterns.setIsTerminal(_isTTY);
 				
 				String property = "SHELL="; //$NON-NLS-1$
 				
 				String[] env = getEnvironment(_subject);
-				boolean isBash = false;
 				boolean isBashonZ = false;
 				boolean isSHonZ = false;
 				
@@ -227,17 +245,20 @@ public class CommandMinerThread extends MinerThread
 					if (_invocation.equals(">")) //$NON-NLS-1$
 					{
 						_invocation = "sh"; //$NON-NLS-1$
+						
 						_isShell = true;
 						if (isZ)
 							isSHonZ = true;
 					}
+
+					
 					if (_isTTY)
 					{
 						if (isSHonZ)
-						{
+						{							
 							String args[] = new String[3];				
 							args[0] = PSEUDO_TERMINAL;
-							args[1] = _invocation;
+							args[1] = "sh"; //$NON-NLS-1$
 							args[2] = "-L"; //$NON-NLS-1$
 							
 							try {
@@ -250,9 +271,19 @@ public class CommandMinerThread extends MinerThread
 						}
 						else
 						{
-							String args[] = new String[2];				
-							args[0] = PSEUDO_TERMINAL;
-							args[1] = _invocation;
+							List argsList = new ArrayList();
+							
+							if (suCommand != null){
+								String[] suSplit = suCommand.split(" "); //$NON-NLS-1$
+								for (int i = 0; i < suSplit.length; i++){ // su before terminal
+									argsList.add(suSplit[i]);
+								}
+							}
+							argsList.add(PSEUDO_TERMINAL);
+							argsList.add(invocation);
+	
+							
+							String args[] = (String[])argsList.toArray(new String[argsList.size()]);
 							_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);
 						}
 					}
@@ -266,51 +297,51 @@ public class CommandMinerThread extends MinerThread
 					if (_invocation.equals(">")) //$NON-NLS-1$
 					{					
 						_invocation = theShell;
-				
+	
+						
 						_isShell = true;
 					
 						if (_isTTY)
 						{
-						    String args[] = null;
-						    if (isBashonZ)
-						    {
-						    	args = new String[5];
-								args[0] = PSEUDO_TERMINAL;
-								args[1] = "-w"; //$NON-NLS-1$
-								args[2] = "256"; //$NON-NLS-1$
-								args[3] = _invocation;
-								args[4] = "--login"; //$NON-NLS-1$
+							List argsList = new ArrayList();
+
+							if (!isBashonZ && !isSHonZ && suCommand != null){ 
+								// su before starting rseterm
+								String[] suArgs = suCommand.split(" "); //$NON-NLS-1$
+								for (int i = 0; i < suArgs.length; i++){
+									argsList.add(suArgs[i]);
+								}
+							}
+							argsList.add(PSEUDO_TERMINAL);							
+							
+							if (!isBashonZ && !isSHonZ && suCommand != null){ 
+								// need sh -c before invocation
+								argsList.add("sh"); //$NON-NLS-1$
+								argsList.add("-c"); //$NON-NLS-1$
+							}
+							else {
+								
+								argsList.add("-w"); //$NON-NLS-1$
+								argsList.add(""+_maxLineLength); //$NON-NLS-1$
+							}
+							
+							argsList.add(_invocation);
+
+							if (isBashonZ){
+								argsList.add("--login"); //$NON-NLS-1$
 								didLogin = true;
-						    }						    
-						    else if (isBash)
-						    {
-						    	args = new String[5];
-								args[0] = PSEUDO_TERMINAL;
-								args[1] = "-w"; //$NON-NLS-1$
-								args[2] = "256"; //$NON-NLS-1$
-								args[3] = _invocation;
-								args[4] = "-l";								 //$NON-NLS-1$
+							}
+							else if (isBash){
+								argsList.add("-l"); //$NON-NLS-1$
 								didLogin = true;
-						    }						    						    
-						    else if (isSHonZ)
-						    {
-						    	args = new String[5];
-								args[0] = PSEUDO_TERMINAL;
-								args[1] = "-w"; //$NON-NLS-1$
-								args[2] = "256"; //$NON-NLS-1$
-								args[3] = _invocation;
-								args[4] = "-L"; //$NON-NLS-1$
+							}
+							else if (isSHonZ){
+								argsList.add("-L"); //$NON-NLS-1$
 								didLogin = true;
-						    }
-						    else
-						    {
-						        args = new String[4];
-								args[0] = PSEUDO_TERMINAL;
-								args[1] = "-w"; //$NON-NLS-1$
-								args[2] = "256"; //$NON-NLS-1$
-								args[3] = _invocation;
-						    }
-						    
+							}
+														
+						    String args[] = (String[])argsList.toArray(new String[argsList.size()]);
+					    						    
 							try {
 								_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);
 							}
@@ -321,9 +352,13 @@ public class CommandMinerThread extends MinerThread
 						}
 						else
 						{
+							if (!isBashonZ && !isSHonZ && suCommand != null){ 
+								_invocation = suCommand + _invocation;								
+							}
+							
 							if (customShellInvocation != null && customShellInvocation.length() > 0){
 								// all handled in the custom shell invocation
-								_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);								
+								_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);
 							}
 							else {
 								if (isBashonZ)
@@ -350,32 +385,21 @@ public class CommandMinerThread extends MinerThread
 					}
 					else
 					{
-						_isTTY = false;
-			
-						
-						
-						//String[] inv = parseArgs(_invocation);
-						if (_isTTY)
-						{
-							String args[] = new String[4];
-							args[0] = PSEUDO_TERMINAL;
-							args[1] = theShell;
-							args[2] = "-c"; //$NON-NLS-1$
-							args[3] = _invocation;
-					
-							_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);
+						if (suCommand != null){ 
+							theShell = suCommand + theShell;
 						}
-						else
-						{
-	
-							String args[] = new String[3];
-							args[0] = theShell;
-							args[1] = "-c"; //$NON-NLS-1$
-							args[2] = _invocation;
-		
-
-							_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);
+						
+						List argsList = new ArrayList();
+						
+						String[] shellArray = theShell.split(" "); //$NON-NLS-1$
+						for (int i = 0; i < shellArray.length; i++){
+							argsList.add(shellArray[i]);
 						}
+						argsList.add("-c"); //$NON-NLS-1$
+						argsList.add(_invocation);
+						
+						String args[] = (String[])argsList.toArray(new String[argsList.size()]);	
+						_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);				
 					}
 				}
 			}
@@ -470,10 +494,19 @@ public class CommandMinerThread extends MinerThread
 			_stdOutputHandler.setDataStore(_dataStore);
 			_stdErrorHandler.start();
 			
-			if (didLogin && !userHome.equals(_cwdStr))
+			// initialization
+			if (didLogin || _isTTY)
 			{
+				String initCmd = ""; //$NON-NLS-1$
+				if (_isTTY){
+					initCmd = "export PS1='$PWD>';" ; //$NON-NLS-1$ 
+				}
+				 if (didLogin && !userHome.equals(_cwdStr)){
+					 initCmd += "cd " + _cwdStr; //$NON-NLS-1$
+				 }
+				 
 				// need to CD to the correct directory
-				final String cdCmd = "cd " + _cwdStr; //$NON-NLS-1$
+				final String finitCmd = initCmd;
 				Thread cdThread = new Thread(
 						new Runnable()
 						{
@@ -488,7 +521,7 @@ public class CommandMinerThread extends MinerThread
 								{
 									
 								}
-								sendInput(cdCmd);
+								sendInput(finitCmd);
 							}
 						});
 				cdThread.start();
@@ -504,7 +537,7 @@ public class CommandMinerThread extends MinerThread
 		catch (IOException e) 
 		{
 			_theProcess = null;
-			e.printStackTrace();
+			_dataStore.trace(e);
 			createObject("command", e.getMessage()); //$NON-NLS-1$
 			status.setAttribute(DE.A_NAME, "done"); //$NON-NLS-1$
 			return;
@@ -578,14 +611,11 @@ public class CommandMinerThread extends MinerThread
 	}
 
 
-
-
 	public void sendInput(String input)
 	{
 		if (!_isDone)
 		{
-
-//			byte[] intoout = input.getBytes();
+			String origInput = input;
 			input.getBytes();
 
 			try
@@ -594,6 +624,9 @@ public class CommandMinerThread extends MinerThread
 			    // pty executable handles the break now
 				if (input.equals("#break") && !_isTTY) //$NON-NLS-1$
 				{
+					// if no pty, then do it explicitly
+					_theProcess.destroy();					
+					
 					return;
 				}
 				else if (input.equals("#enter")) //$NON-NLS-1$
@@ -631,7 +664,7 @@ public class CommandMinerThread extends MinerThread
 
 				if (!_isWindows && !_isTTY)
 				{
-					createObject("input", input); //$NON-NLS-1$
+					createObject("input", origInput); //$NON-NLS-1$
 				}
 
 				writer.write(input);
@@ -640,11 +673,13 @@ public class CommandMinerThread extends MinerThread
 
 				if (!_isWindows && (input.startsWith("cd ") || input.equals("cd"))) //$NON-NLS-1$ //$NON-NLS-2$
 				{
-					queryCWD();
+					if (!_isTTY)
+						queryCWD();
 				}
 				else if (!_didInitialCWDQuery)
 				{
-					queryCWD();
+					if (!_isTTY)
+						queryCWD();
 				}
 				if (!_isWindows && !_isTTY)
 				{
@@ -653,7 +688,6 @@ public class CommandMinerThread extends MinerThread
 					writer.newLine(); 
 					writer.flush();		
 				}
-
 			}
 			catch (IOException e)
 			{
@@ -723,8 +757,11 @@ public class CommandMinerThread extends MinerThread
 
 		if (_isTTY)
 		{
-			varTable.put("PS1","$PWD/>"); //$NON-NLS-1$ //$NON-NLS-2$
-			varTable.put("COLUMNS","256"); //$NON-NLS-1$ //$NON-NLS-2$
+			varTable.put("PS1","'$PWD/>'"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			//if (_maxLineLength )
+			
+			varTable.put("COLUMNS","" + _maxLineLength); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		
 
@@ -809,7 +846,7 @@ public class CommandMinerThread extends MinerThread
 						}
 					}
 				} //If the current char is a %, then simply look for a matching %
-				else if (c == '%')
+				else if (c == '%' && _isWindows)
 				{
 					int next = theValue.toString().indexOf("%", index + 1); //$NON-NLS-1$
 					if (next > 0)
@@ -837,7 +874,7 @@ public class CommandMinerThread extends MinerThread
 		}
 		catch (Throwable e)
 		{
-			e.printStackTrace();
+			_dataStore.trace(e);
 		}
 		return theValue.toString();
 	}
@@ -983,7 +1020,7 @@ public class CommandMinerThread extends MinerThread
 					}
 				}
 				catch (IllegalThreadStateException e)
-				{ //e.printStackTrace();
+				{ 
 					exitcode = -1;
 					_theProcess.destroy();
 				}
@@ -1018,13 +1055,13 @@ public class CommandMinerThread extends MinerThread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			_dataStore.trace(e);
 		}				
 	}
 	
 	
 	public void interpretLine(String line, boolean stdError)
-	{
+	{	
 		// Line wrapping here is due to the fix for an internal IBM bug:
 		//  https://cs.opensource.ibm.com/tracker/index.php?func=detail&aid=65874&group_id=1196&atid=1622
 		// 
@@ -1046,7 +1083,6 @@ public class CommandMinerThread extends MinerThread
 		// A new property, DSTORE_SHELL_MAX_LINE allows for the customization of this value now.  The default
 		// is 4096.
 		//
-		
 		int num = line.length();
 		String[] lines = new String[num/_maxLineLength+1];
 		if(lines.length>1)
@@ -1110,7 +1146,7 @@ public class CommandMinerThread extends MinerThread
 	 			}
 				catch (Throwable e) 
 				{
-					e.printStackTrace();
+					_dataStore.trace(e);
 				}
 				if (parsedMsg == null)
 				{
@@ -1167,7 +1203,7 @@ public class CommandMinerThread extends MinerThread
 					}
 					catch (NumberFormatException e)
 					{
-						e.printStackTrace();
+						_dataStore.trace(e);
 					}
 				}
 			}
