@@ -289,6 +289,9 @@ public class CommandMinerThread extends MinerThread
 					}
 					else
 					{
+						//VRB: for Linux on System z we end up here
+						if (suCommand!=null)
+							_invocation = suCommand + _invocation;
 						_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);
 					}
 				}
@@ -1135,6 +1138,9 @@ public class CommandMinerThread extends MinerThread
 			if (line.indexOf("echo '<'PWD=$PWD") > 0) //$NON-NLS-1$
 			{
 				// ignore this line
+			}
+			else if (line.indexOf("PS1='$PWD>';") > 0){ //$NON-NLS-1$
+				// ignore this line too
 			}
 			else
 			{
