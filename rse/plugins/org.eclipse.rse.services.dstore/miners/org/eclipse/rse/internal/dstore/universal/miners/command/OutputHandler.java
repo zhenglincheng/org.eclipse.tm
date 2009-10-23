@@ -126,7 +126,7 @@ public class OutputHandler extends Handler {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			_commandThread._dataStore.trace(e);
 		}
 	}
 
@@ -145,6 +145,7 @@ public class OutputHandler extends Handler {
 		}
 		catch (Exception e)
 		{			
+			_commandThread._dataStore.trace(e);
 		}
 		return 0;
 	}
@@ -283,11 +284,11 @@ public class OutputHandler extends Handler {
 						return output;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					_commandThread._dataStore.trace(e);
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			_commandThread._dataStore.trace(e);
 		}
 		return output;
 	}
