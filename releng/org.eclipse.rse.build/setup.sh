@@ -122,7 +122,7 @@ if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_${EMFVER}.v${EMFDATE}.ja
   # Need EMF 2.4 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
   cd ${DROPIN}
-  wget "http://download.eclipse.org/modeling/emf/emf/downloads/drops/${EMFBRANCH}/${EMFREL}${EMFDATE}/emf-sdo-xsd-SDK-${EMFVER}.zip"
+  wget "http://archive.eclipse.org/modeling/emf/emf/downloads/drops/${EMFBRANCH}/${EMFREL}${EMFDATE}/emf-sdo-xsd-SDK-${EMFVER}.zip"
   unzip -o emf-sdo-xsd-SDK-${EMFVER}.zip
   rm emf-sdo-xsd-SDK-${EMFVER}.zip
   cd ${DROPUP}
