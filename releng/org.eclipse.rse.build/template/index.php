@@ -23,7 +23,7 @@
 <!-- -->
 <!--
 		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.1/tm-news-3.1.html">New and Noteworthy</a></p>
-		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.1/readme_tm_3.1.html">TM 3.1 Readme / Release Notes</a></p>
+		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.1/readme_tm_3.1.html">TM 3.1.2 Readme / Release Notes</a></p>
 		  <p><a href="buildNotes.php">Build Notes</a></p>
 -->
 		</strong></font></p>

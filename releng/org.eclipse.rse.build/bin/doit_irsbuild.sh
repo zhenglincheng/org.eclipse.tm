@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
@@ -39,7 +39,9 @@ mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR|xM|xJ|xK|xL) ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xR|xM|xJ) mapTag=R3_1_maintenance ; ok=1 ;;
+  xK|xL) mapTag=R3_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ "$3" != "" ]; then
@@ -53,7 +55,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_31x
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -72,7 +74,7 @@ if [ "${CHANGES}" = "" ]; then
   echo "Build canceled, no mapfile or config changed in org.eclipse.rse.build."
   exit 0
 fi
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws_31x/log-${buildType}$stamp.txt
 touch $log
 #cvs -q update -RPd >> $log 2>&1
 cvs -q update -r ${mapTag} -RPd >> $log 2>&1
@@ -98,7 +100,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws_31x/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -132,14 +134,14 @@ if [ -f package.count -a "$FILES" != "" ]; then
   fi
 
   if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the testPatchUpdates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/testPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signedPatchUpdates site
+      echo "Refreshing signedPatchUpdates site"
+      cd $HOME/downloads-tm/signedPatchUpdates/bin
       cvs update
       ./mkTestUpdates.sh
   fi
