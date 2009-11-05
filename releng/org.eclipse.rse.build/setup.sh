@@ -24,7 +24,7 @@
 #
 # - OR -
 #
-# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
+# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=DSDP_Project&content-type=text%2Fplain&view=co&pathrev=R3_1_maintenance"
 # sh setup.sh
 # ./doit_ibuild.sh
 # cd testPatchUpdates/bin
@@ -47,7 +47,7 @@ case ${uname_s}${uname_m} in
 esac
 
 # prepare the base Eclipse installation in folder "eclipse"
-ep_rel="R"
+ep_rel="R-"
 ep_ver=3.5.1
 ep_date="-200909170800"
 P2_disabled=false
