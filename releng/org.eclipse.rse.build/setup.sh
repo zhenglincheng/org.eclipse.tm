@@ -52,7 +52,7 @@ ep_ver=3.5.1
 ep_date="-200909170800"
 P2_disabled=false
 P2_no_dropins=false
-if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.0.v3545a.jar ]; then
+if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.1.v3555a.jar ]; then
   curdir2=`pwd`
   if [ ! -d eclipse -o -h eclipse ]; then
     if [ -d eclipse-${ep_ver}-${ep_arch} ]; then
@@ -145,9 +145,9 @@ fi
 
 # checkout the basebuilder
 baseBuilderTag=r35x_v20090811
-if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.5.0.v20090309-1900.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.5.0.v20090312-1500/pdebuild.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20090309-1845.jar ]; then
+if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.5.0.v20090528.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.5.0.v20090527-1800/pdebuild.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20090520-1905.jar ]; then
   if [ -d org.eclipse.releng.basebuilder ]; then
     echo "Re-getting basebuilder from CVS..."
     rm -rf org.eclipse.releng.basebuilder
@@ -231,7 +231,7 @@ cd ..
 
 echo "Your build environment is now created."
 echo ""
-echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
+echo "Run \"./doit_irsbuild.sh M\" to create an M-build."
 echo ""
 echo "Test the testPatchUpdates, then copy them to updates:"
 echo "cd updates"
