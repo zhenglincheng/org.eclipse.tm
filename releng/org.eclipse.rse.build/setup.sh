@@ -144,12 +144,8 @@ if [ ! -f ${DROPIN}/eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
 fi
 
 # CDT Runtime
-#CDTREL=5.0.0
-#CDTVER=200806171202
-#CDTNAME=cdt-master-5.0.0.zip
-#CDTLOC=releases/ganymede/dist/${CDTNAME}
-CDTREL=5.0.1
-CDTVER=200808290803
+CDTREL=5.0.2
+CDTVER=200902130801
 CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
 CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
 if [ ! -f eclipse/plugins/org.eclipse.cdt.core_${CDTREL}.${CDTVER}.jar ]; then
@@ -178,7 +174,7 @@ if [ ! -f eclipse/plugins/org.eclipse.cdt.core_${CDTREL}.${CDTVER}.jar ]; then
 fi
 
 # checkout the basebuilder
-baseBuilderTag=RC2_34
+baseBuilderTag=r342_v20090210
 if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.4.0.v20080515-2000.jar \
   -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.4.0.v20080522/pdebuild.jar \
   -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.0.v20080523-0001.jar ]; then
