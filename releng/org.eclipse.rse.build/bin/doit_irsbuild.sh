@@ -39,7 +39,7 @@ mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR|xM) ok=1 ;;
+  xP|xN|xI|xS|xR|xM|xJ|xK|xL) ok=1 ;;
   *) ok=0 ;;
 esac
 if [ "$3" != "" ]; then
