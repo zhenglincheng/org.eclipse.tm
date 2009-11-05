@@ -40,7 +40,8 @@ buildType=$1
 buildId=$2
 case x$buildType in
   xP|xN|xI|xS) ok=1 ;;
-  xM|xR) mapTag=R3_0_maintenance ; ok=1 ;;
+  xJ) mapTag=R3_1_maintenance ; ok=1 ;;
+  xM|xK|xL|xR) mapTag=R3_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
 if [ "$3" != "" ]; then

@@ -1,4 +1,16 @@
 #!/usr/bin/ruby
+#*******************************************************************************
+# Copyright (c) 2006, 2009 IBM Corporation and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+#
+# Contributors:
+# David Dykstal (IBM) - initial API and implementation
+# Martin Oberhuber (Wind River) - ongoing maintenance
+#*******************************************************************************
+
 # Build script for Remote System Explorer
 # Author: Dave Dykstal, Kushal Munir
 # Prerequisites:
@@ -51,7 +63,7 @@ packageDirectory = "#{working}/package"
 publishDirectory = "#{working}/publish"
 
 tag = ask("Enter tag to fetch from CVS", "HEAD")
-buildType = ask("Enter build type (P=Personal, N=Nightly, I=Integration, S=Stable)", "P")
+buildType = ask("Enter build type (P=Personal, N=Nightly, I=Integration, S=Stable, J/M=Maintenance, K/L=Legacy)", "P")
 mydstamp = Time.now.strftime("%Y%m%d")
 mytstamp = Time.now.strftime("%H%M")
 buildId = ask("Enter the build id", buildType + mydstamp + "-" + mydstamp)
