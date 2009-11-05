@@ -24,7 +24,7 @@
 #
 # - OR -
 #
-# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
+# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=DSDP_Project&revision=1.53.2.3&content-type=text%2Fplain&pathrev=R3_0_maintenance"
 # sh setup.sh
 # ./doit_ibuild.sh
 # cd testPatchUpdates/bin
@@ -175,9 +175,9 @@ fi
 
 # checkout the basebuilder
 baseBuilderTag=r342_v20090210
-if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.4.0.v20080515-2000.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.4.0.v20080522/pdebuild.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.0.v20080523-0001.jar ]; then
+if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.4.0.v20090202.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.4.1.R34x_v20081217/pdebuild.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.4.v20081217.jars ]; then
   if [ -d org.eclipse.releng.basebuilder ]; then
     echo "Re-getting basebuilder from CVS..."
     rm -rf org.eclipse.releng.basebuilder
