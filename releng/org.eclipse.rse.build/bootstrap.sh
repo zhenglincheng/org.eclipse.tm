@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2005, 2007 IBM Corporation and others.
+# Copyright (c) 2005, 2009 IBM Corporation and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # which accompanies this distribution, and is available at
@@ -183,7 +183,7 @@ then
 	java14_home=/shared/webtools/apps/IBMJava2-ppc-142
     javadoc="-Djavadoc15=$java15_home/bin/javadoc"
     PATH=$java15_home/jre/bin:$PATH;export PATH
-elif [ "$HOSTNAME" == "parser.takefive.co.at" ]
+elif [ "$HOSTNAME" == "parser.wrs.com" ]
 then
 	#Running on parser
 	java15_home=/opt/jdk1.5.0_06
