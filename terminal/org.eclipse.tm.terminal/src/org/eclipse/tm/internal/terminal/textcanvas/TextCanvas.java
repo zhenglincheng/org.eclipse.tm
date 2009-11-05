@@ -8,7 +8,8 @@
  * Contributors:
  * Michael Scharf (Wind River) - initial API and implementation
  * Michael Scharf (Wind River) - [240098] The cursor should not blink when the terminal is disconnected
- * Uwe Stieber (Wind River) - [281238] The very first few characters might be missing in the terminal control if opened and connected programmatically
+ * Uwe Stieber (Wind River) - [281328] The very first few characters might be missing in the terminal control if opened and connected programmatically
+ * Martin Oberhuber (Wind River) - [196462] After logging in, the remote prompt is hidden
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
@@ -44,6 +45,7 @@ public class TextCanvas extends GridCanvas {
 	private int fMinColumns=20;
 	private int fMinLines=4;
 	private boolean fCursorEnabled;
+	private boolean fFirstRealResize = true;
 	/**
 	 * Create a new CellCanvas with the given SWT style bits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
@@ -185,7 +187,7 @@ public class TextCanvas extends GridCanvas {
 			int columns=bonds.width/getCellWidth();
 			// when the view is minimised, its size is set to 0
 			// we don't sent this to the terminal!
-			if(lines>0 && columns>0 || init) {
+			if((lines>0 && columns>0) || init) {
 				if(columns<fMinColumns) {
 					if(!isHorizontalBarVisble()) {
 						setHorizontalBarVisible(true);
@@ -193,12 +195,13 @@ public class TextCanvas extends GridCanvas {
 						lines=bonds.height/getCellHeight();
 					}
 					columns=fMinColumns;
-				} else if(columns>=fMinColumns && isHorizontalBarVisble()) {
+				} else if(columns>=fMinColumns && (isHorizontalBarVisble() || fFirstRealResize)) {
+					//force re-computing the scrollbar on first resize after the widget is realized
+					fFirstRealResize = false;
 					setHorizontalBarVisible(false);
 					bonds=getClientArea();
 					lines=bonds.height/getCellHeight();
 					columns=bonds.width/getCellWidth();
-
 				}
 				if(lines<fMinLines)
 					lines=fMinLines;
@@ -300,13 +303,29 @@ public class TextCanvas extends GridCanvas {
 			throw new IllegalArgumentException("There can be at most one listener at the moment!"); //$NON-NLS-1$
 		fResizeListener=listener;
 
-		// Bug 281238: [terminal] The very first few characters might be missing in
+		// Bug 281328: [terminal] The very first few characters might be missing in
 		//             the terminal control if opened and connected programmatically
 		//
 		// In case the terminal had not been visible yet or is to small (less than one
 		// line visible), the terminal should have a minimum size to avoid RuntimeExceptions.
-		setMinColumns(80); setMinLines(24);
+		setMinColumns(80); setMinLines(1);
 		onResize(true);
+		// TODO Bug 294327 - The setMinColumns() above has two effects:
+		// 1. Any data received before the Terminal widget is realized is rendered to the 
+		//    minsize specified here. Thus a minsize of 1 will render data vertically only.
+		// 2. When resizing the Terminal to a size smaller than minsize, a horizontal 
+		//    scrollbar gets drawn rather than sending the new minsize to the remote.
+		// Having the scrollbar at terminals smaller than 80 chars is in line with 
+		// what dumb terminals often expect. One may not see all the characters at
+		// a smaller size, but since they get rendered into backing store at 80,
+		// one can always temporarily maximize the terminal to see all.
+		// TM 3.0.x and TM 3.1 had a minsize of 20; TM 3.1.1 had a minsize of 80.
+		// In reality, this should be a user preference, and will be fixed with 
+		// 196462 (optional fixed-width terminal).
+		
+		// Need to ensure a real resize (including scrollbar re-computation)
+		// later, when the widget is really resized.
+		fFirstRealResize = true;
 	}
 
 	public void onFontChange() {
