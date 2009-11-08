@@ -9,7 +9,7 @@
  * Michael Scharf (Wind River) - initial API and implementation
  * Michael Scharf (Wind River) - [240098] The cursor should not blink when the terminal is disconnected
  * Uwe Stieber (Wind River) - [281328] The very first few characters might be missing in the terminal control if opened and connected programmatically
- * Martin Oberhuber (Wind River) - [196462] After logging in, the remote prompt is hidden
+ * Martin Oberhuber (Wind River) - [294327] After logging in, the remote prompt is hidden
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
@@ -42,10 +42,33 @@ public class TextCanvas extends GridCanvas {
 	private Point fDraggingEnd;
 	private boolean fHasSelection;
 	private ResizeListener fResizeListener;
+
+	// The minSize is meant to determine the minimum size of the backing store
+	// (grid) into which remote data is rendered. If the viewport is smaller
+	// than that minimum size, the backing store size remains at the minSize,
+	// and a scrollbar is shown instead. In reality, this has the following
+	// issues or effects today:
+	//  (a) Bug 281328: For very early data coming in before the widget is 
+	//      realized, the minSize determines into what initial grid that is 
+	//      rendered. See also @link{#addResizeHandler(ResizeListener)}.
+	//  (b) Bug 294468: Since we have redraw and size computation problems 
+	//      with horizontal scrollers, for now the minColumns must be small
+	//      enough to avoid a horizontal scroller appearing in most cases.
+	//  (b) Bug 294327: since we have problems with the vertical scroller
+	//      showing the correct location, minLines must be small enough
+	//      to avoid a vertical scroller or new data may be rendered off-screen.
+	// As a compromise, we have been working with a 20x4 since the Terminal
+	// inception, though many users would want a 80x24 minSize and backing
+	// store. Pros and cons of the small minsize:
+	//   + consistent "remote size==viewport size", vi works as expected
+	//   - dumb terminals which expect 80x24 render garbled on small viewport.
+	// If bug 294468 were resolved, an 80 wide minSize would be preferrable
+	// since it allows switching the terminal viewport small/large as needed,
+	// without destroying the backing store. For a complete solution, 
+	// Bug 196462 tracks the request for a user-defined fixed-widow-size-mode.
 	private int fMinColumns=20;
 	private int fMinLines=4;
 	private boolean fCursorEnabled;
-	private boolean fFirstRealResize = true;
 	/**
 	 * Create a new CellCanvas with the given SWT style bits.
 	 * (SWT.H_SCROLL and SWT.V_SCROLL are automatically added).
@@ -195,13 +218,12 @@ public class TextCanvas extends GridCanvas {
 						lines=bonds.height/getCellHeight();
 					}
 					columns=fMinColumns;
-				} else if(columns>=fMinColumns && (isHorizontalBarVisble() || fFirstRealResize)) {
-					//force re-computing the scrollbar on first resize after the widget is realized
-					fFirstRealResize = false;
+				} else if(columns>=fMinColumns && isHorizontalBarVisble()) {
 					setHorizontalBarVisible(false);
 					bonds=getClientArea();
 					lines=bonds.height/getCellHeight();
 					columns=bonds.width/getCellWidth();
+
 				}
 				if(lines<fMinLines)
 					lines=fMinLines;
@@ -306,26 +328,17 @@ public class TextCanvas extends GridCanvas {
 		// Bug 281328: [terminal] The very first few characters might be missing in
 		//             the terminal control if opened and connected programmatically
 		//
-		// In case the terminal had not been visible yet or is to small (less than one
+		// In case the terminal had not been visible yet or is too small (less than one
 		// line visible), the terminal should have a minimum size to avoid RuntimeExceptions.
-		setMinColumns(80); setMinLines(1);
-		onResize(true);
-		// TODO Bug 294327 - The setMinColumns() above has two effects:
-		// 1. Any data received before the Terminal widget is realized is rendered to the 
-		//    minsize specified here. Thus a minsize of 1 will render data vertically only.
-		// 2. When resizing the Terminal to a size smaller than minsize, a horizontal 
-		//    scrollbar gets drawn rather than sending the new minsize to the remote.
-		// Having the scrollbar at terminals smaller than 80 chars is in line with 
-		// what dumb terminals often expect. One may not see all the characters at
-		// a smaller size, but since they get rendered into backing store at 80,
-		// one can always temporarily maximize the terminal to see all.
-		// TM 3.0.x and TM 3.1 had a minsize of 20; TM 3.1.1 had a minsize of 80.
-		// In reality, this should be a user preference, and will be fixed with 
-		// 196462 (optional fixed-width terminal).
-		
-		// Need to ensure a real resize (including scrollbar re-computation)
-		// later, when the widget is really resized.
-		fFirstRealResize = true;
+		Rectangle bonds=getClientArea();
+		if (bonds.height<getCellHeight() || bonds.width<getCellWidth()) {
+			//Widget not realized yet, or minimized to < 1 item:
+			//Just tell the listener our min size
+			fResizeListener.sizeChanged(getMinLines(), getMinColumns());
+		} else {
+			//Widget realized: compute actual size and force telling the listener
+			onResize(true);
+		}
 	}
 
 	public void onFontChange() {
