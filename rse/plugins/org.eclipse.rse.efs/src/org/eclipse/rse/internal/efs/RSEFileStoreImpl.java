@@ -80,9 +80,9 @@ public class RSEFileStoreImpl extends FileStore
 {
 	private RSEFileStore _store;
 	
-	// to help with with performance issues when eclipse makes excessing fetchInfo calls
+	// to help with with performance issues when eclipse makes excessive fetchInfo calls
 	private long _lastFetch = 0;
-	private int _fetchWaitThreshold = 5000;
+	private int _fetchWaitThreshold = 1000;
 
 	//cached IRemoteFile object: an Object to avoid early class loading
 	private transient volatile IRemoteFile _remoteFile;
@@ -103,7 +103,7 @@ public class RSEFileStoreImpl extends FileStore
 				_fetchWaitThreshold = Integer.parseInt(waitStr);
 			}
 			catch (Exception e){
-				_fetchWaitThreshold = 5000;
+				_fetchWaitThreshold = 1000;
 			}
 		}
 	}
