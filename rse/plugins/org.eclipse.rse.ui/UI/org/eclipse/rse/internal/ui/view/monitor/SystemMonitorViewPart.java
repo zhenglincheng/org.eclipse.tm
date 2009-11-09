@@ -20,6 +20,7 @@
  * Kevin Doyle		(IBM)		 - [212940] Duplicate Help Context Identifiers
  * David McKnight   (IBM)        - [223103] [cleanup] fix broken externalized strings
  * David McKnight   (IBM)        - [225506] [api][breaking] RSE UI leaks non-API types
+ * David McKnight   (IBM)        - [294663] bad cast in monitor view part refresh action
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view.monitor;
@@ -49,7 +50,6 @@ import org.eclipse.rse.core.model.ISystemContainer;
 import org.eclipse.rse.core.model.ISystemRegistry;
 import org.eclipse.rse.internal.ui.SystemPropertyResources;
 import org.eclipse.rse.internal.ui.SystemResources;
-import org.eclipse.rse.internal.ui.view.SystemTableTreeViewProvider;
 import org.eclipse.rse.services.clientserver.messages.SystemMessage;
 import org.eclipse.rse.ui.ISystemIconConstants;
 import org.eclipse.rse.ui.RSEUIPlugin;
@@ -61,6 +61,7 @@ import org.eclipse.rse.ui.view.IRSEViewPart;
 import org.eclipse.rse.ui.view.ISystemTableViewColumnManager;
 import org.eclipse.rse.ui.view.ISystemViewElementAdapter;
 import org.eclipse.rse.ui.view.SystemTableView;
+import org.eclipse.rse.ui.view.SystemTableViewProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -298,11 +299,11 @@ class SubSetAction extends BrowseAction
 			{
 				((ISystemContainer)inputObject).markStale(true);
 			}
-			((SystemTableTreeViewProvider) getViewer().getContentProvider()).flushCache();
+ 			((SystemTableViewProvider) getViewer().getContentProvider()).flushCache();
 			getViewer().refresh();
 
 			// refresh layout too
-			//_viewer.computeLayout(true);
+			//_viewer.computeLayout(true); 
 
 		}
 	}
