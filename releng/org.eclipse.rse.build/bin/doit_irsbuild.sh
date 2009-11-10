@@ -123,7 +123,8 @@ if [ -f package.count -a "$FILES" != "" ]; then
   
   if [ "$DO_SIGN" = "1" ]; then
     #sign the zipfiles
-    ${mydir}/batch_sign.sh `pwd`
+    #temporarily disabled, this is not a good use of processing power!
+    #${mydir}/batch_sign.sh `pwd`
   fi
 
   if [ ${buildType} = N -a -d ../N.latest ]; then
