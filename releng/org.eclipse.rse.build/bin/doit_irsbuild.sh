@@ -111,8 +111,15 @@ if [ -f package.count -a "$FILES" != "" ]; then
     #hide the release for now until it is tested
     #mirrors will still pick it up
     mv package.count package.count.orig
+    #Do not sign stable or R-builds since we want that signing done 
+    #via the update site in order to ensure that features get signed
     #DO_SIGN=1
   fi
+  
+  # Always sign maintenance builds for immediate consumption in patches
+  case x${buildType} in
+    xJ|xK|xL|xM)  DO_SIGN=1 ;;
+  esac
   
   if [ "$DO_SIGN" = "1" ]; then
     #sign the zipfiles
