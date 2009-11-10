@@ -24,14 +24,14 @@ cd "${curdir}"
 #Use Java5 on build.eclipse.org
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-#export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
+#export PATH=${HOME}/s/IBMJava2-ppc-142/bin:$PATH
 
 SIGNED_JAR_SOURCE=${mydir}/eclipse_ext/tm
 ##SIGNED_JAR_SOURCE=${mydir}/eclipse_ext
 OUTPUT=${curdir}/output.$$
 RESULT=${curdir}/result.$$
 TMP=${curdir}/tmp.$$
-BASEBUILDER=$HOME/ws2/eclipse
+BASEBUILDER=$HOME/ws_31x/eclipse
 
 # Provision update site into SIGNED_JAR_SOURCE
 if [ ! -d "${SIGNED_JAR_SOURCE}" ]; then
@@ -54,11 +54,15 @@ fi
 have_server=`ls "${SIGNED_JAR_SOURCE}"/server/*.jar 2>/dev/null`
 if [ "${have_server}" = "" ]; then
   cd ${SIGNED_JAR_SOURCE}/server
-  unzip ${curdir}/rseserver-*-signed.zip
+  if [ -d "${curdir}/signer/signed" ]; then
+    unzip ${curdir}/signer/signed/rseserver-*.zip
+  else
+    unzip ${curdir}/rseserver-*-signed.zip
+  fi
   have_server=`ls *.jar 2>/dev/null`
   cd "${curdir}"
   if [ "${have_server}" = "" ]; then
-    echo 'ERROR: signed rseserver-*-signed.zip not found!'
+    echo 'ERROR: signed rseserver-*.zip not found!'
     echo "Please sign a server zip on build.eclipse.org, upload and retry."
     exit 1
   fi
