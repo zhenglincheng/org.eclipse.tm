@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright (c) 2007 Wind River Systems, Inc. and others.
+# Copyright (c) 2007, 2009 Wind River Systems, Inc. and others.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -17,7 +17,7 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/ws_31x/org.eclipse.releng.basebuilder
 
 # patch site.xml
 cd ..
@@ -47,10 +47,10 @@ mv plugins/*_1.0.1.v* plugins.sav
 
 # copy new version
 echo "Copying new versions"
-cp ../../signedUpdates/features/*_2.0.1.v* features
-cp ../../signedUpdates/features/*_1.0.1.v* features
-cp ../../signedUpdates/plugins/*_2.0.1.v* plugins
-cp ../../signedUpdates/plugins/*_1.0.1.v* plugins
+cp ../../signedPatchUpdates/features/*_2.0.1.v* features
+cp ../../signedPatchUpdates/features/*_1.0.1.v* features
+cp ../../signedPatchUpdates/plugins/*_2.0.1.v* plugins
+cp ../../signedPatchUpdates/plugins/*_1.0.1.v* plugins
 
 # diff, to be safe
 ls features.sav | sort > f1.$$.txt

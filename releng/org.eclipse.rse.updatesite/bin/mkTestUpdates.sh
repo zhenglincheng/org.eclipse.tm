@@ -9,10 +9,10 @@
 # Contributors: 
 # Martin Oberhuber - initial API and implementation 
 #*******************************************************************************
-# Convert normal "site.xml" to "testUpdates"
+# Convert normal "site.xml" to "testPatchUpdates"
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws_31x/eclipse
 # - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -23,7 +23,7 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/ws_31x/org.eclipse.releng.basebuilder
 
 # patch site.xml
 cd ..
@@ -40,7 +40,7 @@ fi
 
 # get newest plugins and features: to be done manually on real update site
 TPVERSION="Target Management"
-VERSION=3.1.1
+VERSION=3.1.2
 TYPE=none
 SITEDIR=`basename ${SITE}`
 case ${SITEDIR} in
@@ -57,10 +57,10 @@ if [ ${TYPE} = test ]; then
     echo "Working on test update site"
     TPTYPE="${VERSION} Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
-    REL=`ls $HOME/ws2/working/package | sort | tail -1`
+    REL=`ls $HOME/ws_31x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
-      DIR="$HOME/ws2/working/package/$REL/updates"
+      DIR="$HOME/ws_31x/working/package/$REL/updates"
       if [ -d "$DIR/features" ]; then
         echo "Copying new plugins and features from $DIR"
         rm -rf features
@@ -127,27 +127,27 @@ if [ ${TYPE} = test ]; then
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #java -jar $HOME/ws2/eclipse/startup.jar \
+    #java -jar $HOME/ws_31x/eclipse/startup.jar \
     java \
         -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
         -application org.eclipse.update.core.siteOptimizer \
         -jarProcessor -outputDir $SITE \
         -processAll -repack $SITE
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #	$HOME/ws2/jarprocessor/jarprocessor.jar \
+    #	$HOME/ws_31x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
-    echo "Working on signed update site"
-    TPTYPE="${VERSION} Signed Test"
+    echo "Working on signed patch update site"
+    TPTYPE="${VERSION} Signed Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
-    echo "Signing jars from test update site (expecting conditioned jars)..."
+    echo "Signing jars from test patch update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
-    if [ -d ${STAGING} -a -d ${SITE}/../testUpdates ]; then
-      #get jars from testUpdates, sign them and put them here
+    if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
+      #get jars from testPatchUpdates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
-      cp -R ${SITE}/../testUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
+      cp -R ${SITE}/../testPatchUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
         result=`jarsigner -verify ${x} | head -1`
@@ -186,7 +186,7 @@ elif [ ${TYPE} = testSigned ]; then
         rmdir ${STAGING}/updates.${stamp}/features
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
-        cp ${SITE}/../testUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
+        cp ${SITE}/../testPatchUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
           result=`jarsigner -verify ${x} | head -1`
@@ -238,7 +238,7 @@ elif [ ${TYPE} = testSigned ]; then
         exit 1
       fi
     else
-      echo "staging or testUpdates not found:"
+      echo "staging or testPatchUpdates not found:"
       echo "please fix your pathes"
       exit 1
     fi
@@ -372,7 +372,7 @@ else
     cvs -q update -dPR
     sed -e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0_2 -->/,/<!-- END_3_0_2 -->/d' \
+    sed -e '/<!-- BEGIN_3_0_3 -->/,/<!-- END_3_0_3 -->/d' \
         site.xml.new1 > site.xml.new2
     sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
         site.xml.new2 > site.xml.new
@@ -410,20 +410,20 @@ case ${TYPE} in test*)
   # Workaround for downgrading effort of pack200 to avoid VM bug
   # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #java -jar $HOME/ws2/eclipse/startup.jar \
+  #java -jar $HOME/ws_31x/eclipse/startup.jar \
   java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -jarProcessor -outputDir $SITE \
     -processAll -pack $SITE
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #    $HOME/ws2/jarprocessor/jarprocessor.jar \
+  #    $HOME/ws_31x/jarprocessor/jarprocessor.jar \
   #    -outputDir $SITE -processAll -pack $SITE
   ;;
 esac
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws_31x/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \
