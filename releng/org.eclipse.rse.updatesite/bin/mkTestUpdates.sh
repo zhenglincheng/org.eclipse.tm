@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2008 Wind River Systems, Inc.
+# Copyright (c) 2006, 2009 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -9,7 +9,7 @@
 # Contributors: 
 # Martin Oberhuber - initial API and implementation 
 #*******************************************************************************
-# Convert normal "site.xml" to "testPatchUpdates"
+# Convert normal "site.xml" to "testLegacyUpdates"
 #
 # Prerequisites: 
 # - Eclipse 3.3Mx installed in $HOME/ws_30x/eclipse
@@ -65,6 +65,7 @@ fi
 
 # get newest plugins and features: to be done manually on real update site
 TPVERSION="Target Management"
+VERSION="3.0.3+"
 TYPE=none
 SITEDIR=`basename ${SITE}`
 case ${SITEDIR} in
@@ -75,8 +76,8 @@ case ${SITEDIR} in
   *)              TYPE=unknown ;;
 esac
 if [ ${TYPE} = test ]; then
-    echo "Working on test patch update site"
-    TPTYPE="3.0.3+ Test Patch"
+    echo "Working on test legacy update site"
+    TPTYPE="${VERSION} Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     REL=`ls $HOME/ws_30x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
@@ -158,17 +159,17 @@ if [ ${TYPE} = test ]; then
     #	$HOME/ws_30x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
-    echo "Working on signed patch update site"
-    TPTYPE="3.0.3+ Signed Test Patch"
+    echo "Working on signed legacy update site"
+    TPTYPE="${VERSION} Signed Test Legacy"
     TPVERSION="${TPVERSION} ${TPTYPE}"
-    echo "Signing jars from test patch update site (expecting conditioned jars)..."
+    echo "Signing jars from test legacy update site (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
-    if [ -d ${STAGING} -a -d ${SITE}/../testPatchUpdates ]; then
-      #get jars from testPatchUpdates, sign them and put them here
+    if [ -d ${STAGING} -a -d ${SITE}/../testLegacyUpdates ]; then
+      #get jars from testLegacyUpdates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
-      cp -R ${SITE}/../testPatchUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
+      cp -R ${SITE}/../testLegacyUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
         result=`jarsigner -verify ${x} | head -1`
@@ -207,7 +208,7 @@ elif [ ${TYPE} = testSigned ]; then
         rmdir ${STAGING}/updates.${stamp}/features
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
-        cp ${SITE}/../testPatchUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
+        cp ${SITE}/../testLegacyUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
           result=`jarsigner -verify ${x} | head -1`
@@ -259,7 +260,7 @@ elif [ ${TYPE} = testSigned ]; then
         exit 1
       fi
     else
-      echo "staging or testPatchUpdates not found:"
+      echo "staging or testLegacyUpdates not found:"
       echo "please fix your pathes"
       exit 1
     fi
@@ -280,7 +281,7 @@ elif [ ${TYPE} = testSigned ]; then
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = milestone ]; then
     echo "Working on milestone update site"
-    TPTYPE="3.0.x Milestone"
+    TPTYPE="${VERSION} Milestone"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
@@ -307,7 +308,7 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4.x).' \
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = interim ]; then
     echo "Working on interim update site"
-    TPTYPE="3.0 Interim"
+    TPTYPE="${VERSION} Interim"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
