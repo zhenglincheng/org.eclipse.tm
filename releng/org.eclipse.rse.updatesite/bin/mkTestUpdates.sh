@@ -54,7 +54,7 @@ case ${SITEDIR} in
   3.2*)  VERSION=3.2 ;;
 esac
 if [ ${TYPE} = test ]; then
-    echo "Working on test update site"
+    echo "Working on test patch update site for ${VERSION}"
     TPTYPE="${VERSION} Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     REL=`ls $HOME/ws_31x/working/package | sort | tail -1`
@@ -119,7 +119,7 @@ if [ ${TYPE} = test ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -137,7 +137,7 @@ if [ ${TYPE} = test ]; then
     #	$HOME/ws_31x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
-    echo "Working on signed patch update site"
+    echo "Working on signed patch update site for ${VERSION}"
     TPTYPE="${VERSION} Signed Test Patch"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Signing jars from test patch update site (expecting conditioned jars)..."
@@ -251,14 +251,14 @@ elif [ ${TYPE} = testSigned ]; then
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = milestone ]; then
-    echo "Working on milestone update site"
+    echo "Working on milestone update site for ${VERSION}"
     TPTYPE="${VERSION} Milestone"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
@@ -277,14 +277,14 @@ being contributed to the Galileo coordinated release train (Eclipse 3.5.x).' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = interim ]; then
-    echo "Working on interim update site"
+    echo "Working on interim update site for ${version}"
     TPTYPE="${VERSION} Interim"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
@@ -303,7 +303,7 @@ to test them before going live.' \
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_1_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -325,11 +325,10 @@ This site contains Target Management 3.0 Releases and Updates (R- builds) which 
 being contributed to the Ganymede coordinated release train (Eclipse 3.4).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    ## dont keep 2.0.x features in site.xml
+    ## dont keep 2.0.x features in site.xml -- this site has 3.0 and 3.1 content
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0_4 -->/,/<!-- END_3_0_4 -->/d' \
     	-e '/<!-- BEGIN_3_2 -->/,/<!-- END_3_2 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
@@ -352,7 +351,8 @@ This site contains Target Management 3.1 Releases and Updates (R- builds) which 
 being contributed to the Galileo coordinated release train (Eclipse 3.5).' \
     	index.html > index.html.new
     mv -f index.html.new index.html
-    ## dont keep 2.0.x features in site.xml
+    ## dont keep 2.0.x and 3.0.x features in site.xml
+    ## this site has 3.1.x content
     sed -e "s,/dsdp/tm/updates/2.0,/dsdp/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
@@ -372,9 +372,9 @@ else
     cvs -q update -dPR
     sed -e '/<!-- BEGIN_2_0_5 -->/,/<!-- END_2_0_5 -->/d' \
         site.xml > site.xml.new1
-    sed -e '/<!-- BEGIN_3_0_3 -->/,/<!-- END_3_0_3 -->/d' \
+    sed -e '/<!-- BEGIN_3_0_4 -->/,/<!-- END_3_0_4 -->/d' \
         site.xml.new1 > site.xml.new2
-    sed -e '/<!-- BEGIN_3_1 -->/,/<!-- END_3_1 -->/d' \
+    sed -e '/<!-- BEGIN_3_2 -->/,/<!-- END_3_2 -->/d' \
         site.xml.new2 > site.xml.new
     mv -f site.xml.new site.xml
     rm site.xml.new1 site.xml.new2
