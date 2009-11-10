@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2008 Wind River Systems, Inc.
+# Copyright (c) 2006, 2009 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testPatchUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the testLegacyUpdates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
@@ -135,14 +135,14 @@ if [ -f package.count -a "$FILES" != "" ]; then
   fi
 
   if [ ${buildType} != N ]; then
-      #Update the testPatchUpdates site
+      #Update the testLegacyUpdates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testPatchUpdates/bin
+      cd $HOME/downloads-tm/testLegacyUpdates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedPatchUpdates site
-      echo "Refreshing signedPatchUpdates site"
-      cd $HOME/downloads-tm/signedPatchUpdates/bin
+      #Update the signedLegacyUpdates site
+      echo "Refreshing signedLegacyUpdates site"
+      cd $HOME/downloads-tm/signedLegacyUpdates/bin
       cvs update
       ./mkTestUpdates.sh
   fi

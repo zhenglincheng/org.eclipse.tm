@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2008 Wind River Systems, Inc.
+# Copyright (c) 2006, 2009 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -27,7 +27,7 @@
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=DSDP_Project&revision=1.53.2.3&content-type=text%2Fplain&pathrev=R3_0_maintenance"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testPatchUpdates/bin
+# cd testLegacyUpdates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -230,9 +230,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testPatchUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testPatchUpdates
-  if [ -d ${D} ]; then ln -s ${D} testPatchUpdates; else mkdir testPatchUpdates; fi
+if [ ! -d testLegacyUpdates ]; then
+  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testLegacyUpdates
+  if [ -d ${D} ]; then ln -s ${D} testLegacyUpdates; else mkdir testLegacyUpdates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
@@ -263,11 +263,11 @@ echo "Your build environment is now created."
 echo ""
 echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
 echo ""
-echo "Test the testPatchUpdates, then copy them to updates:"
+echo "Test the testLegacyUpdates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testPatchUpdates/plugins ."
-echo "cp -R ../testPatchUpdates/features ."
+echo "cp -R ../testLegacyUpdates/plugins ."
+echo "cp -R ../testLegacyUpdates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"
