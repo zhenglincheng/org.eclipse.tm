@@ -217,6 +217,9 @@ fi
 if [ ! -h doit_irsbuild.sh ]; then
   ln -s org.eclipse.rse.build/bin/doit_irsbuild.sh .
 fi
+if [ ! -h batch_sign.sh ]; then
+  ln -s org.eclipse.rse.build/bin/batch_sign.sh .
+fi
 if [ ! -h doit_nightly.sh ]; then
   ln -s org.eclipse.rse.build/bin/doit_nightly.sh .
 fi
