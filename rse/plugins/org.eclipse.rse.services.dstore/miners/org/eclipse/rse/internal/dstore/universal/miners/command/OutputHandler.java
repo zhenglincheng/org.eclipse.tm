@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@
  * David McKnight   (IBM)        - [243699] [dstore] Loop in OutputHandler
  * David McKnight     (IBM)   [249715] [dstore][shells] Unix shell does not echo command
  * David McKnight   (IBM)     [282919] [dstore] server shutdown results in exception in shell io reading
+ * Peter Wang         (IBM)   [299422] [dstore] OutputHandler.readLines() not compatible with servers that return max 1024bytes available to be read
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -139,7 +140,7 @@ public class OutputHandler extends Handler {
 
 			// if there's none, wait a bit and return true to continue
 			if (available <= 0) {
-				sleep(100);
+				sleep(1500);
 				available = _reader.available();
 			}
 			return available;
@@ -245,7 +246,7 @@ public class OutputHandler extends Handler {
 							
 							int lastIndex = 0;
 									
-							available = _reader.available();
+							available = checkAvailable();
 							if (available > 0)
 							{
 								while (!_endOfStream && lastIndex < MAX_OFFSET)
