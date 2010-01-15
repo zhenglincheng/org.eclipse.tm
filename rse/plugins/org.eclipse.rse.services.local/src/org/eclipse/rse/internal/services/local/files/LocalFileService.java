@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,6 +42,7 @@
  * Martin Oberhuber (Wind River) - [235360][ftp][ssh][local] Return proper "Root" IHostFile
  * David McKnight   (IBM)        - [238367] [regression] Error when deleting Archive Files
  * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
+ *  David McKnight   (IBM)        - [299140] Local Readonly file can't be copied/pasted twice
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -402,6 +403,14 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 
 			inputStream = new FileInputStream(file);
 			bufInputStream = new BufferedInputStream(inputStream);
+						
+			boolean wasReadonly = destinationFile.exists() && !destinationFile.canWrite();
+			if (wasReadonly){ // tempfile is readonly
+				// since we're replacing the tempfile that represents the real file, the readonly bit should be removed for the transfer
+				//destinationFile.setWritable(true);
+				setReadOnly(destinationFile.getParent(), destinationFile.getName(), false, monitor);
+			}
+
 			outputStream = new FileOutputStream(destinationFile);
 
 			if (isEncodingConversionRequired)
