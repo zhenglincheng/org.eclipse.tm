@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@
  * David McKnight   (IBM)        - [216252] [api][nls] Resource Strings specific to subsystems should be moved from rse.ui into files.ui / shells.ui / processes.ui where possible
  * Martin Oberhuber (Wind River) - [218304] Improve deferred adapter loading
  * David McKnight   (IBM)        - [230285] [shells] Remote shells should be restored on quit and re-start of RSE
+ * David McKnight     (IBM)   [302724] problems with environment variable substitution
  *******************************************************************************/
 
 package org.eclipse.rse.subsystems.shells.core.subsystems;
@@ -270,7 +271,7 @@ public abstract class RemoteCmdSubSystem extends SubSystem implements IRemoteCmd
 					varName = userVar.substring(0, assignIndex + 1);
 					if (isUniqueVariable(combinedVars, varName))
 					{
-						combinedVars.add(userVar);
+						combinedVars.add(0, userVar);
 					}
 				}
 			}
