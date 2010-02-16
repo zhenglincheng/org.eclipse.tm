@@ -199,6 +199,7 @@ ls ${OUTPUT}
 echo ""
 if [ ! -d ${DROPDIR}.unsigned ]; then
   echo "cp -Rp ${DROPDIR} ${DROPDIR}.unsigned"
+  echo "chmod -R g+w ${DROPDIR}.unsigned"
 fi
 echo "cp -f ${OUTPUT}/* ${DROPDIR}"
 echo "rm -rf ${DROPDIR}/signed"
