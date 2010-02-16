@@ -326,7 +326,6 @@
 	<!-- ===================================================================== -->
 	<target name="preAssemble">
 		<antcall target="serverruntime" />
-		<antcall target="hideServerStuff" />
 		<antcall target="allElements">
 			<param name="target" value="gatherSources" />
 		</antcall>
@@ -336,7 +335,6 @@
 	<!-- Steps to do after  running assemble. -->
 	<!-- ===================================================================== -->
 	<target name="postAssemble">
-		<antcall target="revealServerStuff" />
 	</target>
 
 	<!-- ===================================================================== -->
@@ -534,29 +532,6 @@
 	     Specialized targets hide/reveal the server stuff so it doesn't get packaged
 	     in the client.          
 	     ===================================================================== -->
-
-	<target name="hideServerStuff">
-		<mkdir dir="${buildDirectory}/hidden"/>
-		<move todir="${buildDirectory}/hidden">
-			<fileset dir="${buildDirectory}/plugins">
-				<include name="**/clientserver.jar"/>
-				<include name="**/dstore_core.jar"/>
-				<include name="**/dstore_extra_server.jar"/>
-				<include name="**/dstore_miners.jar"/>
-				<include name="**/clientserversrc.zip"/>
-				<include name="**/dstore_coresrc.zip"/>
-				<include name="**/dstore_extra_serversrc.zip"/>
-				<include name="**/dstore_minerssrc.zip"/>
-			</fileset>
-		</move>
-	</target>
-
-	<target name="revealServerStuff">
-		<move todir="${buildDirectory}/plugins">
-			<fileset dir="${buildDirectory}/hidden" includes="**" />
-		</move>
-		<delete dir="${buildDirectory}/hidden"/>
-	</target>
 
 	<!-- ===================================================================== -->
 	<!-- Zip the docs                                                          -->
