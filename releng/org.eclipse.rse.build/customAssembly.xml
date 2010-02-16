@@ -85,6 +85,16 @@
 	<!-- (and potentially signed)                                              -->
 	<!-- ===================================================================== -->
 	<target name="post.jarUp">
+		<!-- <target name="revealServerStuff"> -->
+			<move todir="${buildDirectory}/tmp">
+				<fileset dir="${buildDirectory}/hidden.tmp" includes="**" />
+			</move>
+			<delete dir="${buildDirectory}/hidden.tmp"/>
+			<move todir="${buildDirectory}/plugins">
+				<fileset dir="${buildDirectory}/hidden" includes="**" />
+			</move>
+			<delete dir="${buildDirectory}/hidden"/>
+		<!-- </target> -->
 	</target>
 
 	<!-- ===================================================================== -->
