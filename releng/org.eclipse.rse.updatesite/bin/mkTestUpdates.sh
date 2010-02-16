@@ -284,7 +284,7 @@ being contributed to the Galileo coordinated release train (Eclipse 3.5.x).' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = interim ]; then
-    echo "Working on interim update site for ${version}"
+    echo "Working on interim update site for ${VERSION}"
     TPTYPE="${VERSION} Interim"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Expect that you copied your features and plugins yourself"
