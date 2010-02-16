@@ -36,10 +36,14 @@ if [ "${have_sdk}" = "" ]; then
   echo "No drop found in DROPDIR. Please cd to your drop, or setenv DROPDIR."
   exit 1
 fi
+echo ""
+echo "Making a TM/RSE drop signed, based on an update site."
+echo ""
 echo "UPDATE_SITE: ${UPDATE_SITE}"
 echo "SIGNED_JAR_SOURCE: ${SIGNED_JAR_SOURCE}"
 echo "BASEBUILDER: ${BASEBUILDER}"
 echo "DROPDIR: ${DROPDIR}"
+echo ""
 
 #Use Java5 on build.eclipse.org
 #export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
@@ -189,4 +193,14 @@ for f in `ls rseserver-*.zip rseserver-*.tar` ; do
   diff -r -b ${RESULT}/${f} ${SIGNED_JAR_SOURCE}/server
 done
 cd "${curdir}"
+echo ""
+echo "ls ${OUTPUT}"
+ls ${OUTPUT}
+echo ""
+if [ ! -d ${DROPDIR}.unsigned ]; then
+  echo "cp -Rp ${DROPDIR} ${DROPDIR}.unsigned"
+fi
+echo "cp -f ${OUTPUT}/* ${DROPDIR}"
+echo "rm -rf ${DROPDIR}/signed"
+
 
