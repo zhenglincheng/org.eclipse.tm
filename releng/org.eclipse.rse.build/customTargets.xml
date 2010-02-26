@@ -58,6 +58,7 @@
 
 	<target name="assemble.org.eclipse.rse">
 		<property name="archiveName" value="RSE-runtime-${buildId}.zip"/>
+		<property name="copyOrbit" value="true"/>
 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
 		<antcall target="unpackUpdateJarsForPackaging" />
 	</target>
@@ -206,6 +207,18 @@
 					<equals arg1="${buildType}" arg2="M"/>
 					<not><matches pattern="M[0-9-]*" string="${buildId}"/></not>
 				</and>
+				<and>
+					<equals arg1="${buildType}" arg2="J"/>
+					<not><matches pattern="J[0-9-]*" string="${buildId}"/></not>
+				</and>
+				<and>
+					<equals arg1="${buildType}" arg2="K"/>
+					<not><matches pattern="K[0-9-]*" string="${buildId}"/></not>
+				</and>
+				<and>
+					<equals arg1="${buildType}" arg2="L"/>
+					<not><matches pattern="L[0-9-]*" string="${buildId}"/></not>
+				</and>
 			</or>
 		</condition>
 		<property name="buildUpdateSitePath" value="${packageDirectory}/${dropDir}/updates"/>
@@ -313,7 +326,6 @@
 	<!-- ===================================================================== -->
 	<target name="preAssemble">
 		<antcall target="serverruntime" />
-		<antcall target="hideServerStuff" />
 		<antcall target="allElements">
 			<param name="target" value="gatherSources" />
 		</antcall>
@@ -323,7 +335,6 @@
 	<!-- Steps to do after  running assemble. -->
 	<!-- ===================================================================== -->
 	<target name="postAssemble">
-		<antcall target="revealServerStuff" />
 	</target>
 
 	<!-- ===================================================================== -->
@@ -371,7 +382,10 @@
 		<condition property="buildTypeLong" value="Integration"><equals arg1="${buildType}" arg2="I"/></condition>
 		<condition property="buildTypeLong" value="Stable"><equals arg1="${buildType}" arg2="S"/></condition>
 		<condition property="buildTypeLong" value="Release"><equals arg1="${buildType}" arg2="R"/></condition>
+		<condition property="buildTypeLong" value="Maintenance"><equals arg1="${buildType}" arg2="J"/></condition>
 		<condition property="buildTypeLong" value="Maintenance"><equals arg1="${buildType}" arg2="M"/></condition>
+		<condition property="buildTypeLong" value="Legacy"><equals arg1="${buildType}" arg2="K"/></condition>
+		<condition property="buildTypeLong" value="Legacy"><equals arg1="${buildType}" arg2="L"/></condition>
 		<replace file="${packageDirectory}/${dropDir}/index.php">
 			<replacefilter token="@buildTypeLong@" value="${buildTypeLong}"/>
 			<replacefilter token="@dateLong@" value="${dateLong}"/>
@@ -518,29 +532,6 @@
 	     Specialized targets hide/reveal the server stuff so it doesn't get packaged
 	     in the client.          
 	     ===================================================================== -->
-
-	<target name="hideServerStuff">
-		<mkdir dir="${buildDirectory}/hidden"/>
-		<move todir="${buildDirectory}/hidden">
-			<fileset dir="${buildDirectory}/plugins">
-				<include name="**/clientserver.jar"/>
-				<include name="**/dstore_core.jar"/>
-				<include name="**/dstore_extra_server.jar"/>
-				<include name="**/dstore_miners.jar"/>
-				<include name="**/clientserversrc.zip"/>
-				<include name="**/dstore_coresrc.zip"/>
-				<include name="**/dstore_extra_serversrc.zip"/>
-				<include name="**/dstore_minerssrc.zip"/>
-			</fileset>
-		</move>
-	</target>
-
-	<target name="revealServerStuff">
-		<move todir="${buildDirectory}/plugins">
-			<fileset dir="${buildDirectory}/hidden" includes="**" />
-		</move>
-		<delete dir="${buildDirectory}/hidden"/>
-	</target>
 
 	<!-- ===================================================================== -->
 	<!-- Zip the docs                                                          -->

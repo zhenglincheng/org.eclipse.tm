@@ -14,14 +14,20 @@
 # Works on build.eclipse.org -- may need to be adjusted
 # for other hosts.
 #
-# This must be run in $HOME/ws2 in order for the mkTestUpdateSite.sh
+# This must be run in $HOME/ws_31x in order for the mkTestUpdateSite.sh
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
-# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
+# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
+# cvs co -r R3_1_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
+# sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
+#
+# - OR -
+#
+# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=DSDP_Project&content-type=text%2Fplain&view=co&pathrev=R3_1_maintenance"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testUpdates/bin
+# cd testPatchUpdates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -41,15 +47,12 @@ case ${uname_s}${uname_m} in
 esac
 
 # prepare the base Eclipse installation in folder "eclipse"
-ep_rel="S-"
-ep_ver=3.5M7
-ep_date="-200904302300"
-#ep_rel=
-#ep_ver=I20090426-2000
-#ep_date=
+ep_rel="R-"
+ep_ver=3.5.1
+ep_date="-200909170800"
 P2_disabled=false
 P2_no_dropins=false
-if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.0.v3545a.jar ]; then
+if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.1.v3555a.jar ]; then
   curdir2=`pwd`
   if [ ! -d eclipse -o -h eclipse ]; then
     if [ -d eclipse-${ep_ver}-${ep_arch} ]; then
@@ -110,11 +113,11 @@ else
   DROPUP=../..
 fi
 
-# EMF 2.5M7
+# EMF 2.5.0
 EMFBRANCH=2.5.0
-EMFREL=S
-EMFDATE=200905041408
-EMFVER=2.5.0M7
+EMFREL=R
+EMFDATE=200906151043
+EMFVER=2.5.0
 if [ ! -f ${DROPIN}/eclipse/plugins/org.eclipse.emf.doc_${EMFBRANCH}.v${EMFDATE}.jar ]; then
   # Need EMF 2.4 SDK for Service Discovery ISV Docs Backlinks
   echo "Getting EMF SDK..."
@@ -141,10 +144,10 @@ if [ ! -f ${DROPIN}/eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
 fi
 
 # checkout the basebuilder
-baseBuilderTag=R35_M6
-if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.5.0.v20090309-1900.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.5.0.v20090312-1500/pdebuild.jar \
-  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20090309-1845.jar ]; then
+baseBuilderTag=r35x_v20090811
+if [ ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.core_3.5.0.v20090528.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.pde.build_3.5.0.v20090527-1800/pdebuild.jar \
+  -o ! -f org.eclipse.releng.basebuilder/plugins/org.eclipse.equinox.p2.metadata.generator_1.0.100.v20090520-1905.jar ]; then
   if [ -d org.eclipse.releng.basebuilder ]; then
     echo "Re-getting basebuilder from CVS..."
     rm -rf org.eclipse.releng.basebuilder
@@ -173,7 +176,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -dPR
+  cvs -q update -r R3_1_maintenance -dPR
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -182,7 +185,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_1_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -197,9 +200,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testUpdates
-  if [ -d ${D} ]; then ln -s ${D} testUpdates; else mkdir testUpdates; fi
+if [ ! -d testPatchUpdates ]; then
+  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testPatchUpdates
+  if [ -d ${D} ]; then ln -s ${D} testPatchUpdates; else mkdir testPatchUpdates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
@@ -213,6 +216,9 @@ fi
 # create symlinks as needed
 if [ ! -h doit_irsbuild.sh ]; then
   ln -s org.eclipse.rse.build/bin/doit_irsbuild.sh .
+fi
+if [ ! -h batch_sign.sh ]; then
+  ln -s org.eclipse.rse.build/bin/batch_sign.sh .
 fi
 if [ ! -h doit_nightly.sh ]; then
   ln -s org.eclipse.rse.build/bin/doit_nightly.sh .
@@ -228,13 +234,13 @@ cd ..
 
 echo "Your build environment is now created."
 echo ""
-echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
+echo "Run \"./doit_irsbuild.sh M\" to create an M-build."
 echo ""
-echo "Test the testUpdates, then copy them to updates:"
+echo "Test the testPatchUpdates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testUpdates/plugins ."
-echo "cp -R ../testUpdates/features ."
+echo "cp -R ../testPatchUpdates/plugins ."
+echo "cp -R ../testPatchUpdates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"
