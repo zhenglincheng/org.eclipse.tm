@@ -40,7 +40,7 @@ fi
 
 # get newest plugins and features: to be done manually on real update site
 TPVERSION="Target Management"
-VERSION=3.1.2
+VERSION=3.1.2+
 TYPE=none
 SITEDIR=`basename ${SITE}`
 case ${SITEDIR} in
