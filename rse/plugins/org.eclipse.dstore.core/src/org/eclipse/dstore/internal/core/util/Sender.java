@@ -70,8 +70,15 @@ public class Sender implements ISender
 		try
 		{
 			_outFile = new PrintStream(_socket.getOutputStream());
-			_outData = new BufferedWriter(new OutputStreamWriter(_socket.getOutputStream()));
+			String encoding = DE.ENCODING_UTF_8;
+			if (!_dataStore.isVirtual()){
+				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
+			}
+						
+			OutputStreamWriter writer = new OutputStreamWriter(_socket.getOutputStream(), encoding);
+			_outData = new BufferedWriter(writer);
 
+		
 			_xmlGenerator.setFileWriter(_outFile);
 			_xmlGenerator.setDataWriter(_outData);
 			_xmlGenerator.setGenerateBuffer(false);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@
  * David McKnight  (IBM)   [221601][dstore] xmlparser needs to be able to handle very large attributes
  * David McKnight  (IBM)   [222163][dstore] Special characters from old server are not restored
  * David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
+ * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -441,14 +442,20 @@ public class XMLparser
 		if (offset > 0)
 		{
 			String result = null;
+			String encoding = DE.ENCODING_UTF_8;
+			if (!_dataStore.isVirtual()){
+				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
+			}
+
 			try
 			{
-				result = new String(_byteBuffer, 0, offset, DE.ENCODING_UTF_8);
+				result = new String(_byteBuffer, 0, offset, encoding);
 			}
 			catch (IOException e)
 			{
 				_dataStore.trace(e);
-			}
+			}	
+
 			return result;
 		}
 		else
