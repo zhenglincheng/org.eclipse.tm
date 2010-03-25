@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@
  * David McKnight   (IBM)        - [233160] [dstore] SSL/non-SSL alert are not appropriate
  * David Dykstal (IBM) [235284] Cancel password change causes problem
  * David McKnight   (IBM)        - [267236] [dstore] Can't connect after a wrong password
+ * David McKnight   (IBM)        - [306989] [dstore] workspace in strange condition if expanding projects during logon
  *******************************************************************************/
 
 package org.eclipse.rse.connectorservice.dstore;
@@ -533,6 +534,7 @@ public class DStoreConnectorService extends StandardConnectorService implements 
 	    }
 	    
 	    _isConnecting = true;
+	    try {
 	    boolean alertedNONSSL = false;
 
 		// set A_PLUGIN_PATH so that dstore picks up the property
@@ -1327,7 +1329,10 @@ public class DStoreConnectorService extends StandardConnectorService implements 
 			_isConnecting = false;
 			throw new SystemMessageException(msg);
 		}
-		_isConnecting = false;
+	    }
+	    finally {
+	    	_isConnecting = false;
+	    }
 	}
 
 	protected boolean isPortOutOfRange(String message)
