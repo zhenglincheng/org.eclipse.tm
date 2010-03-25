@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,6 +40,7 @@
  * David McKnight  (IBM)  - [250168] handleCommand should not blindly set the status to "done"
  * David McKnight  (IBM)  - [251729][dstore] problems querying symbolic link folder
  * David McKnight  (IBM)  - [283617] [dstore] UniversalFileSystemMiner.handleQueryGetRemoteObject does not return correct result when the queried file does not exist.
+ * David McKnight  (IBM)  - [307115] backport [dstore] 3.0.x version of UniversalFileSystemMiner.updateCancelableThreads casts to wrong thing
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -449,12 +450,12 @@ public class UniversalFileSystemMiner extends Miner {
 		{
 			while (iter.hasNext())
 			{
-				String threadName = (String) iter.next();
-				ICancellableHandler theThread = (ICancellableHandler) _cancellableThreads.get(threadName);
+				DataElement element = (DataElement) iter.next();
+				ICancellableHandler theThread = (ICancellableHandler) _cancellableThreads.get(element);
 				if ((theThread == null) ||
 						theThread.isDone() || theThread.isCancelled())
 				{
-					_cancellableThreads.remove(threadName);
+					_cancellableThreads.remove(element);
 				}
 			}
 		}
@@ -1276,6 +1277,13 @@ public class UniversalFileSystemMiner extends Miner {
 	 */
 	public DataElement statusDone(DataElement status) {
 		status.setAttribute(DE.A_NAME, DataStoreResources.model_done);
+		
+		DataElement parent = status.getParent();
+		String cmd = parent.getName();
+		String subject = parent.get(0).dereference().getValue();
+		
+		_dataStore.trace("done -> command: "+cmd+ " subject: " + subject);  //$NON-NLS-1$//$NON-NLS-2$
+		
 		_dataStore.refresh(status);
 		return status;
 	}
