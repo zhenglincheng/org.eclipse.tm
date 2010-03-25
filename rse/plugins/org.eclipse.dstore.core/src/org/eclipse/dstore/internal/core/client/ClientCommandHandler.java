@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight  (IBM)   [220123][dstore] Configurable timeout on irresponsiveness
  * David McKnight  (IBM)   [222168][dstore] Buffer in DataElement is not sent
+ * David McKnight  (IBM)   [306853][dstore] RD/z client hang  after browse copy book command
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.client;
@@ -224,7 +225,7 @@ public class ClientCommandHandler extends CommandHandler
 		while (_commands.size() > 0)
 		{
 			DataElement command = null;
-			//synchronized (_commands)
+			synchronized (_commands)
 			{
 				command = (DataElement)_commands.remove(0);
 			}
