@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@
  * Li Ding        (IBM)          - [256135] Subsystem not restored in system view tree if subsystem configuration does not support filter
  * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
  * David McKnight   (IBM)        - [250417] Restore from memento flag set to false during restore on startup
+ * Martin Oberhuber (Wind River) - [286122] Avoid NPE when restoring memento
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -1296,7 +1297,7 @@ public class SystemViewPart
 					// filter pool or filter (depends on showFilterPools)
 				case 3 :
 					
-					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+					if (subsystem != null && !(subsystem.getSubSystemConfiguration().supportsFilters())) {
 						remoteObject = new RemoteObject(token, subsystem, null, null);
 						break;
 					}
@@ -1346,7 +1347,7 @@ public class SystemViewPart
 					// filter or filter string (depends on showFilterPools) or remote object (depends on showFilterStrings)
 				case 4 :
 					
-					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+					if (subsystem != null && !(subsystem.getSubSystemConfiguration().supportsFilters())) {
 						remoteObject = new RemoteObject(token, subsystem, null, null);
 						break;
 					}
@@ -1388,7 +1389,7 @@ public class SystemViewPart
 					// filter string (depends on showFilterStrings) or remote object
 				case 5 :
 					
-					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+					if (subsystem != null && !(subsystem.getSubSystemConfiguration().supportsFilters())) {
 						remoteObject = new RemoteObject(token, subsystem, null, null);
 						break;
 					}
@@ -1414,12 +1415,12 @@ public class SystemViewPart
 					break;
 				default : // definitely a remote object
 					
-					if (!(subsystem.getSubSystemConfiguration().supportsFilters())) {
+					if (subsystem != null && !(subsystem.getSubSystemConfiguration().supportsFilters())) {
 						remoteObject = new RemoteObject(token, subsystem, null, null);
 						break;
 					}
 				
-					if ((subsystem != null) && (fRef != null))
+					if (subsystem != null && (subsystem != null) && (fRef != null))
 						remoteObject = new RemoteObject(token, subsystem, fRef, fsRef);
 			}
 		}
