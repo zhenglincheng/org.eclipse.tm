@@ -18,6 +18,7 @@
  * David McKnight   (IBM)     [282919] [dstore] server shutdown results in exception in shell io reading
  * Peter Wang         (IBM)   [299422] [dstore] OutputHandler.readLines() not compatible with servers that return max 1024bytes available to be read
  * David McKnight   (IBM)     [302996] [dstore] null checks and performance issue with shell output
+ * David McKnight   (IBM)     [309338] [dstore] z/OS USS - invocation of 'env' shell command returns inconsistently organized output
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -99,8 +100,17 @@ public class OutputHandler extends Handler {
 			 * !_isTerminal) { doPrompt(); } } else
 			 */
 			for (int i = 0; i < lines.length; i++) {
-				String line = lines[i];
-				_commandThread.interpretLine(line, _isStdError);
+				// first make sure it's not a multiline line
+				String ln = lines[i];
+				if (ln.indexOf('\n') > 0){
+					String[] lns = ln.split("\n"); //$NON-NLS-1$
+					for (int j = 0; j < lns.length; j++){
+						_commandThread.interpretLine(lns[j], _isStdError);
+					}
+				}
+				else {
+					_commandThread.interpretLine(ln, _isStdError);
+				}
 			}
 
 			if (!_isTerminal){
