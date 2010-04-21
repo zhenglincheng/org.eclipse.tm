@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,6 +57,7 @@
  * David Dykstal (IBM) [230821] fix IRemoteFileSubSystem API to be consistent with IFileService
  * Anna Dushistova  (MontaVista) - [226550] [api] Launch Shell and Launch Terminal actions should be contributed declaratively
  * Martin Oberhuber (Wind River) - [234215] improve API documentation for doDelete and doDeleteBatch
+ * David McKnight   (IBM)        - [309813] RSE permits opening of file after access removed
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -3341,9 +3342,14 @@ public class SystemViewRemoteFileAdapter
 			boolean usedBinary = properties.getUsedBinaryTransfer();
 			boolean isBinary = remoteFile.isBinary();
 
+
+			boolean usedReadOnly = properties.getReadOnly();
+			boolean isReadOnly = !remoteFile.canWrite();
+						
 			return (!dirty &&
 					!remoteNewer &&
 					usedBinary == isBinary &&
+					usedReadOnly == isReadOnly && 
 					!encodingChanged);
 		}
 		return false;
