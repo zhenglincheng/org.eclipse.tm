@@ -16,6 +16,7 @@
  * Martin Oberhuber (Wind River) - [189130] Move SystemIFileProperties from UI to Core
  * David McKnight   (IBM)        - [189873] DownloadJob changed to DownloadAndOpenJob
  * David McKnight   (IBM)        - [224377] "open with" menu does not have "other" option
+ * David McKnight   (IBM)        - [312362] Editing Unix file after it changes on host edits old data
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.actions;
@@ -221,7 +222,12 @@ private void createOtherMenuItem(final Menu menu, final IRemoteFile remoteFile) 
 
 
 protected void openEditor(IRemoteFile remoteFile, IEditorDescriptor descriptor) {
-	
+	// make sure we're using the latest version of remoteFile
+	try {
+		remoteFile = remoteFile.getParentRemoteFileSubSystem().getRemoteFileObject(remoteFile.getAbsolutePath(), new NullProgressMonitor());
+	}
+	catch (Exception e){				
+	}
 	SystemEditableRemoteFile editable = null;
 	
 	if (descriptor == null)
@@ -270,7 +276,7 @@ private boolean isFileCached(ISystemEditableRemoteObject editable, IRemoteFile r
 		long storedModifiedStamp = properties.getRemoteFileTimeStamp();
 
 		// get updated remoteFile so we get the current remote timestamp
-		//remoteFile.markStale(true);
+		remoteFile.markStale(true);
 		IRemoteFileSubSystem subsystem = remoteFile.getParentRemoteFileSubSystem();
 		try
 		{

@@ -16,6 +16,7 @@
  * David McKnight   (IBM)        - [189873] DownloadJob changed to DownloadAndOpenJob
  * David McKnight   (IBM)        - [224377] "open with" menu does not have "other" option
  * David McKnight   (IBM)        - [309813] RSE permits opening of file after access removed
+ * David McKnight   (IBM)        - [312362] Editing Unix file after it changes on host edits old data
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.actions;
@@ -103,7 +104,7 @@ public class SystemEditFileAction extends SystemBaseAction {
 			long storedModifiedStamp = properties.getRemoteFileTimeStamp();
 	
 			// get updated remoteFile so we get the current remote timestamp
-			//remoteFile.markStale(true);
+			remoteFile.markStale(true);
 			IRemoteFileSubSystem subsystem = remoteFile.getParentRemoteFileSubSystem();
 			try
 			{
@@ -147,19 +148,22 @@ public class SystemEditFileAction extends SystemBaseAction {
 	/**
 	 * Process the object: download file, open in editor, etc.
 	 */
-	protected void process(IRemoteFile remoteFile) {
-		
-		/*
-		SystemEditableRemoteFile editableFile = new SystemEditableRemoteFile(remoteFile, _editorId);
-		editableFile.open(SystemBasePlugin.getActiveWorkbenchShell());
-		*/
+	protected void process(IRemoteFile remoteFile) {		
+		// make sure we're using the latest version of remoteFile
+		try {
+			remoteFile = remoteFile.getParentRemoteFileSubSystem().getRemoteFileObject(remoteFile.getAbsolutePath(), new NullProgressMonitor());
+		}
+		catch (Exception e){				
+		}
 		SystemEditableRemoteFile editable = new SystemEditableRemoteFile(remoteFile, _editorDescriptor);
 		{
 			try
 			{
+				boolean isCached = isFileCached(editable, remoteFile);
+			
 				if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.OPEN_IN_SAME_PERSPECTIVE)
 				{						
-					if (isFileCached(editable, remoteFile))
+					if (isCached)
 					{
 						editable.openEditor();
 					}
@@ -171,8 +175,16 @@ public class SystemEditFileAction extends SystemBaseAction {
 				}
 				else
 				{
-					editable.setLocalResourceProperties();
-					editable.openEditor();
+					if (isCached)
+					{
+						editable.setLocalResourceProperties();
+						editable.openEditor();
+					}
+					else
+					{
+						DownloadAndOpenJob oJob = new DownloadAndOpenJob(editable, false);
+						oJob.schedule();
+					}
 				}
 			}
 			catch (Exception e)

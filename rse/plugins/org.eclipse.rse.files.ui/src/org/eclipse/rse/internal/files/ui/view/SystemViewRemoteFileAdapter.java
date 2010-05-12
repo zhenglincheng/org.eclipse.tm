@@ -58,6 +58,7 @@
  * Anna Dushistova  (MontaVista) - [226550] [api] Launch Shell and Launch Terminal actions should be contributed declaratively
  * Martin Oberhuber (Wind River) - [234215] improve API documentation for doDelete and doDeleteBatch
  * David McKnight   (IBM)        - [309813] RSE permits opening of file after access removed
+ * David McKnight   (IBM)        - [312362] Editing Unix file after it changes on host edits old data
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -3253,6 +3254,13 @@ public class SystemViewRemoteFileAdapter
 		*/
 		else if (!remoteFile.isArchive() || !remoteFile.getParentRemoteFileSubSystem().getParentRemoteFileSubSystemConfiguration().supportsArchiveManagement())
 		{
+			// make sure we're using the latest version of remoteFile
+			try {
+				remoteFile = remoteFile.getParentRemoteFileSubSystem().getRemoteFileObject(remoteFile.getAbsolutePath(), new NullProgressMonitor());
+			}
+			catch (Exception e){				
+			}			
+
 			// only handle double click if object is a file
 			ISystemEditableRemoteObject editable = getEditableRemoteObject(remoteFile);
 			if (editable != null)
@@ -3317,6 +3325,7 @@ public class SystemViewRemoteFileAdapter
 			//remoteFile.markStale(true);
 			IRemoteFileSubSystem subsystem = remoteFile.getParentRemoteFileSubSystem();
 			if (!subsystem.isOffline()){ // only do this check when online..if offline we assume the temp file is okay
+				remoteFile.markStale(true);
 				try
 				{
 					remoteFile = subsystem.getRemoteFileObject(remoteFile.getAbsolutePath(), new NullProgressMonitor());
