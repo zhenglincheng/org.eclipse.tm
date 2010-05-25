@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2005, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@
  * David McKnight   (IBM)        - [189873] DownloadJob changed to DownloadAndOpenJob
  * David McKnight   (IBM)        - [224377] "open with" menu does not have "other" option
  * David McKnight   (IBM)        - [312362] Editing Unix file after it changes on host edits old data
+ * David McKnight   (IBM)        - [309755] SystemRemoteFileOpenWithMenu.getPreferredEditor(), the listed default editor is not always correct
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.actions;
@@ -332,7 +333,7 @@ protected IEditorDescriptor getPreferredEditor(IRemoteFile remoteFile) {
 
 	IFile localFile = getLocalResource(remoteFile);
 	
-	if (localFile == null) {
+	if (localFile == null || !localFile.exists()) {
 		return registry.getDefaultEditor(remoteFile.getName());
 	}
 	else {
