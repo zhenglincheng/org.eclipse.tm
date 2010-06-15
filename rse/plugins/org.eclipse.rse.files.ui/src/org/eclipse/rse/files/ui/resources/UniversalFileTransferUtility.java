@@ -56,6 +56,7 @@
  * David McKnight     (IBM)      - [281712] [dstore] Warning message is needed when disk is full
  * David McKnight   (IBM)        - [299140] Local Readonly file can't be copied/pasted twice
  * David McKnight     (IBM)      - [298440] jar files in a directory can't be pasted to another system properly
+ * David McKnight     (IBM)      - [311218] Content conflict dialog pops up when it should not
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -226,6 +227,8 @@ public class UniversalFileTransferUtility
 		return false;
 	}
 
+	
+	
 	/**
 	 * replicates a remote file to the temp files project in the workspace
 	 *
@@ -253,7 +256,7 @@ public class UniversalFileTransferUtility
 			listener.addIgnoreFile(tempFile);
 			String remoteEncoding = srcFileOrFolder.getEncoding();
 			srcFS.download(srcFileOrFolder, tempFile.getLocation().makeAbsolute().toOSString(), remoteEncoding, monitor);
-			listener.removeIgnoreFile(tempFile);
+			
 			if (!tempFile.exists() && !tempFile.isSynchronized(IResource.DEPTH_ZERO))
 			{
 				// eclipse doesn't like this if the resource appears to be from another project
@@ -269,10 +272,18 @@ public class UniversalFileTransferUtility
 			}
 			if (tempFile.exists())
 			{
+				SystemIFileProperties properties = new SystemIFileProperties(tempFile);
+				
 				// set the appropriate readonly flag
 				boolean readOnly = !srcFileOrFolder.canWrite();
 				setReadOnly(tempFile, readOnly);
 
+				// set file properties
+				properties.setRemoteFileTimeStamp(srcFileOrFolder.getLastModified());
+				properties.setDownloadFileTimeStamp(tempFile.getLocation().toFile().lastModified());
+				properties.setReadOnly(readOnly);
+				properties.setDirty(false);
+				
 				if (remoteEncoding != null)
 				{
 					if (srcFileOrFolder.isBinary())
@@ -289,7 +300,6 @@ public class UniversalFileTransferUtility
 					else
 					{
 						// using text mode so the char set needs to be local
-						SystemIFileProperties properties = new SystemIFileProperties(tempFile);
 						if (properties.getLocalEncoding() != null){
 							String localEncoding = properties.getLocalEncoding();
 							tempFile.setCharset(localEncoding, null);
@@ -298,6 +308,7 @@ public class UniversalFileTransferUtility
 					}
 				}
 			}
+			listener.removeIgnoreFile(tempFile);
 		}
 		catch (final SystemMessageException e)
 		{
@@ -1035,7 +1046,7 @@ public class UniversalFileTransferUtility
 						e.printStackTrace();
 					}
 				}
-			}
+			}			
 		}
 		catch (Exception e)
 		{
