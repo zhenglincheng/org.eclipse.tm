@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the test32Updates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
@@ -39,8 +39,9 @@ mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
-  xM|xJ) mapTag=R3_1_maintenance ; ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xR|xM) mapTag=R3_2_maintenance ; ok=1 ;;
+  xJ) mapTag=R3_1_maintenance ; ok=1 ;;
   xK|xL) mapTag=R3_0_maintenance ; ok=1 ;;
   *) ok=0 ;;
 esac
@@ -55,7 +56,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_32x
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -74,7 +75,7 @@ if [ "${CHANGES}" = "" ]; then
   echo "Build canceled, no mapfile or config changed in org.eclipse.rse.build."
   exit 0
 fi
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws_32x/log-${buildType}$stamp.txt
 touch $log
 #cvs -q update -RPd >> $log 2>&1
 cvs -q update -r ${mapTag} -RPd >> $log 2>&1
@@ -100,7 +101,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws_32x/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -111,12 +112,24 @@ if [ -f package.count -a "$FILES" != "" ]; then
     #hide the release for now until it is tested
     #mirrors will still pick it up
     mv package.count package.count.orig
+    #Do not sign stable or R-builds since we want that signing done 
+    #via the update site in order to ensure that features get signed
     #DO_SIGN=1
   fi
   
+  # Always sign maintenance builds for immediate consumption in patches
+  case x${buildType} in
+    xJ|xK|xL|xM)  DO_SIGN=1 ;;
+  esac
+  
   if [ "$DO_SIGN" = "1" ]; then
     #sign the zipfiles
-    ${mydir}/batch_sign.sh `pwd`
+    #temporarily disabled, this is not a good use of processing power!
+    #mkdir signer
+    #cp rseserver-*-windows.zip signer
+    #cd signer
+    #${mydir}/batch_sign.sh `pwd`
+    #cd ..
   fi
 
   if [ ${buildType} = N -a -d ../N.latest ]; then
@@ -134,14 +147,14 @@ if [ -f package.count -a "$FILES" != "" ]; then
   fi
 
   if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the test32Updates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/test32Updates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signed32Updates site
+      echo "Refreshing signed32Updates site"
+      cd $HOME/downloads-tm/signed32Updates/bin
       cvs update
       ./mkTestUpdates.sh
   fi
