@@ -736,7 +736,7 @@
    <feature url="features/org.eclipse.tm.terminal.local_0.1.0.qualifier.jar" id="org.eclipse.tm.terminal.local" version="0.1.0.qualifier" os="linux,macosx,solaris">
       <category name="TM and RSE Uncategorized 3.2.1"/>
    </feature>
-   <feature url="features/org.eclipse.tm.terminal.local.sdk_0.1.0.qualifier.jar" id="org.eclipse.tm.terminal.local.sdk" version="0.1.0.qualifier" os="linux,macosx,solaris">
+   <feature url="features/org.eclipse.tm.terminal.local.sdk_0.1.1.qualifier.jar" id="org.eclipse.tm.terminal.local.sdk" version="0.1.1.qualifier" os="linux,macosx,solaris">
       <category name="TM and RSE Uncategorized 3.2.1"/>
    </feature>
    <category-def name="TM and RSE Uncategorized 3.2.1" label="TM and RSE Uncategorized 3.2.1">
