@@ -12,6 +12,7 @@
  * Martin Oberhuber (Wind River) - [294327] After logging in, the remote prompt is hidden
  * Anton Leherbauer (Wind River) - [294468] Fix scroller and text line rendering
  * Uwe Stieber (Wind River) - [205486] Fix ScrollLock always moving to line 1
+ * Anton Leherbauer (Wind River) - [219589] Copy an entire line selection
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.textcanvas;
 
@@ -92,12 +93,8 @@ public class TextCanvas extends GridCanvas {
 			public void terminalDataChanged() {
 				if(isDisposed())
 					return;
+				// scroll to end (unless scroll lock is active)
 				scrollToEnd();
-				// make sure the scroll area is correct:
-				if (!fScrollLock) {
-					scrollY(getVerticalBar());
-					scrollX(getHorizontalBar());
-				}
 			}
 		});
 		// let the cursor blink if the text canvas gets the focus...
@@ -167,7 +164,10 @@ public class TextCanvas extends GridCanvas {
 		if (fDraggingStart !=null && !p.equals(fDraggingEnd)) {
 			fDraggingEnd = p;
 			if (compare(p, fDraggingStart) < 0) {
-				fCellCanvasModel.setSelection(p.y, fDraggingStart.y, p.x, fDraggingStart.x);
+				// bug 219589 - make sure selection start coordinates are non-negative
+				int startColumn = Math.max(0, p.x);
+				int startRow = Math.max(p.y, 0);
+				fCellCanvasModel.setSelection(startRow, fDraggingStart.y, startColumn, fDraggingStart.x);
 			} else {
 				fCellCanvasModel.setSelection(fDraggingStart.y, p.y, fDraggingStart.x, p.x);
 
@@ -250,14 +250,8 @@ public class TextCanvas extends GridCanvas {
 		setVirtualExtend(getCols()*getCellWidth(),getRows()*getCellHeight());
 		setRedraw(false);
 		try {
-			// scroll to end
+			// scroll to end (unless scroll lock is active)
 			scrollToEnd();
-			// make sure the scroll area is correct:
-			if (!fScrollLock) {
-				scrollY(getVerticalBar());
-				scrollX(getHorizontalBar());
-			}
-	
 			getParent().layout();
 		} finally {
 			setRedraw(true);
@@ -273,6 +267,9 @@ public class TextCanvas extends GridCanvas {
 			if(v.y!=-y) {
 				setVirtualOrigin(v.x,y);
 			}
+			// make sure the scroll area is correct:
+			scrollY(getVerticalBar());
+			scrollX(getHorizontalBar());
 		}
 	}
 	/**
