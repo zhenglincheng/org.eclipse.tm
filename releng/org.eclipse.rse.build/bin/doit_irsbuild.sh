@@ -124,11 +124,11 @@ if [ -f package.count -a "$FILES" != "" ]; then
   if [ "$DO_SIGN" = "1" ]; then
     #sign the zipfiles
     #temporarily disabled, this is not a good use of processing power!
-    mkdir signer
-    cp rseserver-*-windows.zip signer
-    cd signer
-    ${mydir}/batch_sign.sh `pwd`
-    cd ..
+    #mkdir signer
+    #cp rseserver-*-windows.zip signer
+    #cd signer
+    #${mydir}/batch_sign.sh `pwd`
+    #cd ..
   fi
 
   if [ ${buildType} = N -a -d ../N.latest ]; then
