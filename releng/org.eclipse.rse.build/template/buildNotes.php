@@ -28,20 +28,21 @@
   RSE runs on Java 1.4.
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF.</li>
-<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.1-200909160905/index.php">TM 3.1.1</a>:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/index.php">TM 3.1.2</a>:
 <ul>
   <li>A regression in the Terminal widget was fixed, which made initial output after login
       invisible above the initial viewport
       [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=294327">294327</a>].</li>
 </ul>
 </li>
-<li>At least 1 bug was resolved: Use 
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;value0-0-2=3.1;chfieldto=2010-03-01;chfield=resolution;query_format=advanced;type0-0-3=equals;field0-0-3=target_milestone;value0-0-3=3.1.1;chfieldfrom=2009-09-24;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;field0-0-2=target_milestone;value0-0-1=3.2%20M[234567];type0-0-0=regexp;value0-0-0=[23]\.[02].*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=equals"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&target_milestone=3.1.2&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&cmdtype=doit">
+<li>At least 2 bugs were resolved: Use 
+  <!-- <a href="https://bugs.eclipse.org/bugs/query.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&chfield=resolution&chfieldfrom=2009-09-24&chfieldto=2010-03-01&classification=DSDP&component=Core&component=RSE&component=Terminal&field0-0-0=target_milestone&field0-0-1=target_milestone&field0-0-2=target_milestone&field0-0-3=target_milestone&negate0=1&product=Target%20Management&query_format=advanced&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&type0-0-0=regexp&type0-0-1=regexp&type0-0-2=equals&type0-0-3=equals&value0-0-0=[23]\.[02].*&value0-0-1=3.2%20M[234567]&value0-0-2=3.1&value0-0-3=3.1.1"> -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.1.2%2B;product=Target%20Management">
+  
   this query</a> to show the list of bugs fixed since
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.1-200909160905/">
-  TM 3.1.1</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.1-200909160905/buildNotes.php">build notes</a>].</li>
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/">
+  TM 3.1.2</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see
   <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
