@@ -60,9 +60,9 @@ case ${SITEDIR} in
   3.2) DO_STATS=1 ;;
 esac
 if [ ${TYPE} = test ]; then
-    echo "Working on test 3.2.x update site"
     TPTYPE="${VERSION} Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
+    echo "Working on ${TPVERSION} update site"
     REL=`ls $HOME/ws_32x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
@@ -153,10 +153,10 @@ if [ ${TYPE} = test ]; then
     #	$HOME/ws_32x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
-    echo "Working on signed update site"
     TPTYPE="${VERSION} Signed Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
-    echo "Signing jars from test update site (expecting conditioned jars)..."
+    echo "Working on ${TPVERSION} update site"
+    echo "Signing jars from ${SITE}/../test32Updates (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
     stamp=`date +'%Y%m%d-%H%M'`
     if [ -d ${STAGING} -a -d ${SITE}/../test32Updates ]; then
@@ -276,9 +276,9 @@ elif [ ${TYPE} = testSigned ]; then
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = milestone ]; then
-    echo "Working on ${VERSION} milestone update site"
     TPTYPE="${VERSION} Milestone"
     TPVERSION="${TPVERSION} ${TPTYPE}"
+    echo "Working on ${TPVERSION} update site"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -302,9 +302,9 @@ being contributed to the Galileo coordinated release train (Eclipse 3.5.x).' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ ${TYPE} = interim ]; then
-    echo "Working on ${VERSION} interim update site"
     TPTYPE="${VERSION} Interim"
     TPVERSION="${TPVERSION} ${TPTYPE}"
+    echo "Working on ${TPVERSION} update site"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -328,10 +328,10 @@ to test them before going live.' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = 3.0 ]; then
-    echo "Working on 3.0 update site"
     TPTYPE="3.0"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     TYPE=official
+    echo "Working on ${TPVERSION} update site"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -355,10 +355,10 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4).' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = 3.1 ]; then
-    echo "Working on 3.1 update site"
     TPTYPE="3.1"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     TYPE=official
+    echo "Working on ${TPVERSION} update site"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
@@ -382,10 +382,10 @@ being contributed to the Galileo coordinated release train (Eclipse 3.5).' \
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 elif [ `basename $SITE` = 3.2 ]; then
-    echo "Working on 3.2 update site"
     TPTYPE="3.2"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     TYPE=official
+    echo "Working on ${TPVERSION} update site"
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
     rm index.html site.xml web/site.xsl
