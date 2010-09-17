@@ -876,7 +876,7 @@ public class SystemRemoteEditManager
 						else {		
 							if (descriptor != null){
 								// using reflection	to change descriptor since there's
-								// no API right now
+								// no API right now but will have to put in something when we're able
 								try {
 						            Class cls = editable.getClass();
 						            Field[] fields = cls.getDeclaredFields();
