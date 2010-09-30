@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,6 +38,8 @@
  * David McKnight   (IBM)        - [267247] Wrong encoding
  * David McKnight   (IBM)        - [272772] Exception handling in SystemEditableRemoteFile
  * David McKnight   (IBM)        - [284420] nullprogressmonitor is needed
+ * David McKnight   (IBM)        - [310215] SystemEditableRemoteFile.open does not behave as expected
+ * David McKnight   (IBM)        - [324519] SystemEditableRemoteFile throws NPE when used in headless mode
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -267,12 +269,15 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 
 		IEditorRegistry registry = getEditorRegistry();
 
-		IEditorDescriptor descriptor = registry.getDefaultEditor(fileName);
-		if (descriptor == null)
-		{
-			descriptor = getDefaultTextEditor();
+		if (registry != null){
+			IEditorDescriptor descriptor = registry.getDefaultEditor(fileName);
+			if (descriptor == null)
+			{
+				descriptor = getDefaultTextEditor();
+			}
+			
+			this._editorDescriptor = descriptor;
 		}
-		this._editorDescriptor = descriptor;
 	}
 
 	protected IEditorRegistry getEditorRegistry()
@@ -472,6 +477,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		if (isReadOnly)
 		{
 			setEditorAsReadOnly();
+			setFileAsReadOnly(); // added since setEditorAsReadOnly() no longer sets the file properties
 		}
 		else
 		{
@@ -1152,7 +1158,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 					if (download(shell))
 					{
 						setLocalResourceProperties();
-						openEditor();
+						setFileAsReadOnly();
+						openEditor(remoteFile, readOnly);
 						setEditorAsReadOnly();
 					}
 				}
@@ -1162,7 +1169,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 					{
 						addAsListener();
 						setLocalResourceProperties();
-						openEditor();
+						openEditor(remoteFile, readOnly);
 					}
 				}
 				else
@@ -1188,8 +1195,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 						if (download(shell))
 						{
 							setLocalResourceProperties();
-							setReadOnly(getLocalResource(), true);
-							openEditor();
+							setFileAsReadOnly();
+							openEditor(remoteFile, readOnly);
 							setEditorAsReadOnly();
 						}
 					}
@@ -1197,7 +1204,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 			}
 			else if (result == OPEN_IN_SAME_PERSPECTIVE)
 			{
-				openEditor();
+				openEditor(remoteFile, readOnly);
 			}
 			else if (result == OPEN_IN_DIFFERENT_PERSPECTIVE)
 			{
@@ -1213,7 +1220,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 
 				if (answer)
 				{
-					openEditor();
+					setFileAsReadOnly();
+					openEditor(remoteFile, readOnly);
 					setEditorAsReadOnly(); // put editor in read only mode, but not file
 				}
 			}
@@ -1282,7 +1290,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 					if (download(monitor))
 					{
 						setLocalResourceProperties();
-						openEditor();
+						setFileAsReadOnly();
+						openEditor(remoteFile, readOnly);
 						setEditorAsReadOnly();
 					}
 				}
@@ -1292,7 +1301,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 					{
 						addAsListener();
 						setLocalResourceProperties();
-						openEditor();
+						openEditor(remoteFile, readOnly);
 					}
 				}
 				else
@@ -1320,8 +1329,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 						if (download(monitor))
 						{
 							setLocalResourceProperties();
-							setReadOnly(getLocalResource(), true);
-							openEditor();
+							setFileAsReadOnly();
+							openEditor(remoteFile, readOnly);
 							setEditorAsReadOnly();
 						}
 					}
@@ -1586,14 +1595,6 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 	 */
 	public void openEditor() throws PartInitException
 	{
-		IWorkbenchPage activePage = this.page;
-		IWorkbench wb = PlatformUI.getWorkbench();
-		if (activePage == null)
-		{
-			activePage = wb.getActiveWorkbenchWindow().getActivePage();
-		}
-		IFile file = getLocalResource();
-
 		// get fresh remote file object
 		remoteFile.markStale(true); // make sure we get the latest remote file (with proper permissions and all)
 		if (!remoteFile.getParentRemoteFileSubSystem().isOffline()){
@@ -1608,6 +1609,22 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 			}
 		}
 		boolean readOnly = !remoteFile.canWrite();
+		openEditor(remoteFile, readOnly);
+	}
+
+	
+	/**
+	 * Method to open the editor given an IRemoteFile and a specified readOnly property.
+	 */
+	private void openEditor(IRemoteFile remoteFile, boolean readOnly) throws PartInitException
+	{
+		IWorkbenchPage activePage = this.page;
+		IWorkbench wb = PlatformUI.getWorkbench();
+		if (activePage == null)
+		{
+			activePage = wb.getActiveWorkbenchWindow().getActivePage();
+		}
+		IFile file = getLocalResource();
 		ResourceAttributes attr = file.getResourceAttributes();
 		if (attr!=null) {
 			attr.setReadOnly(readOnly);
@@ -1622,7 +1639,6 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		}
 
 		// set editor as preferred editor for this file
-
 		String editorId = null;
 		if (_editorDescriptor != null)
 			editorId = _editorDescriptor.getId();
@@ -1698,6 +1714,10 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		{
 			((ISystemTextEditor) editor).setReadOnly(true);
 		}
+	}
+	
+	private void setFileAsReadOnly()
+	{
 		IFile file = getLocalResource();
 		setReadOnly(file, true);
 

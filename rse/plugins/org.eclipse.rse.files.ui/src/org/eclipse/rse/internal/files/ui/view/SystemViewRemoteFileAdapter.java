@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -64,6 +64,11 @@
  * David McKnight   (IBM)        - [276103] Files with names in different cases are not handled properly
  * David McKnight     (IBM)      - [276534] Cache Conflict After Synchronization when Browsing Remote System with Case-Differentiated-Only Filenames
  * David McKnight   (IBM)        - [280466] File download keeps running in case sensitive case
+ * David McKnight   (IBM)        - [309813] RSE permits opening of file after access removed
+ * David McKnight   (IBM)        - [308221] Bidi3.6: Improper display of date in Properties and Table Views
+ * David McKnight   (IBM)        - [317541] Show blank as the last modified for a file with no last modified
+ * David McKnight   (IBM)        - [323299] [files] remote file view adapter needs to use the latest version of IRemoteFile
+ * David McKnight   (IBM)        - [324192] Cannot open a renamed file
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -165,6 +170,7 @@ import org.eclipse.rse.subsystems.files.core.subsystems.IVirtualRemoteFile;
 import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFile;
 import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFileEmpty;
 import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFileRoot;
+import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFileSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.RemoteSearchResultsContentsType;
 import org.eclipse.rse.subsystems.files.core.util.ValidatorFileUniqueName;
 import org.eclipse.rse.ui.ISystemContextMenuConstants;
@@ -200,6 +206,8 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.text.NumberFormat;
+import com.ibm.icu.util.ULocale;
+
 
 /**
  * Adapter for displaying remote file system objects in tree views.
@@ -642,6 +650,18 @@ public class SystemViewRemoteFileAdapter
 			return ((RemoteFileRoot) file).getRootFiles();
 		}
 		IRemoteFileSubSystem ss = file.getParentRemoteFileSubSystem();
+		
+		// make sure we have the lastest cached version otherwise could be working with a bad file that never got marked as stale
+		IRemoteFile originalFile = file;
+		if (ss instanceof RemoteFileSubSystem){
+			IRemoteFile cachedFile = ((RemoteFileSubSystem)ss).getCachedRemoteFile(file.getAbsolutePath());
+			if (cachedFile != null){
+				file = cachedFile;
+				if (originalFile.isStale()){ // the original file was marked stale, so the cached one should be too
+					file.markStale(true);
+				}
+			}
+		}
 
 
 		/*
@@ -741,65 +761,71 @@ public class SystemViewRemoteFileAdapter
 		    }
 		}
 
-		boolean hasChildren = file.hasContents(RemoteChildrenContentsType.getInstance(), filter);
-
-		if (hasChildren && !file.isStale())
+		// taking out the synchronized block to avoid potential deadlock
+		// TODO next release, find a risk-free way to avoid duplicate queries
+		// synchronized (file)
+		
 		{
-			children = file.getContents(RemoteChildrenContentsType.getInstance(), filter);
-			children = filterChildren(children);
-		}
-		else
-		{
-			try
+			boolean hasChildren = file.hasContents(RemoteChildrenContentsType.getInstance(), filter);
+	
+			if (hasChildren && !file.isStale())
 			{
-			    if (monitor != null)
-			    {
-
-			        children = ss.resolveFilterString(file, filter, monitor);
-			    }
-			    else
-			    {
-			        children = ss.resolveFilterString(file, filter, new NullProgressMonitor());
-			    }
-
-				if ((children == null) || (children.length == 0))
+				children = file.getContents(RemoteChildrenContentsType.getInstance(), filter);
+				children = filterChildren(children);
+			}
+			else
+			{
+				try
 				{
-					children = EMPTY_LIST;
-				}
-				else
-				{
-					if (children.length == 1 && children[0] instanceof SystemMessageObject)
+				    if (monitor != null)
+				    {
+	
+				        children = ss.resolveFilterString(file, filter, monitor);
+				    }
+				    else
+				    {
+				        children = ss.resolveFilterString(file, filter, new NullProgressMonitor());
+				    }
+	
+					if ((children == null) || (children.length == 0))
 					{
-						// don't filter children so that the message gets propagated
+						children = EMPTY_LIST;
 					}
 					else
 					{
-						children = filterChildren(children);
+						if (children.length == 1 && children[0] instanceof SystemMessageObject)
+						{
+							// don't filter children so that the message gets propagated
+						}
+						else
+						{
+							children = filterChildren(children);
+						}
 					}
+	
 				}
-
+				catch (InterruptedException exc)
+				{
+					children = new SystemMessageObject[1];
+					SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+							ICommonMessageIds.MSG_EXPAND_CANCELLED,
+							IStatus.CANCEL, CommonMessages.MSG_EXPAND_CANCELLED);
+					children[0] = new SystemMessageObject(msg, ISystemMessageObject.MSGTYPE_CANCEL, element);
+				}
+				catch (Exception exc)
+				{
+					children = new SystemMessageObject[1];
+	
+					SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+							ICommonMessageIds.MSG_EXPAND_FAILED,
+							IStatus.ERROR,
+							CommonMessages.MSG_EXPAND_FAILED);
+					children[0] = new SystemMessageObject(msg, ISystemMessageObject.MSGTYPE_ERROR, element);
+					SystemBasePlugin.logError("Exception resolving file filter strings", exc); //$NON-NLS-1$
+				} // message already issued
 			}
-			catch (InterruptedException exc)
-			{
-				children = new SystemMessageObject[1];
-				SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-						ICommonMessageIds.MSG_EXPAND_CANCELLED,
-						IStatus.CANCEL, CommonMessages.MSG_EXPAND_CANCELLED);
-				children[0] = new SystemMessageObject(msg, ISystemMessageObject.MSGTYPE_CANCEL, element);
-			}
-			catch (Exception exc)
-			{
-				children = new SystemMessageObject[1];
-
-				SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-						ICommonMessageIds.MSG_EXPAND_FAILED,
-						IStatus.ERROR,
-						CommonMessages.MSG_EXPAND_FAILED);
-				children[0] = new SystemMessageObject(msg, ISystemMessageObject.MSGTYPE_ERROR, element);
-				SystemBasePlugin.logError("Exception resolving file filter strings", exc); //$NON-NLS-1$
-			} // message already issued
+			file.markStale(false);
 		}
-		file.markStale(false);
 		return children;
 	}
 
@@ -1287,11 +1313,20 @@ public class SystemViewRemoteFileAdapter
 			Date date = file.getLastModifiedDate();
 			if (date != null)
 			{
+				long t = date.getTime();
+				
 				if (formatted)
 				{
-					DateFormat datefmt = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM);
-					String formattedDate = datefmt.format(date);
-					return formattedDate;
+					if (t == 0){
+						// no time available, we should leave this blank
+						return ""; //$NON-NLS-1$
+					}
+					else {
+						ULocale locale = ULocale.getDefault();					
+						DateFormat  icufmt = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, locale);
+						String formattedDate = icufmt.format(date);
+						return formattedDate;
+					}
 				}
 				else
 				{
@@ -2919,13 +2954,12 @@ public class SystemViewRemoteFileAdapter
 				if (editableObj != null)
 				{
 					SystemEditableRemoteFile editable = (SystemEditableRemoteFile)editableObj;
-					
-					// is this open?
-					if (editable.checkOpenInEditor() != ISystemEditableRemoteObject.NOT_OPEN){					
-						// there's an in-memory editable, so change the associated remote file
-						IRemoteFile newRemoteFile = ss.getRemoteFileObject(remotePath, new NullProgressMonitor());
-						editable.setRemoteFile(newRemoteFile);
-					}
+			
+					// change the remote file regardless of whether it's open in an editor or not
+					// there's an in-memory editable, so change the associated remote file
+					IRemoteFile newRemoteFile = ss.getRemoteFileObject(remotePath, new NullProgressMonitor());
+					editable.setRemoteFile(newRemoteFile);
+
 				}
 			}
 			catch (Exception e)
@@ -3401,9 +3435,13 @@ public class SystemViewRemoteFileAdapter
 			boolean usedBinary = properties.getUsedBinaryTransfer();
 			boolean isBinary = remoteFile.isBinary();
 
+			boolean usedReadOnly = properties.getReadOnly();
+			boolean isReadOnly = !remoteFile.canWrite();
+						
 			return (!dirty &&
 					!remoteNewer &&
 					usedBinary == isBinary &&
+					usedReadOnly == isReadOnly && 
 					!encodingChanged);
 		}
 		return false;
