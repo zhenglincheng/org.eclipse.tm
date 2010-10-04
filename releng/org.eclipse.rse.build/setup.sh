@@ -52,7 +52,7 @@ ep_ver=3.5.2
 ep_date="-201002111343"
 P2_disabled=false
 P2_no_dropins=false
-if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.1.v3555a.jar ]; then
+if [ ! -f eclipse/plugins/org.eclipse.swt_3.5.2.v3557f.jar ]; then
   curdir2=`pwd`
   if [ ! -d eclipse -o -h eclipse ]; then
     if [ -d eclipse-${ep_ver}-${ep_arch} ]; then
