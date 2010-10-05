@@ -682,7 +682,7 @@
    </category-def>
 <!-- END_3_1_2 -->
 <!-- BEGIN_3_1_2plus -->
-   <feature url="features/org.eclipse.rse.core_3.1.1.qualifier.jar" id="org.eclipse.rse.core" version="3.1.1.qualifier">
+   <feature url="features/org.eclipse.rse.core_3.1.2.qualifier.jar" id="org.eclipse.rse.core" version="3.1.2.qualifier">
       <category name="TM and RSE 3.1.2+"/>
    </feature>
    <feature url="features/org.eclipse.rse.dstore_3.1.1.qualifier.jar" id="org.eclipse.rse.dstore" version="3.1.1.qualifier">
