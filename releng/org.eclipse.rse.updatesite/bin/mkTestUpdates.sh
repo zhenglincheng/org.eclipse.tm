@@ -78,9 +78,9 @@ if [ ${TYPE} = test ]; then
     # CHECK VERSION CORRECTNESS for MICRO UPDATES only
     # Minor/major version updates are not allowed.
     # Update of "qualifier" requires also updating "micro"
-    echo "VERIFYING VERSION CORRECTNESS: Features against ../updates/3.2"
+    echo "VERIFYING VERSION CORRECTNESS: Features against ../updates/staging/3.2"
     ls features/*.jar | sed -e 's,^.*features/,,' | sort > f1.$$.txt
-    ls ../updates/3.2/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
+    ls ../updates/staging/3.2/features/*.jar | sed -e 's,^.*features/,,' | sort > f2.$$.txt
     diff f2.$$.txt f1.$$.txt | grep '^[>]' \
        | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > f_new.txt
     for f in `cat f_new.txt`; do
@@ -99,9 +99,9 @@ if [ ${TYPE} = test ]; then
       #  echo "PROBLEM: MAJOR update or NEW : ${f}"
       #fi
     done
-    echo "VERIFYING VERSION CORRECTNESS: Plugins against ../updates/3.2"
+    echo "VERIFYING VERSION CORRECTNESS: Plugins against ../updates/staging/3.2"
     ls plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p1.$$.txt
-    ls ../updates/3.2/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
+    ls ../updates/staging/3.2/plugins/*.jar | sed -e 's,^.*plugins/,,' | sort > p2.$$.txt
     diff p2.$$.txt p1.$$.txt | grep '^[>]' \
        | sed -e 's,[>] \(.*_[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\..*,\1,' > p_new.txt
     for p in `cat p_new.txt`; do
