@@ -169,6 +169,7 @@ elif [ ${TYPE} = testSigned ]; then
       #get jars from testLegacyUpdates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
+      chmod -R g+w ${STAGING}/updates.${stamp}
       cp -R ${SITE}/../testLegacyUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
@@ -208,6 +209,7 @@ elif [ ${TYPE} = testSigned ]; then
         rmdir ${STAGING}/updates.${stamp}/features
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
+        chmod -R g+w ${STAGING}/updates.${stamp}
         cp ${SITE}/../testLegacyUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
