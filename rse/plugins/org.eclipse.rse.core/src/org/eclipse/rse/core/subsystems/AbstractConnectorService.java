@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2010 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -19,6 +19,7 @@
  * David Dykstal (IBM) - [210474] Deny save password function missing
  * David McKnight (IBM) - [249222] [api] Access to communication listeners in AbstractConnectorService
  * David McKnight   (IBM)        - [272882] [api] Handle exceptions in IService.initService()
+ * David Dykstal (IBM) - [321766] safely serialize connect and disconnect operations
  ********************************************************************************/
 package org.eclipse.rse.core.subsystems;
 
@@ -28,11 +29,17 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.core.IRSESystemType;
+import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.RSEPreferencesManager;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.IRSEPersistableContainer;
 import org.eclipse.rse.core.model.RSEModelObject;
+import org.eclipse.rse.services.Mutex;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 
 /**
@@ -407,14 +414,104 @@ public abstract class AbstractConnectorService extends RSEModelObject implements
 		return getPort();
 	}
 
+	/**
+	 * A SafeRunner makes sure that instances of UnsafeRunnableWithProgress will run one
+	 * at a time. A timeout value is specified. If the runnable cannot be started within 
+	 * the timeout value it is not run and a TimeoutException is thrown.
+	 * <p>
+	 * A SafeRunner keeps track of the thread that is running. If that thread 
+	 * reenters the SafeRunner, then it is allowed to continue execution.
+	 */
+	private class SafeRunner {
+		private Mutex semaphore = new Mutex();
+		private Thread semaphoreOwner = null;
+		/**
+		 * Run a runnable. If one is already running in this runner then this one will wait up to
+		 * the specified timeout period. If the timeout expires an exception is thrown.
+		 * @param runnable the runnable to run
+		 * @param timeout the timeout value in milliseconds
+		 * @param monitor the monitor that is tracking progress
+		 * @throws TimeoutException if the timeout expires before the runner becomes unblocked.
+		 */
+		void run(UnsafeRunnableWithProgress runnable, long timeout, IProgressMonitor monitor) throws Exception {
+			if (semaphoreOwner != Thread.currentThread()) {
+				if (semaphore.waitForLock(monitor, timeout)) {
+					semaphoreOwner = Thread.currentThread();
+					try {
+						if (monitor.isCanceled()) {
+							throw new OperationCanceledException();
+						}
+						runnable.run(monitor);
+					} finally {
+						semaphore.release();
+						semaphoreOwner = null;
+					}
+				} else {
+					throw new TimeoutException(timeout);
+				}
+			} else {
+				runnable.run(monitor);
+			}
+		}
+	}
+	
+	/**
+	 * The TimeoutException is to be thrown when an operation experiences a time-out.
+	 */
+	// TODO it may be possible to replace this exception with the one in JRE 5.0 when that becomes the base
+	private class TimeoutException extends Exception {
+		private static final long serialVersionUID = 1L;
+		private long timeoutValue;
+		/**
+		 * Creates a new TimeoutException with a particular value.
+		 * @param timeoutValue The value of the timeout that expired in milliseconds.
+		 */
+		TimeoutException(long timeoutValue) {
+			this.timeoutValue = timeoutValue;
+		}
+		/**
+		 * @return The value of the timeout in milliseconds.
+		 */
+		long getTimeout() {
+			return timeoutValue;
+		}
+	}
+	
+	/**
+	 * This interface is used to describe operations that require a progress
+	 * monitor and may throw arbitrary exceptions during their execution.
+	 * It is meant to be a companion to the SafeRunner class which should 
+	 * serialize these and handle the exceptions appropriately.
+	 */
+	private interface UnsafeRunnableWithProgress {
+		void run(IProgressMonitor monitor) throws Exception;
+	}
+	
+	private final SafeRunner safeRunner = new SafeRunner();
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.rse.core.subsystems.IConnectorService#connect(org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public final void connect(IProgressMonitor monitor) throws Exception {
-		preConnect();
-		internalConnect(monitor);
-		initializeSubSystems(monitor);
-		postConnect();
+		long timeout = 120000; // two minute timeout, this is arbitrary but seems to be a good amount
+		UnsafeRunnableWithProgress runnable = new UnsafeRunnableWithProgress() {
+			public void run(IProgressMonitor monitor) throws Exception {
+				preConnect();
+				internalConnect(monitor);
+				initializeSubSystems(monitor);
+				postConnect();
+			}
+		};
+		try {
+			safeRunner.run(runnable, timeout, monitor);
+		} catch (TimeoutException e) {
+			String id = RSECorePlugin.getDefault().getBundle().getSymbolicName();
+			String messageTemplate = "Connect operation timed out after {0} milliseconds. Operation canceled."; //TODO externalize this message in 3.3
+			String message = NLS.bind(messageTemplate, new Long(e.getTimeout()));
+			IStatus status = new Status(IStatus.INFO, id, message);
+			RSECorePlugin.getDefault().getLog().log(status);
+			throw new OperationCanceledException();
+		}
 	}
 
 	/**
@@ -424,10 +521,24 @@ public abstract class AbstractConnectorService extends RSEModelObject implements
 	 * @throws Exception if the disconnect fails
 	 */
 	public final void disconnect(IProgressMonitor monitor) throws Exception {
-		preDisconnect();
-		internalDisconnect(monitor);
-		uninitializeSubSystems(monitor);
-		postDisconnect();
+		long timeout = 120000; // two minute timeout
+		UnsafeRunnableWithProgress runnable = new UnsafeRunnableWithProgress() {
+			public void run(IProgressMonitor monitor) throws Exception {
+				preDisconnect();
+				internalDisconnect(monitor);
+				uninitializeSubSystems(monitor);
+				postDisconnect();
+			}
+		};
+		try {
+			safeRunner.run(runnable, timeout, monitor);
+		} catch (TimeoutException e) {
+			String id = RSECorePlugin.getDefault().getBundle().getSymbolicName();
+			String messageTemplate = "Disconnect operation timed out after {0} milliseconds."; //TODO externalize this message in 3.3
+			String message = NLS.bind(messageTemplate, new Long(e.getTimeout()));
+			IStatus status = new Status(IStatus.INFO, id, message);
+			RSECorePlugin.getDefault().getLog().log(status);
+		}
 	}
 
 	/**
