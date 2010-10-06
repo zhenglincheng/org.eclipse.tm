@@ -121,7 +121,7 @@ if [ -f package.count -a "$FILES" != "" ]; then
     xJ|xK|xL|xM)  DO_SIGN=1 ;;
   esac
   
-  if [ "$DO_SIGN" = "1" ]; then
+  #if [ "$DO_SIGN" = "1" ]; then
     #sign the zipfiles
     #temporarily disabled, this is not a good use of processing power!
     #mkdir signer
@@ -129,7 +129,7 @@ if [ -f package.count -a "$FILES" != "" ]; then
     #cd signer
     #${mydir}/batch_sign.sh `pwd`
     #cd ..
-  fi
+  #fi
 
   if [ ${buildType} = N -a -d ../N.latest ]; then
     #update the doc server
