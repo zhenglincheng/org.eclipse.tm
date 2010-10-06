@@ -29,7 +29,7 @@
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF.</li>
 <!--
-<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/index.php">TM 3.2</a>:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2.1-201009070720/index.php">TM 3.2.1</a>:
 <ul>
   <li>TBD
       [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=311447">311447</a>].</li>
@@ -40,9 +40,9 @@
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;value0-0-2=3\.2\.1;chfieldto=2011-03-01;chfield=resolution;query_format=advanced;chfieldfrom=2010-07-01;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;field0-0-2=target_milestone;value0-0-1=3\.3;type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=regexp"> -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.2.2;product=Target%20Management">
   this query</a> to show the list of bugs fixed since
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/">
-  TM 3.2</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/buildNotes.php">build notes</a>].</li>
+  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2.1-201009070720/">
+  TM 3.2.1</a>
+  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2.1-201009070720/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see
   <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
@@ -128,12 +128,12 @@ Use
   <!-- 
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&chfieldfrom=2009-06-20&chfieldto=2009-09-25&chfield=resolution&cmdtype=doit">
    -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&target_milestone=3.1.1&cmdtype=doit">
-  this query</a> to show the full list of API related updates since TM 3.1
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&target_milestone=3.2.1&target_milestone=3.2.2&cmdtype=doit">
+  this query</a> to show the full list of API related updates since TM 3.2
   <!--
   , and
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi%5D&classification=DSDP&product=Target+Management&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&cmdtype=doit">
-  this query</a> to show the list of additional API changes proposed for TM 3.1
+  this query</a> to show the list of additional API changes proposed for TM 3.3
   -->
   .
 </td></tr></tbody></table>
