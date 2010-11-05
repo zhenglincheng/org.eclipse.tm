@@ -29,6 +29,7 @@
  *  David McKnight     (IBM)   [302724] problems with environment variable substitution
  *  David McKnight   (IBM)     [302996] [dstore] null checks and performance issue with shell output
  *  David McKnight     (IBM)   [308246] [dstore] fix for Bug 287305 breaks on z/OS due to "su" usage
+ *  David McKnight   (IBM)     [323262] [dstore] zos shell does not display [ ]  brackets properly
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -156,11 +157,15 @@ public class CommandMinerThread extends MinerThread
 		_patterns.refresh(_invocation);
 		
 		boolean isZ = theOS.toLowerCase().startsWith("z");//$NON-NLS-1$
-		
+				
 		if (isZ)
-		{
-		  System.setProperty("dstore.stdin.encoding","Cp037"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+ 		{
+			String inCoding = System.getProperty("dstore.stdin.encoding"); //$NON-NLS-1$
+			if (inCoding == null || inCoding.length() == 0){				
+				// IBM-1047 works better on z/OS than cp037
+				System.setProperty("dstore.stdin.encoding","IBM-1047"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+ 		}
 	    	
 		_isWindows = theOS.toLowerCase().startsWith("win"); //$NON-NLS-1$
 		if (!_isWindows)
