@@ -29,7 +29,7 @@
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF.</li>
 <!--
-<li>Highlights of Fixes and Features since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/index.php">TM 3.2</a>:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/index.php">TM 3.2</a>:
 <ul>
   <li>TBD
       [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=311447">311447</a>].</li>
@@ -37,8 +37,8 @@
 </li>
 -->
 <li>At least 13 bugs were resolved: Use 
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;chfieldto=2010-09-24;chfield=resolution;query_format=advanced;chfieldfrom=2010-06-10;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;value0-0-1=3\.3;type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management">
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.3;product=Target%20Management"> -->
+  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;chfieldto=2010-09-24;chfield=resolution;query_format=advanced;chfieldfrom=2010-06-10;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;value0-0-1=3\.3;type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management"> -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.2.1;product=Target%20Management">
   this query</a> to show the list of bugs fixed since
   <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.2-201006071030/">
   TM 3.2</a>
@@ -86,6 +86,13 @@ are the best places for you to get started.
 	</tr>
 </table>
 <table><tbody><tr><td>
+<p>No API changes are allowed in the TM 3.2.x maintenance stream.
+Therefore, <b>TM 3.2.x is fully upward and backward compatible with TM 3.2</b>,
+and can be fully exchanged for TM 3.2 in any product based on it.
+Take care of API specification updates though, where the TM 3.2.x API Docs
+have been updated to add clarifications or missing information compared
+to 3.2.</p>
+
 <p>For the upcoming TM 3.3 release, only backward compatible API changes
 are planned, especially in order to support improved componentization
 and UI/Non-UI splitting.
@@ -116,7 +123,6 @@ More information can be found in the associated bugzilla items.
 </ul>
 </li>
 </ul>
-
 
 Use 
   <!-- 

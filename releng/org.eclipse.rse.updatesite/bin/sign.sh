@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2007 Wind River Systems, Inc.
+# Copyright (c) 2007, 2010 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -15,7 +15,7 @@
 # sign.sh a.jar featurs/b.jar `ls plugins/*.jar`
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws_32x/eclipse
 # - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
 
 curdir=`pwd`
@@ -26,7 +26,7 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
+basebuilder=${HOME}/ws_32x/org.eclipse.releng.basebuilder
 
 FILES=$*
 
@@ -106,7 +106,7 @@ fi
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws_32x/eclipse/startup.jar \
 java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -application org.eclipse.update.core.siteOptimizer \
     -digestBuilder -digestOutputDir=$SITE \

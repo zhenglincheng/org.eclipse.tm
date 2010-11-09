@@ -14,12 +14,12 @@
 # Works on build.eclipse.org -- may need to be adjusted
 # for other hosts.
 #
-# This must be run in $HOME/ws2 in order for the mkTestUpdateSite.sh
+# This must be run in $HOME/ws_32x in order for the mkTestUpdateSite.sh
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
 # export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
-# cvs co -r HEAD org.eclipse.tm.rse/releng/org.eclipse.rse.build
+# cvs co -r R3_2_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
 # sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
 #
 # - OR -
@@ -27,7 +27,7 @@
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testUpdates/bin
+# cd test32Updates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -204,7 +204,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -A -dPR
+  cvs -q update -r R3_2_maintenance -dPR
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -213,7 +213,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_2_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -228,9 +228,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testUpdates
-  if [ -d ${D} ]; then ln -s ${D} testUpdates; else mkdir testUpdates; fi
+if [ ! -d test32Updates ]; then
+  D=/home/data/httpd/download.eclipse.org/dsdp/tm/test32Updates
+  if [ -d ${D} ]; then ln -s ${D} test32Updates; else mkdir test32Updates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
@@ -259,13 +259,13 @@ cd ..
 
 echo "Your build environment is now created."
 echo ""
-echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
+echo "Run \"./doit_irsbuild.sh M\" to create an M-build."
 echo ""
-echo "Test the testUpdates, then copy them to updates:"
+echo "Test the test32Updates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testUpdates/plugins ."
-echo "cp -R ../testUpdates/features ."
+echo "cp -R ../test32Updates/plugins ."
+echo "cp -R ../test32Updates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"
