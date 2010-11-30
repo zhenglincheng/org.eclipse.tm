@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@
  * David McKnight  (IBM)  - [250458] Backport  [dstore] Remote search doesn't find the right result
  * David McKnight  (IBM)  - [255390] checking for memory
  * David McKnight  (IBM)  - [261644] [dstore] remote search improvements
+ * David McKnight  (IBM]  - [330989] [dstore] OutOfMemoryError occurs when searching for a text in a large remote file
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -30,10 +31,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.List;
 
 import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
@@ -369,17 +367,28 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 
 			// test for unreadable binary
 			if (isUnreadableBinary(bufReader) || fileLength > MAX_FILE){
-				// search some other way?
-				long size = theFile.length();
-				if (simpleSearch(inputStream, size, _stringMatcher)){			
+				boolean matched = false;
+				try {
+					long MAX_READ = MAX_FILE / 10; // read no more than a tenth of max file at a time
+					int offset = 0;
+					
+					while (offset < fileLength && !matched){
+						long readSize = MAX_READ;
+						if (offset +  MAX_READ > fileLength){
+							readSize = fileLength - offset;
+						}
+						matched = simpleSearch(inputStream, offset,readSize, _stringMatcher);
+						offset+=readSize;
+					}				
+				}
+				catch (Exception e){					
+					return false;
+				}
+				finally {
 					bufReader.close();
 					reader.close();
-					return true;
 				}
-				
-				bufReader.close();
-				reader.close();
-				return false;
+				return matched;
 			}
 			else 
 			{
@@ -408,11 +417,11 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 		}
 	}
 	
-	private boolean simpleSearch(FileInputStream stream, long size, SystemSearchStringMatcher matcher)
+	private boolean simpleSearch(FileInputStream stream, int offset, long size, SystemSearchStringMatcher matcher)
 	{
 		byte[] bytes = new byte[(int)size];
 		try {
-			stream.read(bytes, 0, (int)size);
+			stream.read(bytes, offset, (int)size);
 		}
 		catch (Exception e){			
 		}
