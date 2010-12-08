@@ -969,11 +969,18 @@ public class SystemTableView
 						{
 							updateItem(w, child);
 						}
-					}
+						
+						ISelection selection = getSelection();
+						if (selection instanceof IStructuredSelection){
+							Object first = ((IStructuredSelection)selection).getFirstElement();
+							if (first.equals(child)){
+								updatePropertySheet(true);
+							}
+						}
+					}										
 					catch (Exception e)
 					{
-
-					}
+					}					
 				}
 				return;
 				//break;
@@ -2144,6 +2151,36 @@ public class SystemTableView
 	public void setCachedColumnWidths(Map cachedColumnWidths)
 	{
 		_cachedColumnWidths = cachedColumnWidths;
+	}
+	
+	private void updatePropertySheet(boolean force) {
+		ISelection selection = getSelection();
+		if (selection == null) return;
+
+		// only fire this event if the view actually has focus
+		if (force || getControl().isFocusControl())
+		{
+			IStructuredSelection parentSelection = null;
+			// create events in order to update the property sheet
+			if (selection instanceof IStructuredSelection){
+				Object first = ((IStructuredSelection)selection).getFirstElement();
+				ISystemViewElementAdapter adapter = getViewAdapter(first);
+				
+				Object parent = adapter.getParent(first);
+				if (parent != null){
+					parentSelection = new StructuredSelection(parent);
+				}
+			}
+			
+			SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
+			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+
+			// first change the selection, then change it back (otherwise the property sheet ignores the event)
+			fireSelectionChanged(dummyEvent);
+			
+			// fire the event
+			fireSelectionChanged(event);
+		}
 	}
 
 }
