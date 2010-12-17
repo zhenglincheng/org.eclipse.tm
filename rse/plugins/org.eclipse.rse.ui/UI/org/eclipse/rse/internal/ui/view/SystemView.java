@@ -5954,18 +5954,19 @@ public class SystemView extends SafeTreeViewer
 			if (selection instanceof IStructuredSelection){
 				Object first = ((IStructuredSelection)selection).getFirstElement();
 				ISystemViewElementAdapter adapter = getViewAdapter(first);
-				
-				Object parent = adapter.getParent(first);
-				if (parent != null){
-					parentSelection = new StructuredSelection(parent);
+				if (adapter != null){
+					Object parent = adapter.getParent(first);
+					if (parent != null){
+						parentSelection = new StructuredSelection(parent);
+						
+						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
+						// first change the selection, then change it back (otherwise the property sheet ignores the event)
+						fireSelectionChanged(dummyEvent);
+					}
 				}
 			}
 			
-			SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
 			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-
-			// first change the selection, then change it back (otherwise the property sheet ignores the event)
-			fireSelectionChanged(dummyEvent);
 			
 			// fire the event
 			fireSelectionChanged(event);
