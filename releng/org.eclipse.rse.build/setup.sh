@@ -18,13 +18,13 @@
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
-# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
+# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/tools
 # cvs co -r R3_2_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
 # sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
 #
 # - OR -
 #
-# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
+# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=Tools_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
 # cd test32Updates/bin
@@ -48,11 +48,11 @@ esac
 
 # prepare the base Eclipse installation in folder "eclipse"
 ep_rel="R-"
-ep_ver=3.6
-ep_date="-201006080911"
+ep_ver=3.6.1
+ep_date="-201009090800"
 P2_disabled=false
 P2_no_dropins=false
-if [ ! -f eclipse/plugins/org.eclipse.swt_3.6.0.v3650b.jar ]; then
+if [ ! -f eclipse/plugins/org.eclipse.swt_3.6.1.v3655c.jar ]; then
   curdir2=`pwd`
   if [ ! -d eclipse -o -h eclipse ]; then
     if [ -d eclipse-${ep_ver}-${ep_arch} ]; then
@@ -151,9 +151,9 @@ fi
 #CDTVER=200902031437
 #CDTNAME=cdt-master-5.0.0.zip
 #CDTLOC=releases/ganymede/dist/${CDTNAME}
-CDTREL=7.0.0
-CDTFEAT=7.0.0
-CDTVER=201006141710
+CDTREL=7.0.1
+CDTFEAT=7.0.1
+CDTVER=201009241320
 CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
 CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
 if [ ! -f eclipse/plugins/org.eclipse.cdt_${CDTFEAT}.${CDTVER}.jar ]; then
@@ -224,7 +224,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_2_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -r R3_2_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -236,19 +236,19 @@ if [ ! -d working/build ]; then
   mkdir -p working/build
 fi
 if [ ! -d publish ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
+  D=/home/data/httpd/download.eclipse.org/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
 if [ ! -d test32Updates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/test32Updates
+  D=/home/data/httpd/download.eclipse.org/tm/test32Updates
   if [ -d ${D} ]; then ln -s ${D} test32Updates; else mkdir test32Updates; fi
 fi
 if [ ! -d updates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
+  D=/home/data/httpd/download.eclipse.org/tm/updates
   if [ -d ${D} ]; then ln -s ${D} updates; else mkdir updates; fi
 fi
 if [ ! -d staging ]; then
-  D=/home/data/httpd/download-staging.priv/dsdp/tm
+  D=/home/data/httpd/download-staging.priv/tools/tm
   if [ -d ${D} ]; then ln -s ${D} staging; else mkdir staging; fi
 fi
 

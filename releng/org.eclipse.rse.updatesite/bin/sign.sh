@@ -16,7 +16,7 @@
 #
 # Prerequisites: 
 # - Eclipse 3.3Mx installed in $HOME/ws_32x/eclipse
-# - Java5 in the PATH or in /shared/dsdp/tm/ibm-java2-ppc64-50
+# - Java5 in the PATH or in /shared/tools/tm/jdk-1.5
 
 curdir=`pwd`
 cd `dirname $0`
@@ -25,7 +25,7 @@ mydir=`pwd`
 umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
-export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
 basebuilder=${HOME}/ws_32x/org.eclipse.releng.basebuilder
 
 FILES=$*
@@ -34,7 +34,7 @@ FILES=$*
 cd ..
 SITE=`pwd`
 
-STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
+STAGING=/home/data/httpd/download-staging.priv/tools/tm
 stamp=`date +'%Y%m%d-%H%M'`
 WORKDIR=${STAGING}/${stamp}
 mkdir -p ${WORKDIR}
@@ -113,7 +113,7 @@ java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     -siteXML=$SITE/site.xml
 
 cd $SITE
-chgrp -R dsdp-tmadmin .
+chgrp -R tools.tm .
 chmod -R g+w .
 chmod -R a+r .
 cd $curdir

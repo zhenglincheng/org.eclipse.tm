@@ -21,8 +21,8 @@
 umask 22
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
+export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
 
 curdir=`pwd`
@@ -46,7 +46,7 @@ RDIR=`pwd`
 mkdir -p signed
 nameToSign=`basename $RDIR`
 ZIPS=`ls *.zip *.jar`
-STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
+STAGING=/home/data/httpd/download-staging.priv/tools/tm
 STDIR=${STAGING}/${nameToSign}
 mkdir -p ${STDIR}
 cp ${ZIPS} ${STDIR}

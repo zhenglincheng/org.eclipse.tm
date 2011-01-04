@@ -52,8 +52,8 @@ if [ "$1" != "-go" ]; then
 fi
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
+export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=${HOME}/ws_32x/IBMJava2-ppc-142/bin:$PATH
 
 if [ ! -d ${tmpdir} ]; then
@@ -100,10 +100,10 @@ if [ "${have_server}" = "" ]; then
       rm -rf ${tmpdir}
       exit 1
     fi
-    if [ ! -d /home/data/httpd/download-staging.priv/dsdp/tm ]; then
+    if [ ! -d /home/data/httpd/download-staging.priv/tools/tm ]; then
       echo "Error: Must run on build.eclipse.org to sign"
     fi
-    cd /home/data/httpd/download-staging.priv/dsdp/tm
+    cd /home/data/httpd/download-staging.priv/tools/tm
     SIGN_TMP=tmp.$$
     mkdir ${SIGN_TMP}
     cd ${SIGN_TMP}

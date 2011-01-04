@@ -70,11 +70,11 @@ buildId = ask("Enter the build id", buildType + mydstamp + "-" + mydstamp)
 
 # default value of the bootclasspath attribute used in ant javac calls.
 # these pathes are valid on build.eclipse.org  
-bootclasspath = "/shared/dsdp/JDKs/win32/j2sdk1.4.2_19/jre/lib/rt.jar:/shared/dsdp/JDKs/win32/j2sdk1.4.2_19/jre/lib/jsse.jar"
+bootclasspath = "/shared/tools/tm/JDKs/win32/j2sdk1.4.2_19/jre/lib/rt.jar:/shared/tools/tm/JDKs/win32/j2sdk1.4.2_19/jre/lib/jsse.jar"
 bootclasspath_15 = "/shared/common/jdk-1.5.0_16/jre/lib/rt.jar"
 #bootclasspath_16 = "$builderDir/jdk/win32_16/jdk6/jre/lib/rt.jar"
 #bootclasspath_foundation = "/shared/common/Java_ME_platform_SDK_3.0_EA/runtimes/cdc-hi/lib/rt.jar"
-bootclasspath_foundation11 = "/shared/dsdp/JDKs/win32/j9_cdc11/lib/jclFoundation11/classes.zip"
+bootclasspath_foundation11 = "/shared/tools/tm/JDKs/win32/j9_cdc11/lib/jclFoundation11/classes.zip"
 
 command = "java -cp #{basebuilder}/plugins/org.eclipse.equinox.launcher.jar org.eclipse.core.launcher.Main "
 command += "-application org.eclipse.ant.core.antRunner "

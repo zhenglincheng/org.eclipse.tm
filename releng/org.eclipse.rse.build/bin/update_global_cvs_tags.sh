@@ -24,8 +24,8 @@
 # Before running this script, customize the "cvs tag" commands below.
 #
 curdir=`pwd`
-#CVSROOT=:ext:moberhuber@dev.eclipse.org:/cvsroot/dsdp
-CVSROOT=/cvsroot/dsdp
+#CVSROOT=:ext:moberhuber@dev.eclipse.org:/cvsroot/tools
+CVSROOT=/cvsroot/tools
 export CVSROOT
 TOPMODULES="\
   org.eclipse.tm.rse \
