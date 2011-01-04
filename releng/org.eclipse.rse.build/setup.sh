@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2009 Wind River Systems, Inc.
+# Copyright (c) 2006, 2010 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -18,13 +18,13 @@
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
-# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp
+# export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/tools
 # cvs co -r R3_1_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
 # sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
 #
 # - OR -
 #
-# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=DSDP_Project&content-type=text%2Fplain&view=co&pathrev=R3_1_maintenance"
+# wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?root=Tools_Project&content-type=text%2Fplain&view=co&pathrev=R3_1_maintenance"
 # sh setup.sh
 # ./doit_ibuild.sh
 # cd testPatchUpdates/bin
@@ -185,7 +185,7 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r R3_1_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -r R3_1_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # prepare directories for the build
@@ -197,19 +197,19 @@ if [ ! -d working/build ]; then
   mkdir -p working/build
 fi
 if [ ! -d publish ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/downloads/drops
+  D=/home/data/httpd/download.eclipse.org/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
 if [ ! -d testPatchUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/testPatchUpdates
+  D=/home/data/httpd/download.eclipse.org/tm/testPatchUpdates
   if [ -d ${D} ]; then ln -s ${D} testPatchUpdates; else mkdir testPatchUpdates; fi
 fi
 if [ ! -d updates ]; then
-  D=/home/data/httpd/download.eclipse.org/dsdp/tm/updates
+  D=/home/data/httpd/download.eclipse.org/tm/updates
   if [ -d ${D} ]; then ln -s ${D} updates; else mkdir updates; fi
 fi
 if [ ! -d staging ]; then
-  D=/home/data/httpd/download-staging.priv/dsdp/tm
+  D=/home/data/httpd/download-staging.priv/tools/tm
   if [ -d ${D} ]; then ln -s ${D} staging; else mkdir staging; fi
 fi
 

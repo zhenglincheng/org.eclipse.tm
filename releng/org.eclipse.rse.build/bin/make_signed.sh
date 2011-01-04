@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-#  Copyright (c) 2008, 2009 Wind River Systems, Inc. and others.
+#  Copyright (c) 2008, 2010 Wind River Systems, Inc. and others.
 #  All rights reserved. This program and the accompanying materials
 #  are made available under the terms of the Eclipse Public License v1.0
 #  which accompanies this distribution, and is available at
@@ -46,8 +46,8 @@ echo "DROPDIR: ${DROPDIR}"
 echo ""
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
+export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=${HOME}/s/IBMJava2-ppc-142/bin:$PATH
 
 OUTPUT=${curdir}/output.$$
@@ -84,10 +84,10 @@ if [ "${have_server}" = "" ]; then
       echo "Error: No rseserver found in DROPDIR."
       exit 1
     fi
-    if [ ! -d /home/data/httpd/download-staging.priv/dsdp/tm ]; then
+    if [ ! -d /home/data/httpd/download-staging.priv/tools/tm ]; then
       echo "Error: Must run on build.eclipse.org to sign"
     fi
-    cd /home/data/httpd/download-staging.priv/dsdp/tm
+    cd /home/data/httpd/download-staging.priv/tools/tm
     SIGN_TMP=tmp.$$
     mkdir ${SIGN_TMP}
     cd ${SIGN_TMP}
