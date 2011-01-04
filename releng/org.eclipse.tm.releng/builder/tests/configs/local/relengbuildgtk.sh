@@ -7,7 +7,7 @@
 #
 # Contributors:
 #     IBM Corporation - initial API and implementation
-# Martin Oberhuber (Wind River) - adapt for DSDP from o.e.emf.validation.releng
+# Martin Oberhuber (Wind River) - adapt from o.e.emf.validation.releng
 ###############################################################################
 #!/bin/bash
 
@@ -137,7 +137,7 @@ doFunction ()
 #ulimit -c unlimited
 
 getBuildID()
-{	# given $PWD: /home/www-data/build/dsdp/$projectName/$subprojectName/downloads/drops/1.1.0/N200702112049/testing/N200702112049/testing
+{	# given $PWD: /home/www-data/build/tools/$projectName/$subprojectName/downloads/drops/1.1.0/N200702112049/testing/N200702112049/testing
 	# return N200702110400
 	buildID=$1; #echo "buildID=$buildID";
 	buildID=${buildID##*drops\/}; # trim up to drops/ (from start) (substring notation)
@@ -147,7 +147,7 @@ getBuildID()
 buildID=""; getBuildID $PWD; #echo buildID=$buildID;
 
 getBranch()
-{	# given $PWD: /home/www-data/build/dsdp/$projectName/$subprojectName/downloads/drops/1.1.0/N200702112049/testing/N200702112049/testing
+{	# given $PWD: /home/www-data/build/tools/$projectName/$subprojectName/downloads/drops/1.1.0/N200702112049/testing/N200702112049/testing
 	# return 1.1.0
 	branch=$1; #echo "branch=$branch";
 	branch=${branch##*drops\/}; # trim up to drops/ (from start) (substring notation)

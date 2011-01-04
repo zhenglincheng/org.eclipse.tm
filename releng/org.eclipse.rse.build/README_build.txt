@@ -4,13 +4,13 @@ Instructions for building TM and RSE
 1. Set up the build workspace
 -----------------------------
 ssh build.eclipse.org
-cd /shared/dsdp/tm/
+cd /shared/tools/tm/
 mkdir ws2_user
 cd ws2_user
-ln -s `pws` $HOME/ws_30x
-ln -s /home/data/httpd/download.eclipse.org/dsdp/tm $HOME/downloads-tm
+ln -s `pwd` $HOME/ws_30x
+ln -s /home/data/httpd/download.eclipse.org/tm $HOME/downloads-tm
 cp -R ../ws_30x/IBMJava2-ppc-142 .
-wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=DSDP_Project&content-type=text/plain"
+wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=Tools_Project&content-type=text/plain"
 chmod a+x setup.sh
 ./setup.sh
 

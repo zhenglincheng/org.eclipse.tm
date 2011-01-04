@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2009 Wind River Systems, Inc.
+# Copyright (c) 2006, 2011 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -29,7 +29,7 @@ mydir=`pwd`
 echo ${mydir}
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
 export PATH=${HOME}/ws_30x/IBMJava2-ppc-142/bin:$PATH
@@ -85,17 +85,17 @@ echo "Running the builder..."
 tail -30 $log
 
 #update the main download and archive pages: build.eclipse.org only
-if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
-  cd /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads
+if [ -d /home/data/httpd/archive.eclipse.org/tm/downloads ]; then
+  cd /home/data/httpd/archive.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/* 2>/dev/null
-  cd /home/data/httpd/download.eclipse.org/dsdp/tm/downloads
+  chgrp tools.tm * CVS/* 2>/dev/null
+  cd /home/data/httpd/download.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/*
+  chgrp tools.tm * CVS/*
 
   #Fixup permissions and group id on download.eclpse.org (just to be safe)
-  echo "Fixup: chgrp -R dsdp-tmadmin drops/${buildType}*${daystamp}*"
-  chgrp -R dsdp-tmadmin drops/${buildType}*${daystamp}*
+  echo "Fixup: chgrp -R tools.tm drops/${buildType}*${daystamp}*"
+  chgrp -R tools.tm drops/${buildType}*${daystamp}*
   chmod -R g+w drops/${buildType}*${daystamp}*
 fi
 
@@ -126,12 +126,8 @@ if [ -f package.count -a "$FILES" != "" ]; then
     cp -f RSE-SDK-*.zip ../N.latest/RSE-SDK-latest.zip
     cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
     cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
-    chgrp dsdp-tmadmin ../N.latest/*.zip
+    chgrp tools.tm ../N.latest/*.zip
     chmod g+w ../N.latest/*.zip
-    if [ -d /shared/dsdp/public_html/tm/downloads/drops/N.latest ]; then
-      cp -f ../N.latest/* /shared/dsdp/public_html/tm/downloads/drops/N.latest/
-      chmod -R g+w /shared/dsdp/public_html/tm/downloads/drops
-    fi
   fi
 
   if [ ${buildType} != N ]; then
@@ -151,4 +147,4 @@ if [ -f package.count -a "$FILES" != "" ]; then
 else
   echo "package.count missing, release seems failed"
 fi
-chgrp dsdp-tm-rse $log
+chgrp tools.tm $log

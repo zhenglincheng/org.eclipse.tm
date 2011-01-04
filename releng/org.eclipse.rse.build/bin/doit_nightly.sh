@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006 Wind River Systems, Inc.
+# Copyright (c) 2006, 2011 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -15,7 +15,7 @@
 umask 22
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
 export PATH=${HOME}/ws_30x/IBMJava2-ppc-142/bin:$PATH
@@ -47,16 +47,16 @@ echo "Running the builder..."
 tail -30 $log
 
 #update the main download and archive pages: build.eclipse.org only
-if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
-  cd /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads
+if [ -d /home/data/httpd/archive.eclipse.org/tm/downloads ]; then
+  cd /home/data/httpd/archive.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/* 2>/dev/null
-  cd /home/data/httpd/download.eclipse.org/dsdp/tm/downloads
+  chgrp tools.tm * CVS/* 2>/dev/null
+  cd /home/data/httpd/download.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/* 2>/dev/null
+  chgrp tools.tm * CVS/* 2>/dev/null
 
   #Fixup permissions and group id on download.eclpse.org (just to be safe)
-  chgrp -R dsdp-tmadmin drops/${buildType}*${daystamp}* 2>/dev/null
+  chgrp -R tools.tm drops/${buildType}*${daystamp}* 2>/dev/null
   chmod -R g+w drops/${buildType}*${daystamp}* 2>/dev/null
 fi
 
@@ -72,12 +72,8 @@ if [ -d N.latest ]; then
     cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
     cp -f RSE-remotecdt-*.zip ../N.latest/RSE-remotecdt-latest.zip
     cd ../N.latest
-    chgrp dsdp-tmadmin *.zip
+    chgrp tools.tm *.zip
     chmod g+w *.zip
-    if [ -d /shared/dsdp/public_html/tm/downloads/drops/N.latest ]; then
-      cp -f * /shared/dsdp/public_html/tm/downloads/drops/N.latest/
-      chmod -R g+w /shared/dsdp/public_html/tm/downloads/drops
-    fi
   fi
 fi
 

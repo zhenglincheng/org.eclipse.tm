@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006, 2007 Wind River Systems, Inc.
+# Copyright (c) 2006, 2011 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -22,8 +22,8 @@ NEED_RESTART=0
 cd $IHOME/deploy/rse
 rm *.zip
 echo "Downloading RSE-SDK-latest.zip..."
-wget -q "http://build.eclipse.org/dsdp/tm/downloads/drops/N.latest/RSE-SDK-latest.zip"
-#wget -q "http://download.eclipse.org/dsdp/tm/downloads/drops/N.latest/RSE-SDK-latest.zip"
+#wget -q "http://build.eclipse.org/tm/downloads/drops/N.latest/RSE-SDK-latest.zip"
+wget -q "http://download.eclipse.org/tm/downloads/drops/N.latest/RSE-SDK-latest.zip"
 if [ -e RSE-SDK-latest.zip ]; then
   echo "Unzipping..."
   unzip -q RSE-SDK-latest.zip

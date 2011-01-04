@@ -1,6 +1,6 @@
 #!/bin/sh
 #*******************************************************************************
-# Copyright (c) 2006 Wind River Systems, Inc.
+# Copyright (c) 2006, 2011 Wind River Systems, Inc.
 # All rights reserved. This program and the accompanying materials 
 # are made available under the terms of the Eclipse Public License v1.0 
 # which accompanies this distribution, and is available at 
@@ -21,7 +21,7 @@
 umask 22
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=/shared/webtools/apps/IBMJava2-ppc64-142/bin:$PATH
 export PATH=/shared/webtools/apps/IBMJava2-ppc-142/bin:$PATH
 
@@ -46,7 +46,7 @@ RDIR=`pwd`
 mkdir -p signed
 nameToSign=`basename $RDIR`
 ZIPS=`ls *.zip *.jar`
-STAGING=/home/data/httpd/download-staging.priv/dsdp/tm
+STAGING=/home/data/httpd/download-staging.priv/tools/tm
 STDIR=${STAGING}/${nameToSign}
 mkdir -p ${STDIR}
 cp ${ZIPS} ${STDIR}
