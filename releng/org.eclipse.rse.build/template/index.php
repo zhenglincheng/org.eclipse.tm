@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="http://www.eclipse.org/default_style.css" type="text/css">
-<title>DSDP-TM @buildTypeLong@ Build: @buildId@</title>
+<title>TM @buildTypeLong@ Build: @buildId@</title>
 </head>
 
 <body>
@@ -22,8 +22,8 @@
 		  <a href="buildNotes.php">New and Noteworthy / Build Notes</a>
 <!-- -->
 <!--
-		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.1/tm-news-3.1.html">New and Noteworthy</a></p>
-		  <p><a href="http://www.eclipse.org/dsdp/tm/development/relnotes/3.1/readme_tm_3.1.html">TM 3.1.2 Readme / Release Notes</a></p>
+		  <p><a href="http://www.eclipse.org/tm/development/relnotes/3.1/tm-news-3.1.html">New and Noteworthy</a></p>
+		  <p><a href="http://www.eclipse.org/tm/development/relnotes/3.1/readme_tm_3.1.html">TM 3.1.2 Readme / Release Notes</a></p>
 		  <p><a href="buildNotes.php">Build Notes</a></p>
 -->
 		</strong></font></p>
@@ -32,7 +32,7 @@
 		<a href="directory.txt">here</a>.<br/>
 		To view the compile logs for this build, click 
 		<a href="compilelog.txt">here</a>.<br/>
-		For getting started, consider the <a href="http://www.eclipse.org/dsdp/tm/tutorial/index.php">TM Tutorials</a>
+		For getting started, consider the <a href="http://www.eclipse.org/tm/tutorial/index.php">TM Tutorials</a>
 		and the <a href="http://wiki.eclipse.org/TM_and_RSE_FAQ">TM and RSE FAQ</a>.
 		</p>
 <!--
@@ -97,12 +97,12 @@
 	</tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
         <td>All</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-runtime-@buildId@.zip">RSE-runtime-@buildId@.zip</a>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-runtime-@buildId@.zip">RSE-runtime-@buildId@.zip</a>
            <i>(Recommended for most users)</i></td>
     </tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
 		<td>All</td>
-		<td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-SDK-@buildId@.zip">RSE-SDK-@buildId@.zip</a></td>
+		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-SDK-@buildId@.zip">RSE-SDK-@buildId@.zip</a></td>
 	</tr>
 </table>
 
@@ -127,19 +127,19 @@
 	</tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
         <td>All</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/TM-terminal-@buildId@.zip">TM-terminal-@buildId@.zip</a></td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/TM-terminal-@buildId@.zip">TM-terminal-@buildId@.zip</a></td>
         <td>
 			A stand-alone ANSI / vt102 terminal emulator widget and view (with minor 
-			  <a href="http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.core/terminal/org.eclipse.tm.terminal/README.txt?revision=1.4&root=DSDP_Project&view=markup">
+			  <a href="http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.core/terminal/org.eclipse.tm.terminal/README.txt?revision=1.4&root=Tools_Project&view=markup">
 			limitations</a>). Includes pluggable connectors 
 			for serial line (through RXTX, see the 
-			  <a href="http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.core/terminal/org.eclipse.tm.terminal.serial/README.txt?revision=1.5&root=DSDP_Project&view=markup">
+			  <a href="http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.core/terminal/org.eclipse.tm.terminal.serial/README.txt?revision=1.5&root=Tools_Project&view=markup">
 			installation notes</a>), ssh and telnet. Includes Source.
         </td>
     </tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
 		<td>All</td>
-		<td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-useractions-@buildId@.zip">RSE-useractions-@buildId@.zip</a></td>
+		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-useractions-@buildId@.zip">RSE-useractions-@buildId@.zip</a></td>
         <td><small>&nbsp;</small><br/>
         	Additional Framework for user-defined actions and compile commands.
         	Includes Source.
@@ -147,7 +147,7 @@
     </tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
 		<td>All</td>
-		<td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-examples-@buildId@.zip">RSE-examples-@buildId@.zip</a></td>
+		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-examples-@buildId@.zip">RSE-examples-@buildId@.zip</a></td>
         <td><small>&nbsp;</small><br/>
         	Tutorial code and example projects for developing against RSE SDK.
         	Includes Source.
@@ -155,7 +155,7 @@
     </tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
         <td>All</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/TM-discovery-@buildId@.zip">TM-discovery-@buildId@.zip</a></td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/TM-discovery-@buildId@.zip">TM-discovery-@buildId@.zip</a></td>
         <td><small>&nbsp;</small><br/>
 	    	An API and DNS-SD / Zeroconf based 
 			implementation for remote network service discovery. 
@@ -197,7 +197,7 @@
 	</tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
         <td>All <img src="egg.gif" width=20 height=20></td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-wince-incubation-@buildId@.zip">RSE-wince-incubation-@buildId@.zip</a></td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-wince-incubation-@buildId@.zip">RSE-wince-incubation-@buildId@.zip</a></td>
         <td><small>&nbsp;</small><br/>
 			RSE Services for accessing Windows CE devices via Microsoft RAPI2.
 			Provides a File subsystem for transparent remote file access.
@@ -223,17 +223,17 @@
 		<td width="30%"><b>Platform</b></td>
 		<td width="63%"><b>Download</b></td></tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
-        <td>Windows (<a href="http://www.eclipse.org/dsdp/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/rseserver-@buildId@-windows.zip">rseserver-@buildId@-windows.zip</a></td></tr>
+        <td>Windows (<a href="http://www.eclipse.org/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/rseserver-@buildId@-windows.zip">rseserver-@buildId@-windows.zip</a></td></tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
-        <td>Linux (<a href="http://www.eclipse.org/dsdp/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/rseserver-@buildId@-linux.tar">rseserver-@buildId@-linux.tar</a></td></tr>
+        <td>Linux (<a href="http://www.eclipse.org/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/rseserver-@buildId@-linux.tar">rseserver-@buildId@-linux.tar</a></td></tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
-        <td>Other Unix (<a href="http://www.eclipse.org/dsdp/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/rseserver-@buildId@-unix.tar">rseserver-@buildId@-unix.tar</a></td></tr>
+        <td>Other Unix (<a href="http://www.eclipse.org/tm/development/plan.php#OperatingEnvironments">Supported Versions</a>)</td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/rseserver-@buildId@-unix.tar">rseserver-@buildId@-unix.tar</a></td></tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
-        <td>Mac OS X (<a href="http://www.eclipse.org/dsdp/tm/development/plan.php#OperatingEnvironments"><i>Experimental</i></a>)</td>
-        <td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/rseserver-@buildId@-macosx.tar">rseserver-@buildId@-macosx.tar</a></td></tr>
+        <td>Mac OS X (<a href="http://www.eclipse.org/tm/development/plan.php#OperatingEnvironments"><i>Experimental</i></a>)</td>
+        <td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/rseserver-@buildId@-macosx.tar">rseserver-@buildId@-macosx.tar</a></td></tr>
 </table>
 <table border="0" cellspacing="5" cellpadding="2" width="100%">
 	<tr><td colspan="2">&nbsp;</td></tr>
@@ -270,7 +270,7 @@
 	</tr>
 	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
 		<td>All</td>
-		<td><a href="http://www.eclipse.org/downloads/download.php?file=/dsdp/tm/downloads/drops/@dropDir@/RSE-tests-@buildId@.zip">RSE-tests-@buildId@.zip</a></td>
+		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-tests-@buildId@.zip">RSE-tests-@buildId@.zip</a></td>
 	</tr>
 </table>
 <table border="0" cellspacing="5" cellpadding="2" width="100%">

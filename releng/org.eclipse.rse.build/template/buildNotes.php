@@ -28,7 +28,7 @@
   RSE runs on Java 1.4.
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF.</li>
-<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/index.php">TM 3.1.2</a>:
+<li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/tm/downloads/drops/R-3.1.2-201002152323/index.php">TM 3.1.2</a>:
 <ul>
   <li>A regression in the Terminal widget was fixed, which made initial output after login
       invisible above the initial viewport
@@ -36,23 +36,23 @@
 </ul>
 </li>
 <li>At least 2 bugs were resolved: Use 
-  <!-- <a href="https://bugs.eclipse.org/bugs/query.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&chfield=resolution&chfieldfrom=2009-09-24&chfieldto=2010-03-01&classification=DSDP&component=Core&component=RSE&component=Terminal&field0-0-0=target_milestone&field0-0-1=target_milestone&field0-0-2=target_milestone&field0-0-3=target_milestone&negate0=1&product=Target%20Management&query_format=advanced&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&type0-0-0=regexp&type0-0-1=regexp&type0-0-2=equals&type0-0-3=equals&value0-0-0=[23]\.[02].*&value0-0-1=3.2%20M[234567]&value0-0-2=3.1&value0-0-3=3.1.1"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;classification=DSDP;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.1.2%2B;product=Target%20Management">
+  <!-- <a href="https://bugs.eclipse.org/bugs/query.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&chfield=resolution&chfieldfrom=2009-09-24&chfieldto=2010-03-01&component=Core&component=RSE&component=Terminal&field0-0-0=target_milestone&field0-0-1=target_milestone&field0-0-2=target_milestone&field0-0-3=target_milestone&negate0=1&product=Target%20Management&query_format=advanced&resolution=FIXED&resolution=WONTFIX&resolution=WORKSFORME&type0-0-0=regexp&type0-0-1=regexp&type0-0-2=equals&type0-0-3=equals&value0-0-0=[23]\.[02].*&value0-0-1=3.2%20M[234567]&value0-0-2=3.1&value0-0-3=3.1.1"> -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.1.2%2B;product=Target%20Management">
   
   this query</a> to show the list of bugs fixed since
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/">
+  <a href="http://download.eclipse.org/tm/downloads/drops/R-3.1.2-201002152323/">
   TM 3.1.2</a>
-  [<a href="http://download.eclipse.org/dsdp/tm/downloads/drops/R-3.1.2-201002152323/buildNotes.php">build notes</a>].</li>
+  [<a href="http://download.eclipse.org/tm/downloads/drops/R-3.1.2-201002152323/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see
   <a href="http://dsdp.eclipse.org/dsdp/tm/searchcvs.php">TM SearchCVS</a>, the
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/index.html">
+  <a href="http://download.eclipse.org/tm/downloads/drops/N-changelog/index.html">
   RSE CVS changelog</a>, and the
-  <a href="http://download.eclipse.org/dsdp/tm/downloads/drops/N-changelog/core/index.html">
+  <a href="http://download.eclipse.org/tm/downloads/drops/N-changelog/core/index.html">
   TM Core CVS changelog</a>.</li>
 <li>For other questions, please check the
   <a href="http://wiki.eclipse.org/TM_and_RSE_FAQ">TM and RSE FAQ</a>
   as well as the
-  <a href="http://wiki.eclipse.org/DSDP/TM/3.1_Known_Issues_and_Workarounds">
+  <a href="http://wiki.eclipse.org/TM/3.1_Known_Issues_and_Workarounds">
   TM 3.1 Known Issues and Workarounds</a>.</li>
 </ul>
 </td></tr></tbody></table>
@@ -65,14 +65,14 @@
 </table>
 <table><tbody><tr><td>
 <p>The RSE User Documentation has a
-<a href="http://dsdp.eclipse.org/help/latest/index.jsp?topic=/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
+<a href="http://help.eclipse.org/galileo/index.jsp?topic=/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
 Tutorial</a> that guides you through installation, first steps,
 connection setup and important tasks.</p>
 <p>
 If you want to know more about future directions of the Target Management
 Project, developer documents, architecture or how to get involved,
 the online
-<a href="http://www.eclipse.org/dsdp/tm/tutorial/index.php">Getting Started page</a>
+<a href="http://www.eclipse.org/tm/tutorial/index.php">Getting Started page</a>
 as well as the
 <a href="http://wiki.eclipse.org/TM_and_RSE_FAQ">TM and RSE FAQ</a>
 are the best places for you to get started.
@@ -126,13 +126,13 @@ More information can be found in the associated bugzilla items.
 
 Use 
   <!-- 
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&chfieldfrom=2009-06-20&chfieldto=2009-09-25&chfield=resolution&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&chfieldfrom=2009-06-20&chfieldto=2009-09-25&chfield=resolution&cmdtype=doit">
    -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&classification=DSDP&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&target_milestone=3.1.1&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi&product=Target+Management&component=Core&component=RSE&component=Terminal&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&resolution=FIXED&resolution=WORKSFORME&target_milestone=3.1.1&cmdtype=doit">
   this query</a> to show the full list of API related updates since TM 3.1
   <!--
   , and
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi%5D&classification=DSDP&product=Target+Management&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&cmdtype=doit">
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=%5Bapi%5D&product=Target+Management&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&cmdtype=doit">
   this query</a> to show the list of additional API changes proposed for TM 3.1
   -->
   .
@@ -165,11 +165,11 @@ We'll strive to fix these as soon as possible.
 <p>No major or critical bugs are known at the time of release.
 -->
 Use 
-<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&classification=DSDP&product=Target+Management&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_severity=blocker&bug_severity=critical&bug_severity=major&cmdtype=doit">this query</a>
+<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced&product=Target+Management&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_severity=blocker&bug_severity=critical&bug_severity=major&cmdtype=doit">this query</a>
 for an up-to-date list of major or critical bugs.</p>
 
 <p>The 
-<a href="http://wiki.eclipse.org/DSDP/TM/3.1_Known_Issues_and_Workarounds">
+<a href="http://wiki.eclipse.org/TM/3.1_Known_Issues_and_Workarounds">
 TM 3.1 Known Issues and Workarounds</a> Wiki page gives an up-to-date list
 of the most frequent and obvious problems, and describes workarounds for them.<br/>
 If you have other questions regarding TM or RSE, please check the
@@ -177,9 +177,9 @@ If you have other questions regarding TM or RSE, please check the
 </p>
 
 <p>Click 
-<a href="https://bugs.eclipse.org/bugs/report.cgi?x_axis_field=bug_severity&y_axis_field=op_sys&z_axis_field=&query_format=report-table&classification=DSDP&product=Target+Management&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&format=table&action=wrap">here</a>
+<a href="https://bugs.eclipse.org/bugs/report.cgi?x_axis_field=bug_severity&y_axis_field=op_sys&z_axis_field=&query_format=report-table&product=Target+Management&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&format=table&action=wrap">here</a>
 for a complete up-to-date bugzilla status report, or
-<a href="https://bugs.eclipse.org/bugs/report.cgi?x_axis_field=bug_severity&y_axis_field=op_sys&z_axis_field=&query_format=report-table&classification=DSDP&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&format=table&action=wrap">here</a>
+<a href="https://bugs.eclipse.org/bugs/report.cgi?x_axis_field=bug_severity&y_axis_field=op_sys&z_axis_field=&query_format=report-table&product=Target+Management&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&format=table&action=wrap">here</a>
 for a report on bugs fixed so far.
 </p>
 </td></tr></tbody></table>
