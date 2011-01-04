@@ -65,7 +65,7 @@
 </table>
 <table><tbody><tr><td>
 <p>The RSE User Documentation has a
-<a href="http://dsdp.eclipse.org/help/latest/index.jsp?topic=/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
+<a href="http://help.eclipse.org/helios/topic/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
 Tutorial</a> that guides you through installation, first steps,
 connection setup and important tasks.</p>
 <p>
