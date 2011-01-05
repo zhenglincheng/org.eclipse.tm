@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,6 +68,7 @@
  * David McKnight   (IBM)        - [251625] Widget disposed exception when renaming/pasting a folder
  * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
  * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
+ * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -3220,7 +3221,13 @@ public class SystemView extends SafeTreeViewer
 		}
 
 		// STEP 4: update the property sheet in case we changed properties of first selected item
-		updatePropertySheet();
+		ISelection selection = getSelection();
+		if (selection instanceof IStructuredSelection){
+			Object sel = ((IStructuredSelection)selection).getFirstElement();
+			if (remoteObject.equals(sel)){
+				updatePropertySheet(true);
+			}
+		}
 		return;
 	}
 
@@ -5863,20 +5870,41 @@ public class SystemView extends SafeTreeViewer
 		item.setExpanded(true);
 	}
 
+	
+	public void updatePropertySheet(){
+		updatePropertySheet(false);
+	}
+	
 	/**
 	 * Called when a property is updated and we need to inform the Property Sheet viewer.
 	 * There is no formal mechanism for this so we simulate a selection changed event as
 	 *  this is the only event the property sheet listens for.
 	 */
-	public void updatePropertySheet() {
+	private void updatePropertySheet(boolean force) {
 		ISelection selection = getSelection();
 		if (selection == null) return;
 
 		// only fire this event if the view actually has focus
-		if (getControl().isFocusControl())
+		if (force || getControl().isFocusControl())
 		{
-			// create an event
-			SelectionChangedEvent event = new SelectionChangedEvent(this, getSelection());
+			IStructuredSelection parentSelection = null;
+			// create events in order to update the property sheet
+			if (selection instanceof IStructuredSelection){
+				Object first = ((IStructuredSelection)selection).getFirstElement();
+				ISystemViewElementAdapter adapter = getViewAdapter(first);
+				
+				Object parent = adapter.getParent(first);
+				if (parent != null){
+					parentSelection = new StructuredSelection(parent);
+				}
+			}
+			
+			SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
+			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+
+			// first change the selection, then change it back (otherwise the property sheet ignores the event)
+			fireSelectionChanged(dummyEvent);
+			
 			// fire the event
 			fireSelectionChanged(event);
 		}
