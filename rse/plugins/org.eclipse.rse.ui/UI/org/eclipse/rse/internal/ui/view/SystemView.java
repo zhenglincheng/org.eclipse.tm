@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -75,6 +75,7 @@
  * Uwe Stieber      (Wind River) - [238519] [usability][api] Adapt RSE view(s) to follow decoration style of the Eclipse platform common navigator
  * David McKnight   (IBM)        - [330973] Drag/drop a local file generates an error message in the Remote system view
  * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
+ * David McKnight   (IBM)        - [333196] New member filter dialogue keep popping up when creating a shared member filter.
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -4263,8 +4264,6 @@ public class SystemView extends SafeTreeViewer
 		Widget item = findItem(ss);
 
 		if (item == null) {
-			refresh();
-
 			if (debug) logDebugMsg("...Did not find ss " + ss.getName()); //$NON-NLS-1$
 			return;
 		}
