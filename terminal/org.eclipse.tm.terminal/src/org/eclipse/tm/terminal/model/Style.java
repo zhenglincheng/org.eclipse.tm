@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007 Wind River Systems, Inc. and others.
+ * Copyright (c) 2007, 2011 Wind River Systems, Inc. and others.
  * All rights reserved. This program and the accompanying materials 
  * are made available under the terms of the Eclipse Public License v1.0 
  * which accompanies this distribution, and is available at 
@@ -7,6 +7,7 @@
  * 
  * Contributors: 
  * Michael Scharf (Wind River) - initial API and implementation
+ * Martin Oberhuber (Wind River) - add bright attribute
  *******************************************************************************/
 package org.eclipse.tm.terminal.model;
 
@@ -24,21 +25,30 @@ import java.util.Map;
 public class Style {
 	private final StyleColor fForground;
 	private final StyleColor fBackground;
+	private final boolean fBright;
 	private final boolean fBold;
 	private final boolean fBlink;
 	private final boolean fUnderline;
 	private final boolean fReverse;
 	private final static Map fgStyles=new HashMap();
-	private Style(StyleColor forground, StyleColor background, boolean bold, boolean blink, boolean underline, boolean reverse) {
+	private Style(StyleColor forground, StyleColor background, boolean bright, boolean bold, boolean blink, boolean underline, boolean reverse) {
 		fForground = forground;
 		fBackground = background;
+		fBright = bright;
 		fBold = bold;
 		fBlink = blink;
 		fUnderline = underline;
 		fReverse = reverse;
 	}
 	public static Style getStyle(StyleColor forground, StyleColor background, boolean bold, boolean blink, boolean underline, boolean reverse) {
-		Style style = new Style(forground,background, bold, blink,underline,reverse);
+		return getStyle(forground, background, false, bold, blink, underline, reverse);
+	}
+	/**
+	 * Return Style matching arguments.
+	 * @since 3.1
+	 */
+	public static Style getStyle(StyleColor forground, StyleColor background, boolean bright, boolean bold, boolean blink, boolean underline, boolean reverse) {
+		Style style = new Style(forground,background, bright, bold, blink,underline,reverse);
 		Style cached;
 		synchronized (fgStyles) {
 			cached=(Style) fgStyles.get(style);
@@ -50,46 +60,60 @@ public class Style {
 		return cached;
 	}
 	public static Style getStyle(String forground, String background) {
-		return getStyle(StyleColor.getStyleColor(forground), StyleColor.getStyleColor(background),false,false,false,false);
+		return getStyle(StyleColor.getStyleColor(forground), StyleColor.getStyleColor(background),false,false,false,false,false);
 	}
 	public static Style getStyle(StyleColor forground, StyleColor background) {
-		return getStyle(forground, background,false,false,false,false);
+		return getStyle(forground, background,false,false,false,false,false);
 	}
 	public Style setForground(StyleColor forground) {
-		return getStyle(forground,fBackground,fBold,fBlink,fUnderline,fReverse);
+		return getStyle(forground,fBackground,fBright,fBold,fBlink,fUnderline,fReverse);
 	}
 	public Style setBackground(StyleColor background) {
-		return getStyle(fForground,background,fBold,fBlink,fUnderline,fReverse);
+		return getStyle(fForground,background,fBright,fBold,fBlink,fUnderline,fReverse);
 	}
 	public Style setForground(String colorName) {
-		return getStyle(StyleColor.getStyleColor(colorName),fBackground,fBold,fBlink,fUnderline,fReverse);
+		return getStyle(StyleColor.getStyleColor(colorName),fBackground,fBright,fBold,fBlink,fUnderline,fReverse);
 	}
 	public Style setBackground(String colorName) {
-		return getStyle(fForground,StyleColor.getStyleColor(colorName),fBold,fBlink,fUnderline,fReverse);
+		return getStyle(fForground,StyleColor.getStyleColor(colorName),fBright,fBold,fBlink,fUnderline,fReverse);
+	}
+	/**
+	 * Return style with bright attribute changed.
+	 * @since 3.1
+	 */
+	public Style setBright(boolean bright) {
+		return getStyle(fForground,fBackground,bright,fBold,fBlink,fUnderline,fReverse);
 	}
 	public Style setBold(boolean bold) {
-		return getStyle(fForground,fBackground,bold,fBlink,fUnderline,fReverse);
+		return getStyle(fForground,fBackground,fBright,bold,fBlink,fUnderline,fReverse);
 	}
 	public Style setBlink(boolean blink) {
-		return getStyle(fForground,fBackground,fBold,blink,fUnderline,fReverse);
+		return getStyle(fForground,fBackground,fBright,fBold,blink,fUnderline,fReverse);
 	}
 	public Style setUnderline(boolean underline) {
-		return getStyle(fForground,fBackground,fBold,fBlink,underline,fReverse);
+		return getStyle(fForground,fBackground,fBright,fBold,fBlink,underline,fReverse);
 	}
 	public Style setReverse(boolean reverse) {
-		return getStyle(fForground,fBackground,fBold,fBlink,fUnderline,reverse);
+		return getStyle(fForground,fBackground,fBright,fBold,fBlink,fUnderline,reverse);
+	}
+	public StyleColor getForground() {
+		return fForground;
 	}
 	public StyleColor getBackground() {
 		return fBackground;
 	}
-	public boolean isBlink() {
-		return fBlink;
+	/** 
+	 * Return bright attribute.
+	 * @since 3.1
+	 */
+	public boolean isBright() {
+		return fBright;
 	}
 	public boolean isBold() {
 		return fBold;
 	}
-	public StyleColor getForground() {
-		return fForground;
+	public boolean isBlink() {
+		return fBlink;
 	}
 	public boolean isReverse() {
 		return fReverse;
@@ -106,6 +130,7 @@ public class Style {
 		result = prime * result + ((fForground == null) ? 0 : fForground.hashCode());
 		result = prime * result + (fReverse ? 1231 : 1237);
 		result = prime * result + (fUnderline ? 1231 : 1237);
+		result = prime * result + (fBright ? 1231 : 1237);
 		return result;
 	}
 	public boolean equals(Object obj) {
@@ -119,11 +144,13 @@ public class Style {
 		// background == is the same as equals
 		if (fBackground != other.fBackground)
 			return false;
+		if (fForground != other.fForground)
+			return false;
 		if (fBlink != other.fBlink)
 			return false;
 		if (fBold != other.fBold)
 			return false;
-		if (fForground != other.fForground)
+		if (fBright != other.fBright)
 			return false;
 		if (fReverse != other.fReverse)
 			return false;
@@ -137,8 +164,8 @@ public class Style {
 		result.append(fForground);
 		result.append(", background="); //$NON-NLS-1$
 		result.append(fBackground);
-		if(fBlink)
-			result.append(", blink"); //$NON-NLS-1$
+		if(fBright)
+			result.append(", bright"); //$NON-NLS-1$
 		if(fBold)
 			result.append(", bold"); //$NON-NLS-1$
 		if(fBlink)
