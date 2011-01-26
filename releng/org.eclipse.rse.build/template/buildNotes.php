@@ -36,7 +36,7 @@
 </ul>
 </li>
 -->
-<li>At least 19 bugs were resolved: Use 
+<li>At least 29 bugs were resolved: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;value0-0-2=3\.2\.1;chfieldto=2011-03-01;chfield=resolution;query_format=advanced;chfieldfrom=2010-07-01;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;field0-0-2=target_milestone;value0-0-1=3\.3;type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=regexp"> -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.2.2;product=Target%20Management">
   this query</a> to show the list of bugs fixed since
