@@ -28,14 +28,14 @@
   RSE runs on Java 1.4.
   Platform Runtime is the minimum requirement for core RSE and Terminal.
   Discovery needs EMF.</li>
-<!--
 <li>Highlights of Bugs fixed since <a href="http://download.eclipse.org/tm/downloads/drops/R-3.2.1-201009070720/index.php">TM 3.2.1</a>:
 <ul>
-  <li>TBD
-      [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=311447">311447</a>].</li>
+  <li>RSE Paste to Local Files has been fixed for Vista and Windows 7 hosts
+      [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=334006">334006</a>].</li>
+  <li>A number of fixes have been applied to the Terminal: resizing, ANSI escape sequence interpretation, color rendering, middle mouse button paste all work more reliably now
+      [<a href="https://bugs.eclipse.org/bugs/buglist.cgi?bug_id=335408,335410,335411,335412,335413">335408,335410,335411,335412,335413</a>].</li>
 </ul>
 </li>
--->
 <li>At least 36 bugs were resolved: Use 
   <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;value0-0-2=3\.2\.1;chfieldto=2011-03-01;chfield=resolution;query_format=advanced;chfieldfrom=2010-07-01;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;field0-0-2=target_milestone;value0-0-1=3\.3;type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=regexp"> -->
   <a href="https://bugs.eclipse.org/bugs/buglist.cgi?resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;component=Core;component=RSE;component=Terminal;target_milestone=3.2.2;product=Target%20Management">
