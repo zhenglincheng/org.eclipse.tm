@@ -45,7 +45,7 @@ cvs co -l $TOPMODULES
 ##exit 0
 for topmod in $TOPMODULES ; do
   cd $topmod
-  cvs update -l -r R3_2_maintenance .
+  cvs update -l -f -r R3_2_maintenance .
   #cvs update -l -A .
   cvs tag R3_2_2
   cd $curdir
