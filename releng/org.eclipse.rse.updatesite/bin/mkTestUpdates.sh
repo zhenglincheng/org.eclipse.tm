@@ -46,6 +46,8 @@ DO_STATS=0
 DO_CATEGORIES=0
 TYPE=none
 SITEDIR=`basename ${SITE}`
+SITEPARENT=`dirname ${SITE}`
+SITEPARENT=`basename ${SITEPARENT}`
 case ${SITEDIR} in
   test*Updates)   TYPE=test ;;
   signed*Updates) TYPE=testSigned ;;
@@ -58,6 +60,9 @@ case ${SITEDIR} in
 esac
 case ${SITEDIR} in
   3.2) DO_STATS=1 ;;
+esac
+case ${SITEPARENT} in
+  staging) SITEDIR=staging/${SITEDIR} ;;
 esac
 if [ ${TYPE} = test ]; then
     TPTYPE="${VERSION} Test"
@@ -401,7 +406,7 @@ being contributed to the Helios coordinated release train (Eclipse 3.6).' \
     sed -e "s,/tm/updates/2.0,/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- BEGIN_3_2 -->/d' \
-    	-e '/<!-- BEGIN_3_2_2 -->/,/<!-- END_3_2_2 -->/d' \
+    	-e '/<!-- BEGIN_3_2_3 -->/,/<!-- END_3_2_3 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \

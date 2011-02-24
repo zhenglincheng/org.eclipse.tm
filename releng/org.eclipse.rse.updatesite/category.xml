@@ -27,12 +27,12 @@
    <feature url="features/org.eclipse.tm.terminal.local.sdk_0.1.2.qualifier.jar" id="org.eclipse.tm.terminal.local.sdk" version="0.1.2.qualifier">
       <category name="TM and RSE Optional Add-Ons"/>
    </feature>
-   <category-def name="TM and RSE Main Features" label="TM and RSE Main Features">
+   <category-def name="TM and RSE 3.2.2 Main Features" label="TM and RSE 3.2.2 Main Features">
       <description>
          Remote System Explorer (RSE)
       </description>
    </category-def>
-   <category-def name="TM and RSE Optional Add-Ons" label="TM and RSE Optional Add-Ons">
+   <category-def name="TM and RSE 3.2.2 Optional Add-Ons" label="TM and RSE 3.2.2 Optional Add-Ons">
       <description>
          Examples, Tests and Incubation Plug-ins.
       </description>

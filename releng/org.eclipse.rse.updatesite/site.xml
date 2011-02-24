@@ -799,8 +799,15 @@
    </feature>
    <category-def name="TM and RSE Uncategorized 3.2.2" label="TM and RSE Uncategorized 3.2.2">
       <description>
-         Features and add-ons of the 3.2 release of Target Management / RSE.
+         Features and add-ons of the 3.2.2 release of Target Management / RSE.
       </description>
    </category-def>
 <!-- END_3_2_2 -->
+<!-- BEGIN_3_2_3 -->
+   <category-def name="TM and RSE Uncategorized 3.2.2+" label="TM and RSE Uncategorized 3.2.2+">
+      <description>
+         Patches and Updates provided after the 3.2.2 release of Target Management / RSE.
+      </description>
+   </category-def>
+<!-- END_3_2_3 -->
 </site>
