@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,6 +40,8 @@
  * David McKnight   (IBM)        - [250417] Restore from memento flag set to false during restore on startup
  * Martin Oberhuber (Wind River) - [286122] Avoid NPE when restoring memento
  * David McKnight   (IBM)        - [286670] TVT35:TCT586: CHS: English Strings Found
+ * Martin Oberhuber (Wind River) - [326910] RSE looses selection when creating a project
+ * David McKnight   (IBM)        - [330386] RSE SystemView has Focus Problems with Eclipse SDK 4.1M3
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -131,12 +133,10 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.CellEditorActionHandler;
 import org.eclipse.ui.part.ISetSelectionTarget;
@@ -231,7 +231,21 @@ public class SystemViewPart
 	 */
 	public void selectReveal(ISelection selection)
 	{
-		systemView.setSelection(selection, true);
+		ISelection origSel = systemView.getSelection();
+		if (origSel.isEmpty()) {
+			systemView.setSelection(selection, true);
+		} else {
+			// bug check whether the new selection can be set,
+			// before actually setting it. Restore old selection
+			// if the new one does not work.
+			systemView.setSelection(selection, false);
+			ISelection newSel = systemView.getSelection();
+			if (newSel.isEmpty()) {
+				systemView.setSelection(origSel, false);
+			} else {
+				systemView.setSelection(newSel, true);
+			}
+		}
 	}
 
 	/**
@@ -524,8 +538,11 @@ public class SystemViewPart
 	public void setFocus()
 	{
 		//System.out.println("INSIDE SETFOCUS FOR SYSTEMVIEWPART. SYSTEMVIEW NULL? " + (systemView==null));
-		IWorkbench wb = PlatformUI.getWorkbench();
-		wb.getActiveWorkbenchWindow().getShell().setFocus();
+
+		////Bug 323808: Setting focus on the Shell can lead to recursively calling setFocus.
+		//IWorkbench wb = PlatformUI.getWorkbench();
+		//wb.getActiveWorkbenchWindow().getShell().setFocus();
+		
 		systemView.getControl().setFocus();
 		/* the following was an attempt to fix problem with scrollbar needing two clicks to activate. didn't help.
 		if (!SystemPreferencesGlobal.getGlobalSystemPreferences().getRememberState())

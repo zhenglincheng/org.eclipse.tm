@@ -170,15 +170,15 @@ cd $builderDir
 cvs -d :pserver:anonymous@dev.eclipse.org:/cvsroot/eclipse co -r $baseBuilderTag org.eclipse.releng.basebuilder
 
 #check out org.eclipse.rse.build
-cvs -d :pserver:anonymous@dev.eclipse.org:/cvsroot/dsdp co -r $customBuilderTag org.eclipse.tm.rse/releng/org.eclipse.rse.build
+cvs -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -r $customBuilderTag org.eclipse.tm.rse/releng/org.eclipse.rse.build
 if [ "$tagMaps" == "-DtagMaps=true" ]; then  
-  cvs -d moberhuber@dev.eclipse.org:/cvsroot/dsdp rtag -r $customBuilderTag v$buildId org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -d moberhuber@dev.eclipse.org:/cvsroot/tools rtag -r $customBuilderTag v$buildId org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 if [ "$HOSTNAME" == "utils" ]
 then
 	#Running on build.eclipse.org
-	java15_home=/shared/dsdp/tm/ibm-java2-ppc64-50
+	java15_home=/shared/tools/tm/jdk-1.5
 	#java14_home=/shared/webtools/apps/IBMJava2-ppc64-142
 	java14_home=/shared/webtools/apps/IBMJava2-ppc-142
     javadoc="-Djavadoc15=$java15_home/bin/javadoc"

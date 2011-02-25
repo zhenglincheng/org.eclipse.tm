@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,7 @@
  * David McKnight   (IBM) - [287457] [dstore] problems with disconnect when readonly trace file
  * David McKnight   (IBM) - [289891] [dstore] StringIndexOutOfBoundsException in getUserPreferencesDirectory when DSTORE_LOG_DIRECTORY is ""
  * David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
+ * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -3606,10 +3607,16 @@ public final class DataStore
   			if (logDirectory == null){
   				logDirectory = ".eclipse" + File.separator + "RSE" + File.separator;  //$NON-NLS-1$//$NON-NLS-2$
   			}
-  			// append a '/' if not there
+  			
   			if (logDirectory.length() > 0){
+  				// append a '/' if not there
   				if (logDirectory.charAt( logDirectory.length() -1 ) != File.separatorChar ) {
   					logDirectory = logDirectory + File.separator;
+  				}
+  				
+  				// remove the '/' if first char
+  				if (logDirectory.charAt(0) == File.separatorChar){
+  					logDirectory = logDirectory.substring(1);
   				}
   			}
   			

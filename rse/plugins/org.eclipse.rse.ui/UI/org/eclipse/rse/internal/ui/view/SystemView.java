@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -73,6 +73,10 @@
  * David McKnight   (IBM)        - [277328] Unhandled Event Loop Exception When Right-Clicking on "Pending..." Message
  * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
  * Uwe Stieber      (Wind River) - [238519] [usability][api] Adapt RSE view(s) to follow decoration style of the Eclipse platform common navigator
+ * David McKnight   (IBM)        - [330973] Drag/drop a local file generates an error message in the Remote system view
+ * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
+ * David McKnight   (IBM)        - [333196] New member filter dialogue keep popping up when creating a shared member filter.
+ * David McKnight   (IBM)        - [241726] Move doesn't select the moved items
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -2679,7 +2683,15 @@ public class SystemView extends SafeTreeViewer
 			if (originatedHere){
 				// first, restore previous selection...
 				if (prevSelection != null) selectRemoteObjects(prevSelection, ss, parentSelectionItem);
-				TreeItem selectedItem = getFirstSelectedTreeItem();
+				TreeItem selectedItem = null;
+				if (remoteResourceParent instanceof String)
+					selectedItem = (TreeItem)findFirstRemoteItemReference((String)remoteResourceParent, ss, parentSelectionItem);
+				else
+					selectedItem = (TreeItem)findFirstRemoteItemReference(remoteResourceParent, parentSelectionItem);
+				
+				if (selectedItem == null){
+					selectedItem = getFirstSelectedTreeItem();
+				}
 				if (selectedItem != null)
 				{
 					Object data = selectedItem.getData();
@@ -2695,7 +2707,7 @@ public class SystemView extends SafeTreeViewer
 						createChildren(selectedItem);
 						selectedItem.setExpanded(true);
 					}
-					if (adapter.supportsDeferredQueries(ss))
+					if (adapter.supportsDeferredQueries(ss) && allowExpand) // should not be waiting for a non-query - bug 330973
 					{
 						final List names = remoteResourceNames;
 						final String name = remoteResourceName;
@@ -3258,7 +3270,13 @@ public class SystemView extends SafeTreeViewer
 		}
 
 		// STEP 4: update the property sheet in case we changed properties of first selected item
-		updatePropertySheet();
+		ISelection selection = getSelection();
+		if (selection instanceof IStructuredSelection){
+			Object sel = ((IStructuredSelection)selection).getFirstElement();
+			if (remoteObject.equals(sel)){
+				updatePropertySheet(true);
+			}
+		}
 		return;
 	}
 
@@ -3669,9 +3687,13 @@ public class SystemView extends SafeTreeViewer
 			return false;
 		}
 
-		if ((parentItem != null) && !getExpanded(parentItem))
-		//setExpanded(parentItem, true);
-			setExpandedState(parentItem.getData(), true);
+		if ((parentItem != null) && !getExpanded(parentItem)){
+			// don't expand objects that don't have children - bug 330973
+			Object parentData = parentItem.getData();
+			boolean expandable = getViewAdapter(parentData).hasChildren((IAdaptable)parentData);
+			if (expandable)
+				setExpandedState(parentItem.getData(), true);				
+		}
 
 		//System.out.println("SELECT_REMOTE: PARENT = " + parent + ", PARENTITEM = " + parentItem);
 		if (src instanceof List) {
@@ -4251,8 +4273,6 @@ public class SystemView extends SafeTreeViewer
 		Widget item = findItem(ss);
 
 		if (item == null) {
-			refresh();
-
 			if (debug) logDebugMsg("...Did not find ss " + ss.getName()); //$NON-NLS-1$
 			return;
 		}
@@ -5921,20 +5941,41 @@ public class SystemView extends SafeTreeViewer
 		item.setExpanded(true);
 	}
 
+	public void updatePropertySheet(){
+		updatePropertySheet(false);
+	}
+	
 	/**
 	 * Called when a property is updated and we need to inform the Property Sheet viewer.
 	 * There is no formal mechanism for this so we simulate a selection changed event as
 	 *  this is the only event the property sheet listens for.
 	 */
-	public void updatePropertySheet() {
+	private void updatePropertySheet(boolean force) {
 		ISelection selection = getSelection();
 		if (selection == null) return;
 
 		// only fire this event if the view actually has focus
-		if (getControl().isFocusControl())
+		if (force || getControl().isFocusControl())
 		{
-			// create an event
-			SelectionChangedEvent event = new SelectionChangedEvent(this, getSelection());
+			IStructuredSelection parentSelection = null;
+			// create events in order to update the property sheet
+			if (selection instanceof IStructuredSelection){
+				Object first = ((IStructuredSelection)selection).getFirstElement();
+				ISystemViewElementAdapter adapter = getViewAdapter(first);
+				if (adapter != null){
+					Object parent = adapter.getParent(first);
+					if (parent != null){
+						parentSelection = new StructuredSelection(parent);
+						
+						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
+						// first change the selection, then change it back (otherwise the property sheet ignores the event)
+						fireSelectionChanged(dummyEvent);
+					}
+				}
+			}
+			
+			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+			
 			// fire the event
 			fireSelectionChanged(event);
 		}

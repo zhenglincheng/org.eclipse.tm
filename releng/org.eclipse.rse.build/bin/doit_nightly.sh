@@ -15,15 +15,15 @@
 umask 22
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
-export PATH=/shared/dsdp/tm/ibm-java2-ppc64-50/jre/bin:/shared/dsdp/tm/ibm-java2-ppc64-50/bin:$PATH
+#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
+export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
 #export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
 
 curdir=`pwd`
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_32x
 rm log-N*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -36,7 +36,7 @@ fi
 echo "Updating builder from CVS..."
 cd org.eclipse.rse.build
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-N$stamp.txt
+log=$HOME/ws_32x/log-N$stamp.txt
 touch $log
 cvs -q update -RPd >> $log 2>&1
 daystamp=`date +'%Y%m%d-%H'`
@@ -46,21 +46,21 @@ echo "Running the builder..."
 tail -30 $log
 
 #update the main download and archive pages: build.eclipse.org only
-if [ -d /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads ]; then
-  cd /home/data/httpd/archive.eclipse.org/dsdp/tm/downloads
+if [ -d /home/data/httpd/archive.eclipse.org/tm/downloads ]; then
+  cd /home/data/httpd/archive.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/* 2>/dev/null
-  cd /home/data/httpd/download.eclipse.org/dsdp/tm/downloads
+  chgrp tools.tm * CVS/* 2>/dev/null
+  cd /home/data/httpd/download.eclipse.org/tm/downloads
   cvs -q update -RPd >> $log 2>&1
-  chgrp dsdp-tmadmin * CVS/* 2>/dev/null
+  chgrp tools.tm * CVS/* 2>/dev/null
 
   #Fixup permissions and group id on download.eclpse.org (just to be safe)
-  chgrp -R dsdp-tmadmin drops/${buildType}*${daystamp}* 2>/dev/null
+  chgrp -R tools.tm drops/${buildType}*${daystamp}* 2>/dev/null
   chmod -R g+w drops/${buildType}*${daystamp}* 2>/dev/null
 fi
 
 #Copy latest SDK in order to give access to DOC server
-cd $HOME/ws2/publish
+cd $HOME/ws_32x/publish
 if [ -d N.latest ]; then
   FILES=`ls -t N${daystamp}*/RSE-SDK-N${daystamp}*.zip | head -1 2>/dev/null`
   echo "FILES=$FILES"
@@ -70,16 +70,16 @@ if [ -d N.latest ]; then
     cp -f RSE-SDK-N*.zip ../N.latest/RSE-SDK-latest.zip
     cp -f TM-discovery-*.zip ../N.latest/TM-discovery-latest.zip
     cd ../N.latest
-    chgrp dsdp-tmadmin *.zip
+    chgrp tools.tm *.zip
     chmod g+w *.zip
-    if [ -d /shared/dsdp/public_html/tm/downloads/drops/N.latest ]; then
-      cp -f * /shared/dsdp/public_html/tm/downloads/drops/N.latest/
-      chmod -R g+w /shared/dsdp/public_html/tm/downloads/drops
+    if [ -d /shared/tools/tm/public_html/tm/downloads/drops/N.latest ]; then
+      cp -f * /shared/tools/tm/public_html/tm/downloads/drops/N.latest/
+      chmod -R g+w /shared/tools/tm/public_html/tm/downloads/drops
     fi
   fi
 fi
 
 #Cleanup old nightly builds (leave only last 5 in place)
-cd $HOME/ws2/publish
+cd $HOME/ws_32x/publish
 ls -d N201* | sort | head -n-5 | xargs rm -rf
 
