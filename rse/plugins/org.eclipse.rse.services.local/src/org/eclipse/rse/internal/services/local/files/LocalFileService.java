@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -48,6 +48,7 @@
  * Martin Oberhuber (Wind River) - [314461] NPE deleting a folder w/o permission
  * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
  * David McKnight   (IBM)        - [331247] Local file paste failed on Vista and Windows 7
+ * David McKnight   (IBM)        - [337612] Failed to copy the content of a tar file
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -67,12 +68,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.internal.services.local.Activator;
 import org.eclipse.rse.internal.services.local.ILocalMessageIds;
@@ -1396,6 +1403,24 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 		}
 	}
 
+	private boolean isTempFile(File resource){
+		try {
+			URI wsURI = URIUtil.toURI(Platform.getInstanceLocation().getURL());
+			File wsRoot = URIUtil.toFile(wsURI);
+			if (wsRoot!=null) {
+			  File rsProj = new File(wsRoot, "RemoteSystemsTempFiles"); //$NON-NLS-1$
+			  IPath rsProjPath = new Path(rsProj.getAbsolutePath());
+			  IPath resPath = new Path(resource.getAbsolutePath());
+			  return rsProjPath.isPrefixOf(resPath);
+			  //could also compare canonical paths at this point but won't do here
+			  //since it is costly and most likely not needed for the Tempfiles project.
+			}
+		} catch (URISyntaxException e) {
+		}
+		return false;
+	}
+	
+	
 	/**
 	 * Copy a file or folder to a new target parent folder, but if
 	 * copying from an archive, extract the file in the encoding specified
@@ -1424,7 +1449,9 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 			archiveOperationMonitor = new SystemOperationMonitor();
 			checkArchiveOperationStatusThread = new CheckArchiveOperationStatusThread(archiveOperationMonitor, monitor);
 		}
-		if (!(ArchiveHandlerManager.isVirtual(targetFolder.getAbsolutePath())) && !ArchiveHandlerManager.getInstance().isArchive(targetFolder))
+		boolean targetExists = targetFolder.exists();
+		boolean isTempFile = isTempFile(targetFolder);
+		if (!(targetExists && (ArchiveHandlerManager.isVirtual(targetFolder.getAbsolutePath()) && !isTempFile)) && !ArchiveHandlerManager.getInstance().isArchive(targetFolder))
 		{
 			// this is an optimization to speed up extractions from large zips. Instead of
 			// extracting to a temp location and then copying the temp files to the target location
@@ -1509,7 +1536,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 				handler.extractVirtualDirectory(child.fullName, tempSource, sourceEncoding, isText, archiveOperationMonitor);
 			src = tempSource.getAbsolutePath() + File.separatorChar + child.name;
 		}
-		if (ArchiveHandlerManager.isVirtual(targetFolder.getAbsolutePath()) || ArchiveHandlerManager.getInstance().isArchive(targetFolder))
+		if ((targetExists && (ArchiveHandlerManager.isVirtual(targetFolder.getAbsolutePath()) && !isTempFile)) || ArchiveHandlerManager.getInstance().isArchive(targetFolder))
 		{
 			File source = new File(src);
 			boolean returnValue = copyToArchive(source, targetFolder, newName, monitor, SystemEncodingUtil.ENCODING_UTF_8, targetEncoding, isText);
