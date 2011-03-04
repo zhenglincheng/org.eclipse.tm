@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -36,6 +36,7 @@
  * David Dykstal (IBM) - [168976][api] move ISystemNewConnectionWizardPage from core to UI
  * Martin Oberhuber (Wind River) - [226574][api] Add ISubSystemConfiguration#supportsEncoding()
  * David Dykstal (IBM) - [236516] Bug in user code causes failure in RSE initialization
+ * David McKnight   (IBM)        - [338510] "Copy Connection" operation deletes the registered property set in the original connection
  ********************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
@@ -66,6 +67,9 @@ import org.eclipse.rse.core.filters.ISystemFilterPoolWrapperInformation;
 import org.eclipse.rse.core.filters.ISystemFilterString;
 import org.eclipse.rse.core.model.IHost;
 import org.eclipse.rse.core.model.ILabeledObject;
+import org.eclipse.rse.core.model.IProperty;
+import org.eclipse.rse.core.model.IPropertySet;
+import org.eclipse.rse.core.model.IPropertySetContainer;
 import org.eclipse.rse.core.model.IRSEPersistableContainer;
 import org.eclipse.rse.core.model.ISubSystemConfigurator;
 import org.eclipse.rse.core.model.ISystemProfile;
@@ -1050,6 +1054,30 @@ public abstract class SubSystemConfiguration  implements ISubSystemConfiguration
 		}
 		return subsys;
 	}
+	
+	/**
+	 * Make copies of a list of property sets and add them to the specified container.
+	 * Each property set may contain its own list of property sets, so the
+	 * method is recursive.
+	 * @param container
+	 * @param propertySets
+	 */
+	private static void clonePropertySets(IPropertySetContainer container, IPropertySet[] propertySets) {
+		if (propertySets == null) {
+			return;
+		}
+		for (int i = 0, n = propertySets.length; i < n; ++i) {
+			IPropertySet fromSet = propertySets[i];
+			IPropertySet copySet = container.createPropertySet(fromSet.getName(), fromSet.getDescription());
+			String[] fromKeys = fromSet.getPropertyKeys();
+			for (int i2 = 0, n2 = fromKeys.length; i2 < n2; ++i2) {
+				IProperty fromProperty = fromSet.getProperty(fromKeys[i2]);
+				copySet.addProperty(fromProperty.getKey(), fromProperty.getValue(), fromProperty.getType());
+			}
+			clonePropertySets(copySet, fromSet.getPropertySets());
+		}
+	}
+
 	/**
 	 * Clone a given subsystem into the given connection.
 	 * Called when user does a copy-connection action.
@@ -1069,7 +1097,10 @@ public abstract class SubSystemConfiguration  implements ISubSystemConfiguration
 			internalInitializeNewSubSystem(subsys, newConnection);
 			// copy common data
 			subsys.setName(oldSubsystem.getName()); // just in case it was changed
-			subsys.addPropertySets(oldSubsystem.getPropertySets());
+
+			IPropertySet[] oldSet = oldSubsystem.getPropertySets();
+			clonePropertySets(subsys, oldSet);
+			
 			subsys.setHidden(oldSubsystem.isHidden());
 
 
