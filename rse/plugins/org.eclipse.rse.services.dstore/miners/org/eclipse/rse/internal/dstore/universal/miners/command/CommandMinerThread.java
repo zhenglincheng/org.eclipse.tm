@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2010 IBM Corporation and others.
+ * Copyright (c) 2003, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,7 @@
  *  David McKnight   (IBM)     [312415] [dstore] shell service interprets &lt; and &gt; sequences - handle old client/new server case
  *  David McKnight   (IBM)     [318372] [dstore][shells] "export" shell command invalid for certain shells
  *  David McKnight   (IBM)     [323262] [dstore] zos shell does not display [ ]  brackets properly
+ *  David McKnight   (IBM)     [339741] [dstore][shells] consecutive prompt line is ignored
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -1304,7 +1305,7 @@ public class CommandMinerThread extends MinerThread
 		if (size > 0)
 		{
 			DataElement lastObject = _status.get(size - 1);
-			if (!lastObject.getType().equals("prompt")) //$NON-NLS-1$
+			if (!lastObject.getType().equals("prompt") || !lastObject.getName().equals(line)) //$NON-NLS-1$
 			{
 			    line = line.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$
 			    fileName = fileName.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$
