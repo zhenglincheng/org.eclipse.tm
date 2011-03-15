@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@
  * David McKnight  (IBM)  - [243495] [api] New: Allow file name search in Remote Search to not be case sensitive
  * David McKnight  (IBM)         - [279307] NPE when select a filter remove search dialog
  * Kit Lo  (IBM)         - [312923]  TVT36:TCT252: JPN: Extra spaces in front of the second Regular expression checkbox  (edit)  
+ * David McKnight    (IBM)       - [340069] Change access modifier for SystemSearchPage methods to protected from private
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.search;
@@ -73,7 +74,6 @@ import org.eclipse.rse.ui.RSEUIPlugin;
 import org.eclipse.rse.ui.SystemBasePlugin;
 import org.eclipse.rse.ui.SystemWidgetHelpers;
 import org.eclipse.rse.ui.messages.SystemMessageDialog;
-import org.eclipse.rse.ui.view.ISystemViewElementAdapter;
 import org.eclipse.search.internal.ui.SearchMessages;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
@@ -178,19 +178,19 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	private static final int MAX_DATA_SIZE = 20;
 	
 	// inner class to hold search data
-	private class RemoteSearchData {
+	protected class RemoteSearchData {
 		
-		private String searchString;
-		private boolean caseSensitive;
-		private boolean stringRegex;
-		private String fileNames;
-		private boolean fileNameCaseSensitive;
-		private boolean fileNameRegex;
-		private String profileName;
-		private String connectionName;
-		private String folderName;
-		private boolean includeArchives;
-		private boolean includeSubfolders;
+		public String searchString;
+		public boolean caseSensitive;
+		public boolean stringRegex;
+		public String fileNames;
+		public boolean fileNameCaseSensitive;
+		public boolean fileNameRegex;
+		public String profileName;
+		public String connectionName;
+		public String folderName;
+		public boolean includeArchives;
+		public boolean includeSubfolders;
 		
 		/**
 		 * Constructor for search data.
@@ -605,7 +605,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * search data search string, then that data is deleted and replaced with the new data.
 	 * @return the search data corresponding to the current state of the dialog.
 	 */
-	private RemoteSearchData getSearchData() {
+	protected RemoteSearchData getSearchData() {
 		RemoteSearchData data = null;
 		String searchString = stringCombo.getText();
 		
@@ -667,7 +667,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * Gets the file names string.
 	 * @return the file names string.
 	 */
-	private String getFileNames() {
+	protected String getFileNames() {
 		return fileNameEditor.getFileNamesText();
 	}
 	
@@ -675,7 +675,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * Gets the profile name from the folder selection.
 	 * @return the profile name.
 	 */
-	private String getProfileName() {
+	protected String getProfileName() {
 		return folderNameEditor.getProfileName();
 	}
 	
@@ -683,7 +683,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * Gets the connection name from the folder selection.
 	 * @return the connection name.
 	 */
-	private String getConnectionName() {
+	protected String getConnectionName() {
 		return folderNameEditor.getConnectionName();
 	}
 	
@@ -691,7 +691,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * Gets the folder name from the folder selection.
 	 * @return the folder name.
 	 */
-	private String getFolderName() {
+	protected String getFolderName() {
 		return folderNameEditor.getFolderPath();
 	}
 	
@@ -1229,7 +1229,7 @@ public class SystemSearchPage extends DialogPage implements ISearchPage {
 	 * Gets the remote file subsystem for the given profile name and connection name.
 	 * @return the remote file subsystem, or <code>null</code> if the profile or connection does not exist.
 	 */
-	private IRemoteFileSubSystem getRemoteFileSubSystem(String profName, String connName) {
+	protected IRemoteFileSubSystem getRemoteFileSubSystem(String profName, String connName) {
 		
 		if (profName == null || connName == null) {
 			return null;
