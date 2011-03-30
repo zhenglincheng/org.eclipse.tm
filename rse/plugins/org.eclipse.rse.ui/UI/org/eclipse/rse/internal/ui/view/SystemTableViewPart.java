@@ -44,6 +44,7 @@
  * David McKnight   (IBM)        - [333702] Remote Systems details view does not maintain column width settings across sessions
  * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
  * David McKnight   (IBM)        - [341240] Remote Systems Details view not remembering locked/unlocked state between sessions
+ * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
 *******************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -730,8 +731,7 @@ public class SystemTableViewPart extends ViewPart
 					_viewer.setCachedColumnWidths(cachedColumnWidths);
 				}
 			}
-			
-			
+				
 			String profileId = memento.getString(TAG_TABLE_VIEW_PROFILE_ID);
 			String connectionId = memento.getString(TAG_TABLE_VIEW_CONNECTION_ID);
 			String subsystemId = memento.getString(TAG_TABLE_VIEW_SUBSYSTEM_ID);
@@ -1345,8 +1345,7 @@ public class SystemTableViewPart extends ViewPart
 				{
 					Object first = ((IStructuredSelection) sel).getFirstElement();
 					if (_lastSelection != first)
-					{
-						_lastSelection = first;
+					{						
 						if (first instanceof IAdaptable)
 						{
 							{
@@ -1357,6 +1356,7 @@ public class SystemTableViewPart extends ViewPart
 									if (va.hasChildren(adapt) && adapt != _viewer.getInput())
 									{
 										setInput(adapt);
+										_lastSelection = first;
 									}
 								}
 							}
