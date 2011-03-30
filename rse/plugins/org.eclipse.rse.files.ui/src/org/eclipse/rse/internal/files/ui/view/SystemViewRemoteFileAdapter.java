@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,6 +69,7 @@
  * David McKnight   (IBM)        - [317541] Show blank as the last modified for a file with no last modified
  * David McKnight   (IBM)        - [323299] [files] remote file view adapter needs to use the latest version of IRemoteFile
  * David McKnight   (IBM)        - [324192] Cannot open a renamed file
+ * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -877,6 +878,20 @@ public class SystemViewRemoteFileAdapter
 	{
 		IRemoteFile file = (IRemoteFile) element;
 
+		IRemoteFileSubSystem ss = file.getParentRemoteFileSubSystem();
+		
+		// make sure we have the lastest cached version otherwise could be working with a bad file that never got marked as stale
+		IRemoteFile originalFile = file;
+		if (ss instanceof RemoteFileSubSystem){
+			IRemoteFile cachedFile = ((RemoteFileSubSystem)ss).getCachedRemoteFile(file.getAbsolutePath());
+			if (cachedFile != null){
+				file = cachedFile;
+				if (originalFile.isStale()){ // the original file was marked stale, so the cached one should be too
+					file.markStale(true);
+				}
+			}
+		}		
+		
 		if (!file.exists())
 			return false;
 
