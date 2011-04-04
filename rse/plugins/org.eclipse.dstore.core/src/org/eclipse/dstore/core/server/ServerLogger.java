@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -21,6 +21,7 @@
  * David McKnight  (IBM)  - [269908] [dstore] rsecomm.log file management
  * David McKnight  (IBM)  - [284787] [dstore] ability to disable RSECOMM_LOGFILE_MAX option
  * David McKnight  (IBM)  - [305272] [dstore][multithread] log close in ServerLogger
+ * Noriaki Takatsu (IBM)  - [341578] [dstore] ServerLogger is looped when IOError happens
  ********************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -142,7 +143,9 @@ public class ServerLogger implements IServerLogger
 					logFile.createNewFile();
 					found = true;
 				}
-				catch (IOException e){}
+				catch (IOException e){
+					return null;
+				}
 			}
 			else {
 				// if the file exists, check it's size
