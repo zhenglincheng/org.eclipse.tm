@@ -337,6 +337,7 @@ public class UniversalFileSystemMiner extends Miner {
 
 		if (thread != null) {
 			if (!thread.isDone()) {
+				_dataStore.trace("cancelling active thread."); //$NON-NLS-1$
 				thread.cancel();
 			}
 		}
