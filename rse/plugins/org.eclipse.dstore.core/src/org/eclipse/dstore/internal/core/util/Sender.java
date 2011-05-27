@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@
  * David McKnight  (IBM)   [222168][dstore] Buffer in DataElement is not sent
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
+ * David McKnight  (IBM)   [347412][dstore] Need an option to set TCP NODELAYACKS
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -62,6 +63,18 @@ public class Sender implements ISender
 		_xmlGenerator = new XMLgenerator(_dataStore);
 		try
 		{
+			String noDelayStr = System.getProperty("DSTORE_TCP_NO_DELAY"); //$NON-NLS-1$
+			if (noDelayStr != null && noDelayStr.length() > 0){
+				try {
+					boolean noDelay = Boolean.parseBoolean(noDelayStr);
+					_socket.setTcpNoDelay(noDelay); 
+					
+					noDelay = _socket.getTcpNoDelay();
+					_dataStore.trace("tcp no delay set to " + noDelay); //$NON-NLS-1$
+				}
+				catch (Exception e){					
+				}
+			}
 			int bufferSize = _socket.getSendBufferSize();
 			_xmlGenerator.setBufferSize(bufferSize);
 		}
