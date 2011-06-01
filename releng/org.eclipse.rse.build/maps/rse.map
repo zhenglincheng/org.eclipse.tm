@@ -1,5 +1,5 @@
 !***************  PROJECT CONTRIBUTION  ******************************************************** 
-!*** Project's plugins, features and fragments
+!*** Project's plugins, features and fragments 
 feature@org.eclipse.rse=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse-feature
 feature@org.eclipse.rse.core=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.core-feature
 feature@org.eclipse.rse.dstore=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.dstore-feature
