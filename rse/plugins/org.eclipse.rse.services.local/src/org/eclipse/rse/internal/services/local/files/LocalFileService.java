@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,7 +42,8 @@
  * Martin Oberhuber (Wind River) - [235360][ftp][ssh][local] Return proper "Root" IHostFile
  * David McKnight   (IBM)        - [238367] [regression] Error when deleting Archive Files
  * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
- *  David McKnight   (IBM)        - [299140] Local Readonly file can't be copied/pasted twice
+ * David McKnight   (IBM)        - [299140] Local Readonly file can't be copied/pasted twice
+ * David McKnight   (IBM)        - [331247] Local file paste failed on Vista and Windows 7
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -175,6 +176,10 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 			{
 				_osCmdShell = "start /B "; //$NON-NLS-1$
 			}
+			else if (_isWindows){ // newer version of windows (i.e. vista or 7)
+				_osCmdShell = "cmd /C "; //$NON-NLS-1$
+			}
+			
 			_checkedOS = true;
 		}
 		return _isWindows;
