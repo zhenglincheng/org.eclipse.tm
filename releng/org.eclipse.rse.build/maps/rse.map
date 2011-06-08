@@ -1,15 +1,15 @@
 !***************  PROJECT CONTRIBUTION  ******************************************************** 
-!*** Project's plugins, features and fragments 
-feature@org.eclipse.rse=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse-feature
+!*** Project's plugins, features and fragments
+feature@org.eclipse.rse=R32x_v201106081352,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse-feature
 feature@org.eclipse.rse.core=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.core-feature
 feature@org.eclipse.rse.dstore=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.dstore-feature
 feature@org.eclipse.rse.examples=v201005032000,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/examples/org.eclipse.rse.examples-feature
 feature@org.eclipse.rse.ftp=v201005221100,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.ftp-feature
 feature@org.eclipse.rse.local=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.local-feature
-feature@org.eclipse.rse.sdk=R32x_v201105041224,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.sdk-feature
+feature@org.eclipse.rse.sdk=R32x_v201106081352,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.sdk-feature
 feature@org.eclipse.rse.ssh=v201005221100,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.ssh-feature
 feature@org.eclipse.rse.telnet=v201005221100,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.telnet-feature
-feature@org.eclipse.rse.terminals=R32x_v201105241127,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.terminals-feature
+feature@org.eclipse.rse.terminals=R32x_v201106081352,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.terminals-feature
 feature@org.eclipse.rse.tests=v201005221100,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/tests/org.eclipse.rse.tests-feature
 feature@org.eclipse.rse.useractions=v201005221100,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.useractions-feature
 !!feature@org.eclipse.rse.useractions.wrapper=v20080609a,:pserver:anonymous:none@dev.eclipse.org:/cvsroot/tools,,org.eclipse.tm.rse/features/org.eclipse.rse.useractions.wrapper-feature
