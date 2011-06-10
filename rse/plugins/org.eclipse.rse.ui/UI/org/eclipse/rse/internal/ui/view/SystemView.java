@@ -79,6 +79,7 @@
  * David McKnight   (IBM)        - [241726] Move doesn't select the moved items
  * David McKnight   (IBM)        - [341281] amendment to fix for bug 308983
  * David McKnight   (IBM)        - [342208] potential NPE in SystemView$ExpandRemoteObjects.execute()
+ * David McKnight   (IBM)        - [342095] Properties in Properties view remain "Pending..." in some cases
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -5960,22 +5961,38 @@ public class SystemView extends SafeTreeViewer
 
 		// only fire this event if the view actually has focus
 		if (force || getControl().isFocusControl())
-		{
-			IStructuredSelection fakeSelection = null;
-			// create events in order to update the property sheet
-			if (selection instanceof IStructuredSelection){
-				fakeSelection = new StructuredSelection(new Object());
+		{			
+			Object object = ((IStructuredSelection)selection).getFirstElement();
+			if (object != null){
+				IWorkbenchPart ourPart = getWorkbenchPart();
+				IWorkbenchPart activePart = getWorkbenchWindow().getActivePage().getActivePart();
+				if (activePart != ourPart){
+					ourPart.setFocus(); // without part focus, there are no post selection change listeners
+				}
+				
+				IStructuredSelection fakeSelection = null;
+				// create events in order to update the property sheet
+				if (selection instanceof IStructuredSelection){
+					fakeSelection = new StructuredSelection(new Object());
+				}
+				
+				if (fakeSelection != null){
+					SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
+					// first change the selection, then change it back (otherwise the property sheet ignores the event)
+					fireSelectionChanged(dummyEvent);
+					firePostSelectionChanged(dummyEvent);
+				}
+				SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+				
+				// fire the event
+				fireSelectionChanged(event);
+				firePostSelectionChanged(event);
+				
+				if (ourPart != activePart){
+					activePart.setFocus();
+				}
 			}
-						
-			if (fakeSelection != null){
-				SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
-				// first change the selection, then change it back (otherwise the property sheet ignores the event)
-				fireSelectionChanged(dummyEvent);
-			}
-			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
 			
-			// fire the event
-			fireSelectionChanged(event);
 		}
 	}
 
