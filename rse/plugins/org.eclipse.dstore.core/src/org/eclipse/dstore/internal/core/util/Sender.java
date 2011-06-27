@@ -16,6 +16,7 @@
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
  * David McKnight  (IBM)   [347412][dstore] Need an option to set TCP NODELAYACKS
+ * David McKnight  (IBM)   [350315][dstore] regress change made for bug 305218
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -85,16 +86,8 @@ public class Sender implements ISender
 		{
 			_outFile = new PrintStream(_socket.getOutputStream());
 			
-			String encoding = DE.ENCODING_UTF_8;
-			if (!_dataStore.isVirtual()){
-				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
-				String theOS = System.getProperty("os.name"); //$NON-NLS-1$
-				if (theOS.startsWith("z")){ //$NON-NLS-1$
-					encoding = DE.ENCODING_UTF_8;
-				}
-			}
-			
-			
+			String encoding = DE.ENCODING_UTF_8;	
+						
 			OutputStreamWriter writer = new OutputStreamWriter(_socket.getOutputStream(), encoding);
 			_outData = new BufferedWriter(writer);
 

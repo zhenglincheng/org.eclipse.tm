@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
  * David McKnight  (IBM)   [322407][dstore] Connection dropped automatically when idle
+ * David McKnight  (IBM)   [350315][dstore] regress change made for bug 305218
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -459,13 +460,6 @@ public class XMLparser
 			String result = null;	
 			
 			String encoding = DE.ENCODING_UTF_8;
-			if (!_dataStore.isVirtual()){
-				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
-				String theOS = System.getProperty("os.name"); //$NON-NLS-1$
-				if (theOS.startsWith("z")){ //$NON-NLS-1$
-					encoding = DE.ENCODING_UTF_8;
-				}
-			}
 
 			try
 			{
