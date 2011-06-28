@@ -222,6 +222,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -2688,6 +2689,7 @@ public class SystemView extends SafeTreeViewer
 			if (originatedHere){
 				// first, restore previous selection...
 				if (prevSelection != null) selectRemoteObjects(prevSelection, ss, parentSelectionItem);
+				
 				TreeItem selectedItem = null;
 				if (remoteResourceParent instanceof String)
 					selectedItem = (TreeItem)findFirstRemoteItemReference((String)remoteResourceParent, ss, parentSelectionItem);
@@ -5957,39 +5959,45 @@ public class SystemView extends SafeTreeViewer
 	 */
 	private void updatePropertySheet(boolean force) {
 		ISelection selection = getSelection();
-		if (selection == null) return;
+		if (selection == null || !(selection instanceof IStructuredSelection)) return;
 
 		// only fire this event if the view actually has focus
 		if (force || getControl().isFocusControl())
-		{			
+		{		
 			Object object = ((IStructuredSelection)selection).getFirstElement();
 			if (object != null){
 				IWorkbenchPart ourPart = getWorkbenchPart();
-				IWorkbenchPart activePart = getWorkbenchWindow().getActivePage().getActivePart();
-				if (activePart != ourPart){
-					ourPart.setFocus(); // without part focus, there are no post selection change listeners
+				IWorkbenchPart activePart = null;
+				IWorkbenchWindow win = getWorkbenchWindow(); // from dialog it's possible to not have an active part
+				if (win != null){
+					IWorkbenchPage page = win.getActivePage();
+					if (page != null){
+						activePart = page.getActivePart();
+					}
 				}
-				
-				IStructuredSelection fakeSelection = null;
-				// create events in order to update the property sheet
-				if (selection instanceof IStructuredSelection){
-					fakeSelection = new StructuredSelection(new Object());
-				}
-				
-				if (fakeSelection != null){
-					SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
-					// first change the selection, then change it back (otherwise the property sheet ignores the event)
-					fireSelectionChanged(dummyEvent);
-					firePostSelectionChanged(dummyEvent);
-				}
-				SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-				
-				// fire the event
-				fireSelectionChanged(event);
-				firePostSelectionChanged(event);
-				
-				if (ourPart != activePart){
-					activePart.setFocus();
+				if (activePart != null){
+					if (activePart != ourPart){
+						ourPart.setFocus(); // without part focus, there are no post selection change listeners
+					}
+	
+					// create events in order to update the property sheet
+					 IStructuredSelection fakeSelection = new StructuredSelection(new Object());		
+					
+					if (fakeSelection != null){
+						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
+						// first change the selection, then change it back (otherwise the property sheet ignores the event)
+						fireSelectionChanged(dummyEvent);
+						firePostSelectionChanged(dummyEvent);
+					}
+					SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+					
+					// fire the event
+					fireSelectionChanged(event);
+					firePostSelectionChanged(event);
+					
+					if (ourPart != activePart){
+						activePart.setFocus();
+					}
 				}
 			}
 			
