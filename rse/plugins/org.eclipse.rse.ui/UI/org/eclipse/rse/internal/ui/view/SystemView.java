@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,6 +69,7 @@
  * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
  * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
  * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
+ * David McKnight   (IBM)        - [350395] NPE in SystemView.updatePropertySheet()
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -5891,22 +5892,26 @@ public class SystemView extends SafeTreeViewer
 			// create events in order to update the property sheet
 			if (selection instanceof IStructuredSelection){
 				Object first = ((IStructuredSelection)selection).getFirstElement();
-				ISystemViewElementAdapter adapter = getViewAdapter(first);
-				
-				Object parent = adapter.getParent(first);
-				if (parent != null){
-					parentSelection = new StructuredSelection(parent);
+				if (first != null){
+					ISystemViewElementAdapter adapter = getViewAdapter(first);
+					if (adapter != null){
+						Object parent = adapter.getParent(first);
+						if (parent != null){
+							parentSelection = new StructuredSelection(parent);
+						}
+					}
 				}
 			}
-			
-			SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
-			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+			if (parentSelection != null){
+				SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
+				SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
 
-			// first change the selection, then change it back (otherwise the property sheet ignores the event)
-			fireSelectionChanged(dummyEvent);
+				// first change the selection, then change it back (otherwise the property sheet ignores the event)
+				fireSelectionChanged(dummyEvent);
 			
-			// fire the event
-			fireSelectionChanged(event);
+				// fire the event
+				fireSelectionChanged(event);
+			}
 		}
 	}
 
