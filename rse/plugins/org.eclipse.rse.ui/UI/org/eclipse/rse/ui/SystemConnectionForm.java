@@ -128,7 +128,7 @@ public class SystemConnectionForm implements Listener, SelectionListener, Runnab
 	protected ISystemValidator[] nameValidators;
 	protected ISystemValidator hostValidator;
 	protected ISystemValidator userIdValidator;
-	protected ISystemValidator fileNameValidator;
+	private ISystemValidator fileNameValidator;
 
 	// other inputs
 	protected ISystemMessageLine msgLine;
