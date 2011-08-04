@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -13,6 +13,7 @@
  * Contributors:
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * David McKnight   (IBM)        - [254588] SystemDropActionDelegate performs refreshLocal too early
+ * David McKnight   (IBM)        - [353377] Connection name with ":" causes problems
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -158,8 +159,15 @@ public class SystemDropActionDelegate implements IDropActionDelegate
 				}
 			}
 			
-			
-			int subsystemDelim = str.indexOf(":", connectionDelim + 1); //$NON-NLS-1$
+			// bug 353377 - account for colon in connection name 
+			int separatorDelim = str.indexOf('/');
+			if (separatorDelim == -1){
+				separatorDelim = str.indexOf('\\');
+			}
+			int subsystemDelim = str.lastIndexOf(':', separatorDelim);
+			if (subsystemDelim == -1){
+				subsystemDelim = str.indexOf(':', connectionDelim + 1);
+			}
 			if (subsystemDelim == -1) // not remote object, therefore likely to be a subsystem
 			{
 			    return registry.getSubSystem(str);
