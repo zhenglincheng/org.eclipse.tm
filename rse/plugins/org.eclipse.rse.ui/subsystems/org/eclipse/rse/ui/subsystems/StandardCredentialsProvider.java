@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2007, 2009 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2007, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -15,6 +15,8 @@
  * Richie Yu (IBM) - [241716] Handle change expired password
  * Don Yantzi (IBM) - [233970] Handle messages provided by ICredentialsValidator
  * David Dykstal (IBM) - [261047] StandardCredentialsProvider does not cause a reacquire of a password when validation fails in a background thread 
+ * David McKnight   (IBM)        - [334839] File Content Conflict is not handled properly
+ * David McKnight   (IBM)        - [351883] StandardCredentialsProvider.getCredentials() ignores password cache
  ********************************************************************************/
 package org.eclipse.rse.ui.subsystems;
 
@@ -79,6 +81,9 @@ public class StandardCredentialsProvider extends AbstractCredentialsProvider {
 		 */
 		public void run() {
 			Shell shell = getShell();
+			if (shell == null){
+				shell = new Shell(); // need this for the case of being prompted during workbench shutdown
+			}
 			if (shell != null) {
 				ISystemPasswordPromptDialog dialog = getPasswordPromptDialog(shell);
 				dialog.setSystemInput(getConnectorService());
@@ -266,7 +271,17 @@ public class StandardCredentialsProvider extends AbstractCredentialsProvider {
 		IHost host = getConnectorService().getHost();
 		String hostName = host.getHostName();
 		IRSESystemType systemType = host.getSystemType();
-		SystemSignonInformation result = new SystemSignonInformation(hostName, userId, password, systemType);
+		SystemSignonInformation result = null;
+		if (password == null && savePassword) { // no password, then read it if we can
+			PasswordPersistenceManager ppm = PasswordPersistenceManager.getInstance();
+			result = ppm.find(systemType, hostName, userId);
+			if (result != null) {
+				password = result.getPassword();
+			}
+		}
+		if (result == null) {
+			result = new SystemSignonInformation(hostName, userId, password, systemType);
+		}
 		return result;
 	}
 

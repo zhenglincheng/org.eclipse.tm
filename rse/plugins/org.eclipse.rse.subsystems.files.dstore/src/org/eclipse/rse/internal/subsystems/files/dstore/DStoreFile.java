@@ -181,14 +181,12 @@ public class DStoreFile extends AbstractRemoteFile
 		super(ss,context, parent, hostFile);
 		_dstoreHostFile = hostFile;
 	}
-	
-	
 
 	public void setHostFile(IHostFile hostFile) {
 		super.setHostFile(hostFile);
 		_dstoreHostFile = (DStoreHostFile)hostFile;
 	}
-
+	
 	public boolean isVirtual()
 	{
 		DataElement element = _dstoreHostFile.getDataElement();

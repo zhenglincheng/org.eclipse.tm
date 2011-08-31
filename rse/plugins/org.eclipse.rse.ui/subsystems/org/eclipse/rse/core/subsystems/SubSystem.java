@@ -48,9 +48,9 @@
  * David McKnight   (IBM)        - [262930] Remote System Details view not restoring filter memento input
  * David McKnight   (IBM)        - [272882] [api] Handle exceptions in IService.initService()
  * David McKnight   (IBM)        - [284018] concurrent SubSystem.connect() calls can result in double login-prompt
- * David McKnight   (IBM)        - [318836] Period in filter name causes wrong message on drag and drop
  * David McKnight   (IBM)        - [326555] Dead lock when debug session starts
- *  ********************************************************************************/
+ * David McKnight   (IBM)        - [318836] Period in filter name causes wrong message on drag and drop
+ *********************************************************************************/
 
 package org.eclipse.rse.core.subsystems;
 import java.lang.reflect.InvocationTargetException;

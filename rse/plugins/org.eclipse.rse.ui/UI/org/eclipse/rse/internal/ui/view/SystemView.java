@@ -75,7 +75,11 @@
  * Uwe Stieber      (Wind River) - [238519] [usability][api] Adapt RSE view(s) to follow decoration style of the Eclipse platform common navigator
  * David McKnight   (IBM)        - [330973] Drag/drop a local file generates an error message in the Remote system view
  * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
+ * David McKnight   (IBM)        - [333196] New member filter dialogue keep popping up when creating a shared member filter.
  * David McKnight   (IBM)        - [241726] Move doesn't select the moved items
+ * David McKnight   (IBM)        - [341281] amendment to fix for bug 308983
+ * David McKnight   (IBM)        - [342208] potential NPE in SystemView$ExpandRemoteObjects.execute()
+ * David McKnight   (IBM)        - [342095] Properties in Properties view remain "Pending..." in some cases
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -218,6 +222,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -285,8 +290,10 @@ public class SystemView extends SafeTreeViewer
 					// if found, re-expand it
 					if (item != null && !item.isDisposed()) {
 						IRSECallback callback = getCallbackForSubChildren(itemToExpand, _toExpand);
-						createChildren(item, callback);
-						((TreeItem) item).setExpanded(true);
+						if (callback != null){
+							createChildren(item, callback);
+							((TreeItem) item).setExpanded(true);
+						}
 					}
 				} else if (itemToExpand.data!=null) {
 					setExpandedState(itemToExpand.data, true);
@@ -2692,8 +2699,6 @@ public class SystemView extends SafeTreeViewer
 				if (selectedItem == null){
 					selectedItem = getFirstSelectedTreeItem();
 				}
-				
-				
 				if (selectedItem != null)
 				{
 					Object data = selectedItem.getData();
@@ -4275,8 +4280,6 @@ public class SystemView extends SafeTreeViewer
 		Widget item = findItem(ss);
 
 		if (item == null) {
-			refresh();
-
 			if (debug) logDebugMsg("...Did not find ss " + ss.getName()); //$NON-NLS-1$
 			return;
 		}
@@ -5956,34 +5959,48 @@ public class SystemView extends SafeTreeViewer
 	 */
 	private void updatePropertySheet(boolean force) {
 		ISelection selection = getSelection();
-		if (selection == null) return;
+		if (selection == null || !(selection instanceof IStructuredSelection)) return;
 
 		// only fire this event if the view actually has focus
 		if (force || getControl().isFocusControl())
-		{
-			IStructuredSelection parentSelection = null;
-			// create events in order to update the property sheet
-			if (selection instanceof IStructuredSelection){
-				Object first = ((IStructuredSelection)selection).getFirstElement();
-				ISystemViewElementAdapter adapter = getViewAdapter(first);
-				if (adapter != null){
-					Object parent = adapter.getParent(first);
-					if (parent != null){
-						parentSelection = new StructuredSelection(parent);
+		{		
+			Object object = ((IStructuredSelection)selection).getFirstElement();
+			if (object != null){
+				IWorkbenchPart ourPart = getWorkbenchPart();
+				IWorkbenchPart activePart = null;
+				IWorkbenchWindow win = getWorkbenchWindow(); // from dialog it's possible to not have an active part
+				if (win != null){
+					IWorkbenchPage page = win.getActivePage();
+					if (page != null){
+						activePart = page.getActivePart();
+					}
+				}
+				if (activePart != null){
+					if (activePart != ourPart){
+						ourPart.setFocus(); // without part focus, there are no post selection change listeners
+					}
+	
+					// create events in order to update the property sheet
+					 IStructuredSelection fakeSelection = new StructuredSelection(new Object());		
+					
+					if (fakeSelection != null){
+						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
+						// first change the selection, then change it back (otherwise the property sheet ignores the event)
+						fireSelectionChanged(dummyEvent);
+						firePostSelectionChanged(dummyEvent);
+					}
+					SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+					
+					// fire the event
+					fireSelectionChanged(event);
+					firePostSelectionChanged(event);
+					
+					if (ourPart != activePart){
+						activePart.setFocus();
 					}
 				}
 			}
 			
-			
-			if (parentSelection != null){
-				SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
-				// first change the selection, then change it back (otherwise the property sheet ignores the event)
-				fireSelectionChanged(dummyEvent);
-			}
-			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-			
-			// fire the event
-			fireSelectionChanged(event);
 		}
 	}
 

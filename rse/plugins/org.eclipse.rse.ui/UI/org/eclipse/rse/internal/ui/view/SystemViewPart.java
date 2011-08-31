@@ -133,12 +133,10 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.CellEditorActionHandler;
 import org.eclipse.ui.part.ISetSelectionTarget;
@@ -540,6 +538,11 @@ public class SystemViewPart
 	public void setFocus()
 	{
 		//System.out.println("INSIDE SETFOCUS FOR SYSTEMVIEWPART. SYSTEMVIEW NULL? " + (systemView==null));
+
+		////Bug 323808: Setting focus on the Shell can lead to recursively calling setFocus.
+		//IWorkbench wb = PlatformUI.getWorkbench();
+		//wb.getActiveWorkbenchWindow().getShell().setFocus();
+		
 		systemView.getControl().setFocus();
 		/* the following was an attempt to fix problem with scrollbar needing two clicks to activate. didn't help.
 		if (!SystemPreferencesGlobal.getGlobalSystemPreferences().getRememberState())
