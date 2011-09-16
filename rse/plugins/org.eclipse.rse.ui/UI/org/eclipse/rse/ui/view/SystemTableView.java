@@ -27,6 +27,7 @@
  * Noriaki Takatsu  (IBM)        - [288894] CANCEL has to be pressed 3 times in Userid/Password prompt window in Remote System Details view
  * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
  * David McKnight   (IBM)        - [329170] Show in table does not work after showing empty folder in table
+ * David McKnight   (IBM)        - [357587] Custom sorter is changed to SystemTableViewSorter
  ********************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -222,16 +223,21 @@ public class SystemTableView
 			    TableColumn tcolumn = (TableColumn)e.widget;
 				int column = table.indexOf(tcolumn);
 				SystemTableViewSorter oldSorter = (SystemTableViewSorter) getSorter();
-				if (oldSorter != null && column == oldSorter.getColumnNumber())
+				if (oldSorter != null)
 				{
-					oldSorter.setReversed(!oldSorter.isReversed());
-					if (tcolumn.getImage() == _upI)
-					{
-					    tcolumn.setImage(_downI);
+					if (column == oldSorter.getColumnNumber()){
+						oldSorter.setReversed(!oldSorter.isReversed());
+						if (tcolumn.getImage() == _upI)
+						{
+							tcolumn.setImage(_downI);
+						}
+						else
+						{
+							tcolumn.setImage(_upI);
+						}
 					}
-					else
-					{
-					    tcolumn.setImage(_upI);
+					else {
+						oldSorter.setColumnNumber(column);
 					}
 				}
 				else
