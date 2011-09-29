@@ -5,8 +5,8 @@ Instructions for building TM and RSE
 -----------------------------
 ssh build.eclipse.org
 cd /shared/tools/tm/
-mkdir ws2_user
-cd ws2_user
+mkdir ws_33x_user
+cd ws_33x_user
 ln -s `pwd` $HOME/ws_33x
 ln -s /home/data/httpd/download.eclipse.org/tm $HOME/downloads-tm
 wget -O setup.sh "http://dev.eclipse.org/viewcvs/viewvc.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?view=co&root=Tools_Project&pathrev=R3_3_maintenance"

@@ -9,10 +9,10 @@
 # Contributors: 
 # Martin Oberhuber - initial API and implementation 
 #*******************************************************************************
-# Convert normal "site.xml" to "testUpdates"
+# Convert normal "site.xml" to "test33Updates"
 #
 # Prerequisites: 
-# - Eclipse 3.3Mx installed in $HOME/ws2/eclipse
+# - Eclipse 3.3Mx installed in $HOME/ws_33x/eclipse
 # - Java5 in the PATH or in /shared/tools/tm/jdk-1.5
 
 curdir=`/bin/pwd`
@@ -23,8 +23,8 @@ umask 022
 
 #Use Java5 on build.eclipse.org - need JRE for pack200
 export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
-basebuilder=${HOME}/ws2/org.eclipse.releng.basebuilder
-tgtlauncher=`ls ${HOME}/ws2/eclipse/plugins/org.eclipse.equinox.launcher_* | sort | tail -1`
+basebuilder=${HOME}/ws_33x/org.eclipse.releng.basebuilder
+tgtlauncher=`ls ${HOME}/ws_33x/eclipse/plugins/org.eclipse.equinox.launcher_* | sort | tail -1`
 
 # patch site.xml
 cd ..
@@ -71,10 +71,10 @@ if [ ${TYPE} = test ]; then
     TPTYPE="${VERSION} Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Working on ${TPVERSION} update site"
-    REL=`ls $HOME/ws2/working/package | sort | tail -1`
+    REL=`ls $HOME/ws_33x/working/package | sort | tail -1`
     if [ "$REL" != "" ]; then
       echo "Checking new Updates from $REL"
-      DIR="$HOME/ws2/working/package/$REL/updates"
+      DIR="$HOME/ws_33x/working/package/$REL/updates"
       if [ -d "$DIR/features" ]; then
         echo "Copying new plugins and features from $DIR"
         rm -rf features
@@ -156,7 +156,7 @@ if [ ${TYPE} = test ]; then
     sed -e "s,/tm/updates/2.0,/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -164,28 +164,28 @@ if [ ${TYPE} = test ]; then
     mv -f web/site.xsl.new web/site.xsl
     echo "Conditioning the site... $SITE"
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #java -jar $HOME/ws2/eclipse/startup.jar \
+    #java -jar $HOME/ws_33x/eclipse/startup.jar \
     #java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
     java -jar ${tgtlauncher} \
         -application org.eclipse.update.core.siteOptimizer \
         -jarProcessor -outputDir $SITE \
         -processAll -repack $SITE
     #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-    #	$HOME/ws2/jarprocessor/jarprocessor.jar \
+    #	$HOME/ws_33x/jarprocessor/jarprocessor.jar \
 	#	-outputDir $SITE -processAll -repack $SITE
 elif [ ${TYPE} = testSigned ]; then
     TPTYPE="${VERSION} Signed Test"
     TPVERSION="${TPVERSION} ${TPTYPE}"
     echo "Working on ${TPVERSION} update site"
-    echo "Signing jars from ${SITE}/../testUpdates (expecting conditioned jars)..."
+    echo "Signing jars from ${SITE}/../test33Updates (expecting conditioned jars)..."
     STAGING=/home/data/httpd/download-staging.priv/tools/tm
     stamp=`date +'%Y%m%d-%H%M'`
-    if [ -d ${STAGING} -a -d ${SITE}/../testUpdates ]; then
-      #get jars from testUpdates, sign them and put them here
+    if [ -d ${STAGING} -a -d ${SITE}/../test33Updates ]; then
+      #get jars from test33Updates, sign them and put them here
       mkdir ${SITE}/features.${stamp}
       mkdir -p ${STAGING}/updates.${stamp}/features
       chmod -R g+w ${STAGING}/updates.${stamp}
-      cp -R ${SITE}/../testUpdates/features/*.jar ${STAGING}/updates.${stamp}/features
+      cp -R ${SITE}/../test33Updates/features/*.jar ${STAGING}/updates.${stamp}/features
       cd ${STAGING}/updates.${stamp}/features
       for x in `ls *.jar`; do
         result=`jarsigner -verify ${x} | head -1`
@@ -225,7 +225,7 @@ elif [ ${TYPE} = testSigned ]; then
         mkdir ${SITE}/plugins.${stamp}
         mkdir -p ${STAGING}/updates.${stamp}/plugins
         chmod -R g+w ${STAGING}/updates.${stamp}
-        cp ${SITE}/../testUpdates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
+        cp ${SITE}/../test33Updates/plugins/*.jar ${STAGING}/updates.${stamp}/plugins
         cd ${STAGING}/updates.${stamp}/plugins
         for x in `ls *.jar`; do
           result=`jarsigner -verify ${x} | head -1`
@@ -277,7 +277,7 @@ elif [ ${TYPE} = testSigned ]; then
         exit 1
       fi
     else
-      echo "staging or testUpdates not found:"
+      echo "staging or test33Updates not found:"
       echo "please fix your pathes"
       exit 1
     fi
@@ -290,7 +290,7 @@ elif [ ${TYPE} = testSigned ]; then
     sed -e "s,/tm/updates/2.0,/tm/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -316,7 +316,7 @@ being contributed to the Eclipse Indigo coordinated release train (Eclipse 3.7.x
     sed -e "s,/tm/updates/2.0,/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -342,7 +342,7 @@ to test them before going live.' \
     sed -e "s,/tm/updates/2.0,/tm/updates/${SITEDIR},g" \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3 -->/d' \
+    	-e '/<!-- BEGIN_3_0 -->/,/<!-- END_3_3_1 -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -369,7 +369,7 @@ being contributed to the Ganymede coordinated release train (Eclipse 3.4).' \
         -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
     	-e '/<!-- BEGIN_2_0 -->/,/<!-- END_2_0_4 -->/d' \
     	-e '/<!-- BEGIN_3_0_4 -->/,/<!-- END_3_0_4 -->/d' \
-    	-e '/<!-- BEGIN_3_2 -->/,/<!-- END_ALL -->/d' \
+    	-e '/<!-- BEGIN_3_1 -->/,/<!-- END_ALL -->/d' \
         site.xml > site.xml.new
     mv -f site.xml.new site.xml
     sed -e "s,Project 2.0 Update,Project ${TPTYPE} Update,g" \
@@ -454,7 +454,7 @@ being contributed to the Eclipse Indigo coordinated release train (Eclipse 3.7.x
     	web/site.xsl > web/site.xsl.new
     mv -f web/site.xsl.new web/site.xsl
 else
-    echo "Working on official update site"
+    echo "Working on official 1.x / 2.x update site"
     TYPE=official
     echo "Expect that you copied your features and plugins yourself"
     stamp=`date +'%Y%m%d-%H%M'`
@@ -500,21 +500,21 @@ case ${TYPE} in test*)
   # Workaround for downgrading effort of pack200 to avoid VM bug
   # See https://bugs.eclipse.org/bugs/show_bug.cgi?id=154069
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #java -jar $HOME/ws2/eclipse/startup.jar \
+  #java -jar $HOME/ws_33x/eclipse/startup.jar \
   #java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
   java -jar ${tgtlauncher} \
     -application org.eclipse.update.core.siteOptimizer \
     -jarProcessor -outputDir $SITE \
     -processAll -pack $SITE
   #java -Dorg.eclipse.update.jarprocessor.pack200=$mydir \
-  #    $HOME/ws2/jarprocessor/jarprocessor.jar \
+  #    $HOME/ws_33x/jarprocessor/jarprocessor.jar \
   #    -outputDir $SITE -processAll -pack $SITE
   ;;
 esac
 
 #Create the digest
 echo "Creating digest..."
-#java -jar $HOME/ws2/eclipse/startup.jar \
+#java -jar $HOME/ws_33x/eclipse/startup.jar \
 #java -jar ${basebuilder}/plugins/org.eclipse.equinox.launcher.jar \
 java -jar ${tgtlauncher} \
     -application org.eclipse.update.core.siteOptimizer \
@@ -546,7 +546,7 @@ if [ x${DO_STATS} = x1 ]; then
     -p2.statsURI http://download.eclipse.org/stats/tm \
     -p2.statsTrackedFeatures org.eclipse.rse.sdk,org.eclipse.rse.dstore,org.eclipse.rse.core,org.eclipse.rse.useractions,org.eclipse.rse.examples,org.eclipse.rse.tests,org.eclipse.rse.wince,org.eclipse.tm.terminal.view,org.eclipse.tm.terminal.local \
     -p2.statsTrackedBundles org.eclipse.rse.core,org.eclipse.rse.core.source,org.eclipse.tm.terminal \
-    -p2.statsSuffix _tm331
+    -p2.statsSuffix _tm332
     -vmargs -Xmx256M"
   echo $CMD
   $CMD
