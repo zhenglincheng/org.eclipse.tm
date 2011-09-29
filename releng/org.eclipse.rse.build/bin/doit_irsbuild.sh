@@ -11,7 +11,7 @@
 #*******************************************************************************
 #:#
 #:# Bootstrapping script to perform S-builds and R-builds on build.eclipse.org
-#:# Will build based on HEAD of all mapfiles, and update the testUpdates as well
+#:# Will build based on HEAD of all mapfiles, and update the test33Updates as well
 #:#
 #:# Usage:
 #:#    doit_irsbuild.sh {buildType} [buildId] [maptag]
@@ -29,10 +29,7 @@ mydir=`pwd`
 echo ${mydir}
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
-#export PATH=/shared/tools/tm/jdk-1.6/jre/bin:/shared/tools/tm/jdk-1.6/bin:$PATH
-#export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
 
 
 #Get parameters
@@ -40,7 +37,8 @@ mapTag=HEAD
 buildType=$1
 buildId=$2
 case x$buildType in
-  xP|xN|xI|xS|xR) ok=1 ;;
+  xP|xN|xI|xS) ok=1 ;;
+  xR|xH) mapTag=R3_3_maintenance ; ok=1 ;;
   xM) mapTag=R3_2_maintenance ; ok=1 ;;
   xJ) mapTag=R3_1_maintenance ; ok=1 ;;
   xK|xL) mapTag=R3_0_maintenance ; ok=1 ;;
@@ -57,7 +55,7 @@ fi
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_33x
 #rm log-*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -81,7 +79,7 @@ if [ "${CHANGEMAPS}" = "" -a "${CHANGES}" = "" ]; then
   exit 0
 fi
 
-log=$HOME/ws2/log-${buildType}$stamp.txt
+log=$HOME/ws_33x/log-${buildType}$stamp.txt
 touch $log
 cd ../org.eclipse.tm.releng
 cvs -q update -r ${mapTag} -RPd >> $log 2>&1
@@ -109,7 +107,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/tm/downloads ]; then
 fi
 
 #Check the publishing
-cd $HOME/ws2/publish
+cd $HOME/ws_33x/publish
 DIRS=`ls -dt ${buildType}*${daystamp}* | head -1 2>/dev/null`
 cd ${DIRS}
 FILES=`ls RSE-SDK-*.zip 2>/dev/null`
@@ -144,14 +142,14 @@ if [ -f package.count -a "$FILES" != "" ]; then
   fi
 
   if [ ${buildType} != N ]; then
-      #Update the testUpdates site
+      #Update the test33Updates site
       echo "Refreshing update site"
-      cd $HOME/downloads-tm/testUpdates/bin
+      cd $HOME/downloads-tm/test33Updates/bin
       cvs update
       ./mkTestUpdates.sh
-      #Update the signedUpdates site
-      echo "Refreshing signedUpdates site"
-      cd $HOME/downloads-tm/signedUpdates/bin
+      #Update the signed33Updates site
+      echo "Refreshing signed33Updates site"
+      cd $HOME/downloads-tm/signed33Updates/bin
       cvs update
       ./mkTestUpdates.sh
   fi

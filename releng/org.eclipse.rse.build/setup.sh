@@ -14,12 +14,12 @@
 # Works on build.eclipse.org -- may need to be adjusted
 # for other hosts.
 #
-# This must be run in $HOME/ws2 in order for the mkTestUpdateSite.sh
+# This must be run in $HOME/ws_33x in order for the mkTestUpdateSite.sh
 # script to find the published packages
 #
 # Bootstrapping: Get this script by
 # export CVSROOT=:pserver:anonymous@dev.eclipse.org:/cvsroot/tools
-# cvs co -r HEAD org.eclipse.tm.rse/releng/org.eclipse.rse.build
+# cvs co -r R3_3_maintenance org.eclipse.tm.rse/releng/org.eclipse.rse.build
 # sh org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh
 #
 # - OR -
@@ -27,7 +27,7 @@
 # wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=Tools_Project&content-type=text/plain"
 # sh setup.sh
 # ./doit_ibuild.sh
-# cd testUpdates/bin
+# cd test33Updates/bin
 # mkTestUpdates.sh
 
 curdir=`pwd`
@@ -48,8 +48,8 @@ esac
 
 # prepare the base Eclipse installation in folder "eclipse"
 ep_rel="R-"
-ep_ver=3.7
-ep_date="-201106131736"
+ep_ver=3.7.1
+ep_date="-201109091335"
 P2_disabled=false
 P2_no_dropins=false
 if [ ! -f eclipse/plugins/org.eclipse.swt_3.7.0.v3735b.jar ]; then
@@ -133,11 +133,13 @@ if [ ! -f ${DROPIN}/org.sonatype.tycho.p2.updatesite_0.9.0.201005191712.jar ]; t
 fi
 
 # CDT Runtime
-CDTREL=8.0.0
-CDTFEAT=8.0.0
-CDTVER=201106081058
-CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
-CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
+CDTREL=8.0.1
+CDTFEAT=8.0.1
+CDTVER=201109151620
+#CDTNAME=cdt-master-${CDTREL}-I${CDTVER}.zip
+#CDTLOC=builds/${CDTREL}/I.I${CDTVER}/${CDTNAME}
+CDTNAME=cdt-master-${CDTREL}.zip
+CDTLOC=releases/indigo/dist/${CDTNAME}
 if [ ! -f eclipse/plugins/org.eclipse.cdt_${CDTFEAT}.${CDTVER}.jar ]; then
   echo "Getting CDT Runtime..."
   wget "http://download.eclipse.org/tools/cdt/${CDTLOC}"
@@ -198,7 +200,7 @@ fi
 if [ -f org.eclipse.rse.build/CVS/Entries ]; then
   echo "Updating org.eclipse.rse.build from CVS"
   cd org.eclipse.rse.build
-  cvs -q update -A -dPR
+  cvs -q update -r R3_3_maintenance -dPR
   cd ..
 else
   if [ -d org.eclipse.rse.build ]; then
@@ -207,14 +209,14 @@ else
   else
     echo "Getting org.eclipse.rse.build from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -r R3_3_maintenance -Rd org.eclipse.rse.build org.eclipse.tm.rse/releng/org.eclipse.rse.build
 fi
 
 # checkout the Mapfiles
 if [ -f org.eclipse.tm.releng/CVS/Entries ]; then
   echo "Updating org.eclipse.tm.releng from CVS"
   cd org.eclipse.tm.releng
-  cvs -q update -A -dPR
+  cvs -q update -r R3_3_maintenance -dPR
   cd ..
 else
   if [ -d org.eclipse.tm.releng ]; then
@@ -223,7 +225,7 @@ else
   else
     echo "Getting org.eclipse.tm.releng from CVS"
   fi
-  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -Rd org.eclipse.tm.releng org.eclipse.tm.rse/releng/org.eclipse.tm.releng
+  cvs -q -d :pserver:anonymous@dev.eclipse.org:/cvsroot/tools co -r R3_3_maintenance -Rd org.eclipse.tm.releng org.eclipse.tm.rse/releng/org.eclipse.tm.releng
 fi
 
 # prepare directories for the build
@@ -238,9 +240,9 @@ if [ ! -d publish ]; then
   D=/home/data/httpd/download.eclipse.org/tm/downloads/drops
   if [ -d ${D} ]; then ln -s ${D} publish; else mkdir publish; fi
 fi
-if [ ! -d testUpdates ]; then
-  D=/home/data/httpd/download.eclipse.org/tm/testUpdates
-  if [ -d ${D} ]; then ln -s ${D} testUpdates; else mkdir testUpdates; fi
+if [ ! -d test33Updates ]; then
+  D=/home/data/httpd/download.eclipse.org/tm/test33Updates
+  if [ -d ${D} ]; then ln -s ${D} test33Updates; else mkdir test33Updates; fi
 fi
 if [ ! -d updates ]; then
   D=/home/data/httpd/download.eclipse.org/tm/updates
@@ -269,13 +271,13 @@ cd ..
 
 echo "Your build environment is now created."
 echo ""
-echo "Run \"./doit_irsbuild.sh I\" to create an I-build."
+echo "Run \"./doit_irsbuild.sh H\" to create a H-build for TM 3.3.x."
 echo ""
-echo "Test the testUpdates, then copy them to updates:"
+echo "Test the test33Updates, then copy them to updates:"
 echo "cd updates"
 echo "rm -rf plugins features"
-echo "cp -R ../testUpdates/plugins ."
-echo "cp -R ../testUpdates/features ."
+echo "cp -R ../test33Updates/plugins ."
+echo "cp -R ../test33Updates/features ."
 echo "cd bin"
 echo "cvs update"
 echo "./mkTestUpdates.sh"

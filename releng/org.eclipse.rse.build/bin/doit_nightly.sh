@@ -15,16 +15,13 @@
 umask 22
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
-#export PATH=/shared/tools/tm/jdk-1.6/jre/bin:/shared/tools/tm/jdk-1.6/bin:$PATH
-#export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
 
 curdir=`pwd`
 
 #Remove old logs and builds
 echo "Removing old logs and builds..."
-cd $HOME/ws2
+cd $HOME/ws_33x
 rm log-N*.txt
 if [ -d working/build ]; then
   rm -rf working/build
@@ -35,7 +32,7 @@ fi
 
 #Do the main job
 stamp=`date +'%Y%m%d-%H%M'`
-log=$HOME/ws2/log-N$stamp.txt
+log=$HOME/ws_33x/log-N$stamp.txt
 touch $log
 
 echo "Updating builder from CVS..."
@@ -64,7 +61,7 @@ if [ -d /home/data/httpd/archive.eclipse.org/tm/downloads ]; then
 fi
 
 #Copy latest SDK in order to give access to DOC server
-cd $HOME/ws2/publish
+cd $HOME/ws_33x/publish
 if [ -d N.latest ]; then
   FILES=`ls -t N${daystamp}*/RSE-SDK-N${daystamp}*.zip | head -1 2>/dev/null`
   echo "FILES=$FILES"
@@ -85,6 +82,6 @@ if [ -d N.latest ]; then
 fi
 
 #Cleanup old nightly builds (leave only last 5 in place)
-cd $HOME/ws2/publish
+cd $HOME/ws_33x/publish
 ls -d N201* | sort | head -n-5 | xargs rm -rf
 
