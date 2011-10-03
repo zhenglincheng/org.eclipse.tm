@@ -99,6 +99,11 @@
 		<td>All</td>
 		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/RSE-SDK-@buildId@.zip">RSE-SDK-@buildId@.zip</a></td>
 	</tr>
+	<tr><td><div align=left><img src = "OK.gif" width=19 height=23></div></td>
+		<td>All</td>
+		<td><a href="http://www.eclipse.org/downloads/download.php?file=/tm/downloads/drops/@dropDir@/TM-repo-@buildId@.zip">TM-repo-@buildId@.zip</a>
+		    (Downloadable p2 repository including all features)</td>
+	</tr>
 </table>
 
 <table border="0" cellspacing="5" cellpadding="2" width="100%">
