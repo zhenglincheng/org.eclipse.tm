@@ -114,6 +114,7 @@ FILES=`ls RSE-SDK-*.zip 2>/dev/null`
 echo "FILES=$FILES"
 if [ -f package.count -a "$FILES" != "" ]; then
   echo "package.count found, release seems ok"
+  realstamp=`echo $FILES | sed -e 's,RSE-SDK-,,g' -e 's,.zip,,g'`
   if [ ${buildType} = S -o ${buildType} = R ]; then
     #hide the release for now until it is tested
     #mirrors will still pick it up
@@ -152,6 +153,33 @@ if [ -f package.count -a "$FILES" != "" ]; then
       cd $HOME/downloads-tm/signed33Updates/bin
       cvs update
       ./mkTestUpdates.sh
+      
+      echo "Creating TM-repo-${realstamp}.zip"
+      if [ -d 3.3interim ]; then
+        rm -rf 3.3interim
+      fi
+      FILES=`ls`
+      tar cf - ${FILES} | (mkdir 3.3interim ; cd 3.3interim ; tar xf -)
+      if [ -d 3.3interim ]; then
+         cd 3.3interim
+         rm -rf plugins/*.pack.gz features/*.pack.gz
+         cd bin
+         ./mkTestUpdates.sh
+         cd ..
+         rm -rf bin CVS .cvsignore web/CVS
+         rm ../TM-repo-*.zip
+         zip -r ../TM-repo-${realstamp}.zip .
+         cd ..
+         rm -rf 3.3interim
+         cd $HOME/ws_33x/publish
+         cd $DIRS
+         cp $HOME/downloads-tm/signed33Updates/TM-repo-${realstamp}.zip .
+         count=`cat package.count`
+         count=`expr $count + 1`
+         rm package.count
+         echo $count > package.count
+         echo "Successfully created TM-repo-${realstamp}.zip" 
+      fi
   fi
   
   cd "$curdir"
