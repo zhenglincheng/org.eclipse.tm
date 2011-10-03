@@ -179,6 +179,12 @@ if [ -f package.count -a "$FILES" != "" ]; then
          rm package.count
          echo $count > package.count
          echo "Successfully created TM-repo-${realstamp}.zip" 
+
+         echo "Making signed..."
+         UPDATE_SITE=$HOME/downloads-tm/signed33Updates
+         export UPDATE_SITE
+         $HOME/ws_33x/org.eclipse.rse.build/bin/make_signed.sh -go
+         echo "Made signed."
       fi
   fi
   
