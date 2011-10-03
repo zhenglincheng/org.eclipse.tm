@@ -155,13 +155,15 @@ if [ -f package.count -a "$FILES" != "" ]; then
       ./mkTestUpdates.sh
       
       echo "Creating TM-repo-${realstamp}.zip"
-      if [ -d 3.3interim ]; then
-        rm -rf 3.3interim
+      cd ..
+      ISITE=3.3interim
+      if [ -d ${ISITE} ]; then
+        rm -rf ${ISITE}
       fi
       FILES=`ls`
-      tar cf - ${FILES} | (mkdir 3.3interim ; cd 3.3interim ; tar xf -)
-      if [ -d 3.3interim ]; then
-         cd 3.3interim
+      tar cf - ${FILES} | (mkdir ${ISITE} ; cd ${ISITE} ; tar xf -)
+      if [ -d ${ISITE} ]; then
+         cd ${ISITE}
          rm -rf plugins/*.pack.gz features/*.pack.gz
          cd bin
          ./mkTestUpdates.sh
@@ -170,15 +172,17 @@ if [ -f package.count -a "$FILES" != "" ]; then
          rm ../TM-repo-*.zip
          zip -r ../TM-repo-${realstamp}.zip .
          cd ..
-         rm -rf 3.3interim
+         rm -rf ${ISITE}
          cd $HOME/ws_33x/publish
          cd $DIRS
          cp $HOME/downloads-tm/signed33Updates/TM-repo-${realstamp}.zip .
-         count=`cat package.count`
-         count=`expr $count + 1`
-         rm package.count
-         echo $count > package.count
          echo "Successfully created TM-repo-${realstamp}.zip" 
+         if [ -f package.count ]; then
+           count=`cat package.count`
+           count=`expr $count + 1`
+           rm package.count
+           echo $count > package.count
+         fi
 
          echo "Making signed..."
          UPDATE_SITE=$HOME/downloads-tm/signed33Updates
