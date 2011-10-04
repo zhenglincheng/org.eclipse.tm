@@ -41,6 +41,7 @@
  * David McKnight   (IBM)        - [310215] SystemEditableRemoteFile.open does not behave as expected
  * David McKnight   (IBM)        - [324519] SystemEditableRemoteFile throws NPE when used in headless mode
  * David McKnight   (IBM)        - [334839] File Content Conflict is not handled properly
+ * David McKnight   (IBM)        - [359704] SystemEditableRemoteFile does not release reference to editor
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -1759,19 +1760,18 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 	 */
 	public void partClosed(IWorkbenchPart part)
 	{
-		/*
-		        if (editor == part)
-		        {
-		            delete();
-		        }
-		*/
-		SystemUniversalTempFileListener.getListener().unregisterEditedFile(this);
+		if (editor == part){
+			//delete();
+		      
+			SystemUniversalTempFileListener.getListener().unregisterEditedFile(this);
 
-		IWorkbenchPage page = SystemBasePlugin.getActiveWorkbenchWindow().getActivePage();
+			IWorkbenchPage page = SystemBasePlugin.getActiveWorkbenchWindow().getActivePage();
 
-		if (page != null)
-		{
-			page.removePartListener(this);
+			if (page != null)
+			{
+				page.removePartListener(this);
+				editor = null;
+			}
 		}
 	}
 
