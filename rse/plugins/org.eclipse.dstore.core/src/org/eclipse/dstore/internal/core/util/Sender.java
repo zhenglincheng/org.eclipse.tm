@@ -17,6 +17,7 @@
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
  * David McKnight  (IBM)   [347412][dstore] Need an option to set TCP NODELAYACKS
  * David McKnight  (IBM)   [350315][dstore] regress change made for bug 305218
+ * David McKnight    (IBM)  - [358301] [DSTORE] Hang during debug source look up
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -286,10 +287,14 @@ public class Sender implements ISender
 		{
 			synchronized (_outFile)
 			{
-
-				_xmlGenerator.empty();
-				_xmlGenerator.generate(objectRoot, depth);
-				_xmlGenerator.flushData();
+				try {
+					_xmlGenerator.empty();
+					_xmlGenerator.generate(objectRoot, depth);
+					_xmlGenerator.flushData();
+				}
+				catch (OutOfMemoryError e){
+					System.exit(-1);
+				}
 			}
 
 		}
