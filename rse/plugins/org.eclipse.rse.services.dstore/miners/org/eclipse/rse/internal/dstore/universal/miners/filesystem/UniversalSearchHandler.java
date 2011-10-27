@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@
  * David McKnight  (IBM)  - [255390] checking for memory
  * David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  * David McKnight  (IBM]  - [330989] [dstore] OutOfMemoryError occurs when searching for a text in a large remote file
+ * Noriaki Takatsu  (IBM) - [362025] [dstore] Search for text hung in encountering a device definition
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -184,7 +185,9 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 	protected void internalSearch(File theFile, int depth) throws SystemMessageException {
 		
 		if (!hasSearched(theFile)) {
-			
+			if (!theFile.isDirectory() && !theFile.isFile()) {
+				return;
+			}
 			try {
 				_alreadySearched.add(theFile.getCanonicalPath());
 			}
