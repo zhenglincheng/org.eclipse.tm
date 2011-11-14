@@ -28,6 +28,7 @@
  * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
  * David McKnight   (IBM)        - [329170] Show in table does not work after showing empty folder in table
  * David McKnight   (IBM)        - [357587] Custom sorter is changed to SystemTableViewSorter
+ * David McKnight   (IBM)        - [363392] system table views shows open view actions when they shouldn't
  ********************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -2004,10 +2005,11 @@ public class SystemTableView
 				SystemShowInTableAction showInTableAction = getShowInTableAction();
 				openToPerspectiveAction.setSelection(selection);
 				showInTableAction.setSelection(selection);
-				//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
-				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
-				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
-
+				if (_selectionShowOpenViewActions){		
+					//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
+					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
+					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
+				}
 			}
 
 
