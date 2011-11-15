@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others.
+ * Copyright (c) 2006, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight   (IBM) - [244388] [dstore] Connection hangs when a miner not installed
+ * David McKnight  (IBM)   [360847] [dstore] need to add tracing and fixes to enable remote class transfer
  *******************************************************************************/
 
 package org.eclipse.dstore.core.java;
@@ -171,8 +172,9 @@ public class RemoteClassLoader extends ClassLoader
 	 */
 	protected Class findClass(String className) throws ClassNotFoundException
 	{
+		_dataStore.trace("findClass "+className); //$NON-NLS-1$
+		
 		// first try using the datastore's local classloaders
-
 		ArrayList localLoaders = _dataStore.getLocalClassLoaders();
 		if (localLoaders != null)
 		{
@@ -186,7 +188,7 @@ public class RemoteClassLoader extends ClassLoader
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 		}
@@ -197,7 +199,6 @@ public class RemoteClassLoader extends ClassLoader
 			Class theClass = super.findClass(className);
 			if (theClass != null)
 			{
-				//System.out.println("Using super's: " + className);
 				return theClass;
 			}
 		}
@@ -219,6 +220,7 @@ public class RemoteClassLoader extends ClassLoader
 		// search the class request repository to see if the class has been requested
 		// already
 		ClassRequest request;
+		_dataStore.trace("checking class repository..."); //$NON-NLS-1$
 		request = (ClassRequest) _dataStore.getClassRequestRepository().get(className);
 
 		if (request == null)
@@ -229,7 +231,7 @@ public class RemoteClassLoader extends ClassLoader
 			{
 				try
 				{
-
+					_dataStore.trace("checking cache"); //$NON-NLS-1$
 					Class theClass = _urlClassLoader.findCachedClass(className);
 
 					//System.out.println("Using cached: " + className);
@@ -280,7 +282,7 @@ public class RemoteClassLoader extends ClassLoader
 	 */
 	public synchronized void receiveClass(String className, byte[] bytes, int size)
 	{
-	//	System.out.println("receiving "+className);
+		_dataStore.trace("receiving "+className); //$NON-NLS-1$
 		// check the class request repository to see if the class is there
 		ClassRequest request = (ClassRequest) _dataStore.getClassRequestRepository().get(className);
 		if (request != null)
@@ -299,14 +301,21 @@ public class RemoteClassLoader extends ClassLoader
 		Class receivedClass = null;
 		try
 		{
-		//	System.out.println("defining "+className+"...");
+			_dataStore.trace("defining "+className+"..."); //$NON-NLS-2$
 			// try to define the class. If any dependent classes cannot be
 			// found the JRE implementation will call findClass to look for them.
 			// Thus we could end up with a stack of requests all waiting until the
 			// classes with no dependent classes load.
 			receivedClass = defineClass(className, bytes, 0, size);
+			if (receivedClass == null){
+				try {
+					receivedClass = findClass(className);
+				}
+				catch (Exception e){					
+				}
+			}
 
-		//	System.out.println("...finished defining "+className);
+		_dataStore.trace("...finished defining "+className); //$NON-NLS-1$
 		}
 		catch (NoClassDefFoundError e)
 		{
@@ -369,7 +378,7 @@ public class RemoteClassLoader extends ClassLoader
 			// SUCCESS! The class has been received, and defined, so just
 			// load it into the class request object. This action will
 			// also notify threads waiting for the class
-	//		System.out.println("notifying requesters");
+			_dataStore.trace("notifying requesters");
 			request.setLoadedClass(receivedClass);
 			if (useCaching())
 			{
@@ -385,7 +394,7 @@ public class RemoteClassLoader extends ClassLoader
 	 */
 	protected void requestClassInThread(String className)
 	{
-	//	System.out.println("requesting (in thread)"+className);
+		_dataStore.trace("requesting (in thread)"+className);
 		LoadClassThread thread = new LoadClassThread(className);
 		thread.start();
 	}
@@ -413,9 +422,9 @@ public class RemoteClassLoader extends ClassLoader
 			_dataStore.requestClass(className);
 
 			// wait for a response
-		//	System.out.println("thread to wait: "+Thread.currentThread().getName());
+			_dataStore.trace("thread to wait: "+Thread.currentThread().getName());
 			if (!request.isLoaded()) request.waitForResponse();
-		//	System.out.println("thread finished waiting: "+Thread.currentThread().getName());
+			_dataStore.trace("thread finished waiting: "+Thread.currentThread().getName());
 			if (request.isLoaded()) return request.getLoadedClass();
 			else {
 				// remove the request so that if another one comes in for the
@@ -428,9 +437,9 @@ public class RemoteClassLoader extends ClassLoader
 		else if (!request.isLoaded())
 		{
 			// class has already been requested, wait for it to load
-	//		System.out.println("requested elsewhere, thread to wait: "+Thread.currentThread().getName());
+	_dataStore.trace("requested elsewhere, thread to wait: "+Thread.currentThread().getName());
 			if (!request.isLoaded()) request.waitForResponse();
-		//	System.out.println("requested elsewhere, thread finished waiting: "+Thread.currentThread().getName());
+	_dataStore.trace("requested elsewhere, thread finished waiting: "+Thread.currentThread().getName());
 			if (request.isLoaded()) return request.getLoadedClass();
 			else throw new ClassNotFoundException(className);
 		}
