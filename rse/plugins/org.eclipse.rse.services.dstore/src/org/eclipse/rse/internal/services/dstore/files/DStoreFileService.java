@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,6 +63,7 @@
  * David McKnight   (IBM)        - [284420] nullprogressmonitor is needed
  * David McKnight     (IBM)      - [298440] jar files in a directory can't be pasted to another system properly
  * David McKnight   (IBM)        - [308770] [dstore] Remote Search using old server fails with NPE
+ * David McKnight    (IBM)       - [365780] [dstore] codepage conversion should only occur for different encodings
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -838,29 +839,32 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 			if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_SUCCESS_TYPE))
 			{
-				if (!isBinary){ // do standard conversion if this is text!
+				if (!isBinary && fileLength > 0){ // do standard conversion if this is text!
 					String localEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
 
-					IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(encoding, this);
+					if (!localEncoding.equals(encoding)) {// only do conversion if the encodings are different and the length is non-zero
 
-					try {
-						codePageConverter.convertFileFromRemoteEncoding(remotePath, localFile, encoding, localEncoding, this);
-					}
-					catch (RuntimeException e){
-						Throwable ex = e.getCause();
-						StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
-						msgTxtBuffer.append('\n');
-						msgTxtBuffer.append('\n');
-						msgTxtBuffer.append(remotePath);
-						msgTxtBuffer.append('\n');						
-						msgTxtBuffer.append(encoding);
-						msgTxtBuffer.append(" -> ");
-						msgTxtBuffer.append(localEncoding);
-						
-						SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-								IDStoreMessageIds.FILEMSG_IO_ERROR,
-								IStatus.ERROR, msgTxtBuffer.toString(), ex);
-						throw new SystemMessageException(msg);
+						IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(encoding, this);
+	
+						try {
+							codePageConverter.convertFileFromRemoteEncoding(remotePath, localFile, encoding, localEncoding, this);
+						}
+						catch (RuntimeException e){
+							Throwable ex = e.getCause();
+							StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
+							msgTxtBuffer.append('\n');
+							msgTxtBuffer.append('\n');
+							msgTxtBuffer.append(remotePath);
+							msgTxtBuffer.append('\n');						
+							msgTxtBuffer.append(encoding);
+							msgTxtBuffer.append(" -> ");
+							msgTxtBuffer.append(localEncoding);
+							
+							SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+									IDStoreMessageIds.FILEMSG_IO_ERROR,
+									IStatus.ERROR, msgTxtBuffer.toString(), ex);
+							throw new SystemMessageException(msg);
+						}
 					}
 				}
 			}
@@ -1089,28 +1093,30 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_SUCCESS_TYPE))
 					{
 						// do standard conversion if this is text!
-						if (!isBinaries[j]){ // do standard conversion if this is text!
+						if (!isBinaries[j] && fileLength > 0){ // do standard conversion if this is text! or if the file is empty
 							String localEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
-							IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(hostEncodings[j], this);
-
-							try {
-								codePageConverter.convertFileFromRemoteEncoding(remoteElement.getName(), localFile, hostEncodings[j], localEncoding, this);
-							}
-							catch (RuntimeException e){
-								Throwable ex = e.getCause();
-								StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
-								msgTxtBuffer.append('\n');
-								msgTxtBuffer.append('\n');
-								msgTxtBuffer.append(remoteFiles[j]);
-								msgTxtBuffer.append('\n');						
-								msgTxtBuffer.append(hostEncodings[j]);
-								msgTxtBuffer.append(" -> ");
-								msgTxtBuffer.append(localEncoding);
-								
-								SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-										IDStoreMessageIds.FILEMSG_IO_ERROR,
-										IStatus.ERROR, msgTxtBuffer.toString(), ex);
-								throw new SystemMessageException(msg);
+							if (!localEncoding.equals(hostEncodings[j])){
+								IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(hostEncodings[j], this);
+	
+								try {
+									codePageConverter.convertFileFromRemoteEncoding(remoteElement.getName(), localFile, hostEncodings[j], localEncoding, this);
+								}
+								catch (RuntimeException e){
+									Throwable ex = e.getCause();
+									StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
+									msgTxtBuffer.append('\n');
+									msgTxtBuffer.append('\n');
+									msgTxtBuffer.append(remoteFiles[j]);
+									msgTxtBuffer.append('\n');						
+									msgTxtBuffer.append(hostEncodings[j]);
+									msgTxtBuffer.append(" -> ");
+									msgTxtBuffer.append(localEncoding);
+									
+									SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+											IDStoreMessageIds.FILEMSG_IO_ERROR,
+											IStatus.ERROR, msgTxtBuffer.toString(), ex);
+									throw new SystemMessageException(msg);
+								}
 							}
 						}
 					}
