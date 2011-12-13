@@ -23,6 +23,7 @@
  * David McKnight  (IBM)  - [305272] [dstore][multithread] log close in ServerLogger
  * Noriaki Takatsu (IBM)  - [341578] [dstore] ServerLogger is looped when IOError happens
  * David McKnight   (IBM) - [351993] [dstore] not able to connect to server if .eclipse folder not available
+ * David McKnight  (IBM)  - [366220] Log_To_File no longer default value for log_location in rsecomm.properties
  ********************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -89,8 +90,6 @@ public class ServerLogger implements IServerLogger
 		} catch (Exception e) {
 			// Just use logging defaults: log_level = 0, log to file
 			//e.printStackTrace();		
-			logToFile = false;
-			_logFileStream = new PrintWriter(System.out);
 		}
 	}
 
@@ -101,6 +100,9 @@ public class ServerLogger implements IServerLogger
 			if (logToFile) {
 				try {
 			  		File _logFile = getLogFile("rsecomm"); //$NON-NLS-1$
+			  		if (!_logFile.exists()){
+			  			_logFile.createNewFile();
+			  		}
 			  		if (_logFile != null && _logFile.canWrite()){
 			  			_logFileStream = new PrintWriter(new FileOutputStream(_logFile));
 			  		}
