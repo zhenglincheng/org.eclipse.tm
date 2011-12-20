@@ -37,6 +37,7 @@
  * David McKnight   (IBM) - [340080] [dstore] empty string should not be allowed as a DataElement ID
  * David McKnight   (IBM) - [351993] [dstore] not able to connect to server if .eclipse folder not available
  * David McKnight   (IBM) - [366070] [dstore] fix for bug 351993 won't allow tracing if .dstoreTrace doesn't exist
+ * David McKnight   (IBM) - [367096] [dstore] DataElement.isSpirit() may return true for newly created DStore objects
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -3942,6 +3943,7 @@ public final class DataStore
 		}
 
 		newObject.setUpdated(false);
+		newObject.setSpirit(false);
 		updateLastCreated(newObject);
 		return newObject;
 	}
