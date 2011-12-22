@@ -15,6 +15,7 @@
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight   (IBM) - [244388] [dstore] Connection hangs when a miner not installed
  * David McKnight  (IBM)   [360847] [dstore] need to add tracing and fixes to enable remote class transfer
+ * David McKnight   (IBM) - [367264] [dstore] Trace should be written when load miner is failed.
  *******************************************************************************/
 
 package org.eclipse.dstore.core.java;
@@ -188,7 +189,7 @@ public class RemoteClassLoader extends ClassLoader
 				}
 				catch (Exception e)
 				{
-					//e.printStackTrace();
+					_dataStore.trace(e);
 				}
 			}
 		}
@@ -204,7 +205,10 @@ public class RemoteClassLoader extends ClassLoader
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			if (!_useCaching){
+				// no remote loading in this case
+				throw new ClassNotFoundException(className);
+			}
 		}
 
 		// DKM
