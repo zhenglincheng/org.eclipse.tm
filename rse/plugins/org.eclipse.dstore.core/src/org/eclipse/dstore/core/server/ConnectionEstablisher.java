@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@
  * David McKnight   (IBM) - [257321] [dstore] "Error binding socket" should include port of the failed socket
  * Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
  * Noriaki Takatsu  (IBM) - [289678][api][breaking] ServerSocket creation in multiple IP addresses
+ * David McKnight   (IBM) - [368072] [dstore][ssl] no exception logged upon bind error
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -350,13 +351,31 @@ public class ConnectionEstablisher
 						{
 							serverSocket = sslContext.getServerSocketFactory().createServerSocket(i, backlog, bindAddr);
 						}
+						catch (BindException e)
+						{
+							_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
+							System.err.println(_msg);
+							_dataStore.trace(_msg);
+						}
 						catch (Exception e)
 						{
 						}
 					}
 					else
 					{
-						serverSocket = new ServerSocket(i, backlog, bindAddr);
+						try
+						{
+							serverSocket = new ServerSocket(i, backlog, bindAddr);
+						}						
+						catch (BindException e)
+						{
+							_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
+							System.err.println(_msg);
+							_dataStore.trace(_msg);
+						}
+						catch (Exception e)
+						{
+						}
 					}
 				}
 				catch (Exception e)
@@ -388,6 +407,7 @@ public class ConnectionEstablisher
 				catch (BindException e){
 					_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 					System.err.println(_msg);
+					_dataStore.trace(_msg);
 				}
 				catch (Exception e)
 				{
@@ -403,6 +423,7 @@ public class ConnectionEstablisher
 				catch (BindException e){
 					_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 					System.err.println(_msg);
+					_dataStore.trace(_msg);
 				}
 				catch (Exception e)
 				{
