@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,6 +42,7 @@
  * David McKnight   (IBM)        - [324519] SystemEditableRemoteFile throws NPE when used in headless mode
  * David McKnight   (IBM)        - [334839] File Content Conflict is not handled properly
  * David McKnight   (IBM)        - [359704] SystemEditableRemoteFile does not release reference to editor
+ * David McKnight   (IBM)        - [249031] Last used editor should be set to SystemEditableRemoteFile
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -268,20 +269,20 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		this.root = SystemRemoteEditManager.getInstance().getRemoteEditProjectLocation().makeAbsolute().toOSString();
 		this.localPath = getDownloadPath();
 
-		// dkm - use registered
-		String fileName = remoteFile.getName();
-
-		IEditorRegistry registry = getEditorRegistry();
-
-		if (registry != null){
-			IEditorDescriptor descriptor = registry.getDefaultEditor(fileName);
-			if (descriptor == null)
-			{
-				descriptor = getDefaultTextEditor();
-			}
-			
-			this._editorDescriptor = descriptor;
+		IFile localResource = getLocalResource();
+		
+		// first look for editor corresponding to this particular file
+		IEditorDescriptor descriptor = null;
+		try {
+			descriptor = IDE.getEditorDescriptor(localResource);
+		} catch (PartInitException e) {	
+		}	
+		
+		if (descriptor == null){
+			descriptor = getDefaultTextEditor();
 		}
+			
+		this._editorDescriptor = descriptor;		
 	}
 
 	protected IEditorRegistry getEditorRegistry()
