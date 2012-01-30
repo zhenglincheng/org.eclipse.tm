@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@
  * David McKnight  (IBM)  - [251729][dstore] problems querying symbolic link folder
  * David McKnight  (IBM)  - [283617] [dstore] UniversalFileSystemMiner.handleQueryGetRemoteObject does not return correct result when the queried file does not exist.
  * David McKnight  (IBM)  - [307115] backport [dstore] 3.0.x version of UniversalFileSystemMiner.updateCancelableThreads casts to wrong thing
+ * David McKnight  (IBM)  - [369941] [dstore] cancelable threads not removed fast enough from Hashmap, resulting in OOM
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -464,7 +465,9 @@ public class UniversalFileSystemMiner extends Miner {
 			_dataStore.trace(e);
 		}
 		// save find thread in hashmap for retrieval during cancel
-		_cancellableThreads.put(command, thread);
+		if (!thread.isDone() && !thread.isCancelled()){
+			_cancellableThreads.put(command, thread);
+		}
 	}
 
 
