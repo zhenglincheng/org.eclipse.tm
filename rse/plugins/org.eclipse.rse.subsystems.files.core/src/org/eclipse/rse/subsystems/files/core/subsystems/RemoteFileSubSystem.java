@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -123,7 +123,22 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 
 	protected ArrayList _searchHistory;
 
-	// all created IRemoteFiles mapped in cache to quick retrieval
+ 	/**
+ 	 *  All created IRemoteFiles are mapped in a cache for quick retrieval.
+ 	 *  This is a HashMap so any access to it needs to be synchronized otherwise
+ 	 *  thread-safety could be compromised.
+ 	 * The _cachedRemoteFiles map is used to store queried IRemoteFiles 
+ 	 * for quick retrieval.  This is a HashMap so any access to it needs 
+ 	 * to be synchronized; otherwise thread-safety could be compromised.
+ 	 * 
+ 	 * The _cachedRemoteFiles HashMap should be synchronized on like this:
+ 	 * <code>
+ 	 *		synchronized (_cachedRemoteFiles){
+ 	 * 			// call to _cachedRemoteFiles
+ 	 *  		...
+ 	 *		}
+ 	 * </code>
+ 	 */
 	protected HashMap _cachedRemoteFiles = new HashMap();
 
 	/**
