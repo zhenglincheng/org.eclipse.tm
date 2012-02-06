@@ -47,12 +47,16 @@ case ${uname_s}${uname_m} in
 esac
 
 # prepare the base Eclipse installation in folder "eclipse"
-ep_rel="R-"
-ep_ver=3.7.1
-ep_date="-201109091335"
+#ep_rel="R-"
+#ep_ver=3.7.1
+#ep_date="-201109091335"
+ep_rel=""
+ep_ver=M20120201-1336
+ep_date=""
 P2_disabled=false
 P2_no_dropins=false
-if [ ! -f eclipse/plugins/org.eclipse.swt_3.7.1.v3738a.jar ]; then
+#if [ ! -f eclipse/plugins/org.eclipse.swt_3.7.1.v3738a.jar ]; then
+if [ ! -f eclipse/plugins/org.eclipse.swt_3.7.2.v3740f.jar ]; then
   curdir2=`pwd`
   if [ ! -d eclipse -o -h eclipse ]; then
     if [ -d eclipse-${ep_ver}-${ep_arch} ]; then
@@ -65,6 +69,7 @@ if [ ! -f eclipse/plugins/org.eclipse.swt_3.7.1.v3738a.jar ]; then
   fi
   # Eclipse SDK: Need the SDK so we can link into docs
   echo "Getting Eclipse SDK..."
+  http://download.eclipse.org/eclipse/downloads/drops/M20120201-1336/eclipse-SDK-M20120201-1336-win32.zip
   wget "http://download.eclipse.org/eclipse/downloads/drops/${ep_rel}${ep_ver}${ep_date}/eclipse-SDK-${ep_ver}-${ep_arch}.tar.gz"
   tar xfvz eclipse-SDK-${ep_ver}-${ep_arch}.tar.gz
   rm eclipse-SDK-${ep_ver}-${ep_arch}.tar.gz
@@ -115,7 +120,7 @@ if [ ! -f ${DROPIN}/eclipse/plugins/gnu.io.rxtx_2.1.7.4_v20071016.jar ]; then
   #wget "http://rxtx.qbang.org/eclipse/downloads/RXTX-SDK-I20071016-1945.zip"
   #unzip -o RXTX-SDK-I20071016-1945.zip
   #rm RXTX-SDK-I20071016-1945.zip
-  wget "http://download.eclipse.org/athena/runnables/RXTX-runtime-I20071016-1945.zip"
+  wget "http://archive.eclipse.org/tm/updates/rxtx/downloads/RXTX-runtime-I20071016-1945.zip"
   unzip -o RXTX-runtime-I20071016-1945.zip
   rm RXTX-runtime-I20071016-1945.zip
   cd ${DROPUP}
