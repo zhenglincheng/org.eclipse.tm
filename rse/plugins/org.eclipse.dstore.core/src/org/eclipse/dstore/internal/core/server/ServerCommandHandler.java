@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@
  *  David McKnight   (IBM) - [278341] [dstore] Disconnect on idle causes the client hang
  *  Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
  *  David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
+ *  David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.server;
@@ -77,7 +78,7 @@ public class ServerCommandHandler extends CommandHandler
 					System.exit(0);
 				}
 				else {
-					_dataStore.getClient().disconnectServerReceiver();
+					_dataStore.getClient().disconnectServerReceiver();					
 				}
 			}
 		}
@@ -201,6 +202,13 @@ public class ServerCommandHandler extends CommandHandler
 	 */
 	public void finish()
 	{
+		if (_serverIdleThread != null){
+			if (_serverIdleThread.isAlive()){
+				_serverIdleThread._serverTimedOut = true;
+				_serverIdleThread.interrupt();
+			}
+			_serverIdleThread = null;
+		}
 		if (_minerLoader != null)
 			_minerLoader.finishMiners();
 		super.finish();
