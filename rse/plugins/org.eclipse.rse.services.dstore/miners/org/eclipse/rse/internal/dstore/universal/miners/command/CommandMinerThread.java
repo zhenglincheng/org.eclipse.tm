@@ -34,6 +34,7 @@
  *  David McKnight   (IBM)     [323262] [dstore] zos shell does not display [ ]  brackets properly
  *  David McKnight   (IBM)     [339741] [dstore][shells] consecutive prompt line is ignored
  *  Noriaki Takatsu  (IBM)     [369767] [multithread][dstore] Invalid Default directory in shell Launch
+ *  David McKnight   (IBM)     [372968] [dstore][shell] provide support for csh and tcsh shells
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -270,7 +271,7 @@ public class CommandMinerThread extends MinerThread
 						{
 							isSHonZ = true;
 						}
-						else if (theShell.endsWith("/csh") || theShell.endsWith("/bsh")){  //$NON-NLS-1$//$NON-NLS-2$
+						else if (theShell.endsWith("/csh") || theShell.endsWith("/tcsh") || theShell.endsWith("/bsh")){  //$NON-NLS-1$//$NON-NLS-2$
 							_isCsh = true;			
 						}
 					}
@@ -553,13 +554,18 @@ public class CommandMinerThread extends MinerThread
 			if (didLogin || _isTTY)
 			{
 				// unsupported prompting
-				boolean unsupportedPrompt = theShell.endsWith("csh") || theShell.endsWith("bsh") ||   //$NON-NLS-1$//$NON-NLS-2$
+				boolean unsupportedPrompt = theShell.endsWith("bsh") ||   //$NON-NLS-1$
 											theShell.endsWith("tsh") || theShell.endsWith("rksh");  //$NON-NLS-1$//$NON-NLS-2$
 				
 				
 				String initCmd = ""; //$NON-NLS-1$
 				if (_isTTY && !unsupportedPrompt){
-					initCmd = "export PS1='$PWD>';" ; //$NON-NLS-1$ 
+					if (_isCsh){
+						initCmd = "set prompt=\"$PWD>\""; //$NON-NLS-1$ 
+					}
+					else {
+						initCmd = "export PS1='$PWD>';" ; //$NON-NLS-1$ 
+					}
 				}
 				 if (didLogin && !userHome.equals(_cwdStr)){
 					 initCmd += "cd " + _cwdStr; //$NON-NLS-1$
@@ -679,7 +685,7 @@ public class CommandMinerThread extends MinerThread
 			}
 			input.getBytes();
 			if (_isCsh && origInput.startsWith("export ")){ //$NON-NLS-1$
-				input = origInput.replaceAll("export ", "set ");  //$NON-NLS-1$//$NON-NLS-2$
+				input = origInput.replaceAll("export ", "setenv ").replaceAll("=", " ");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
 			try
 			{
