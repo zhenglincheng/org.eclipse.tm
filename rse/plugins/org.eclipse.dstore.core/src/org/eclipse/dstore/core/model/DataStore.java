@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,7 @@
  * David McKnight   (IBM) - [289891] [dstore] StringIndexOutOfBoundsException in getUserPreferencesDirectory when DSTORE_LOG_DIRECTORY is ""
  * David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
  * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
+ * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -2628,7 +2629,32 @@ public final class DataStore
 		flush(_descriptorRoot);
 		flush(_dummy);
 		flush(_root);
+		flush(_externalRoot);
+		
+		// make sure these aren't null set since
+		// Miners need them on shutdown
+		// _logRoot = null;
+		// _minerRoot = null;
+		
+		_hostRoot = null;
+		_tempRoot = null;
+		_descriptorRoot = null;
+		_dummy = null;
+		_root = null;
+		_externalRoot = null;
+		_status = null;
+		_ticket = null;
 
+		// clear the maps
+		_classReqRepository.clear();
+		_cmdDescriptorMap.clear();
+		_hashMap.clear();
+		_lastCreatedElements.clear();
+		_localClassLoaders.clear();
+		_objDescriptorMap.clear();
+		_relDescriptorMap.clear();
+		
+		_remoteLoader = null;
 	}
 
 	/**
@@ -4174,9 +4200,19 @@ public final class DataStore
 		// which causes havoc for iSeries caching when switching between offline / online
 		//if (isVirtual())
 		//	flush();
-		if (_deRemover != null)
+		
+		if (!isVirtual()){ // only on server
+			if (getClient() != null){
+				getClient().getLogger().logInfo(this.getName(), "DataStore.finish() - flush()"); //$NON-NLS-1$
+			}
+			flush();
+		}
+		
+		if (_deRemover != null){
 			_deRemover.finish();
-
+		}	
+		
+		
 		if (_tracingOn)
 		{
 			try
