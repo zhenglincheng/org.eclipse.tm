@@ -80,9 +80,9 @@ public class ByteStreamHandler implements IByteStreamHandler
 			{
 				// need to create directories as well
 				File file = new File(fileName);
+				File parent = new File(file.getParent());
 				if (!file.exists())
-				{
-					File parent = new File(file.getParent());
+				{					
 					parent.mkdirs();
 				}
 				else
@@ -90,9 +90,12 @@ public class ByteStreamHandler implements IByteStreamHandler
 					// backup file on upload by default
 					String doBackups = System.getProperty("backupfiles"); //$NON-NLS-1$
 					if (doBackups == null || doBackups.equals("true")){ //$NON-NLS-1$
-						// backup the file first					
-						file.renameTo(new File('.'+fileName+'~'));
-					}				
+						// backup the file first	
+						String n = file.getName();			
+						File backupFile = new File(parent, '.' + n + '~');
+						_dataStore.trace("Backing up as "+backupFile.getAbsolutePath()); //$NON-NLS-1$
+						file.renameTo(backupFile);
+					}
 				}
 				
 				File newFile = new File(fileName);				
