@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2012 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -45,6 +45,7 @@
  * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
  * David McKnight   (IBM)        - [341240] Remote Systems Details view not remembering locked/unlocked state between sessions
  * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
+ * David McKnight   (IBM)        - [373673] Remote Systems Details view calling wrong method for setting action tooltips
 *******************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -197,7 +198,7 @@ public class SystemTableViewPart extends ViewPart
 		{
 			super(SystemResources.ACTION_HISTORY_MOVEFORWARD_LABEL, getEclipseImageDescriptor("elcl16/forward_nav.gif")); //$NON-NLS-1$
 
-			setTitleToolTip(SystemResources.ACTION_HISTORY_MOVEFORWARD_TOOLTIP);
+			setToolTipText(SystemResources.ACTION_HISTORY_MOVEFORWARD_TOOLTIP);
 			setDisabledImageDescriptor(getEclipseImageDescriptor("dlcl16/forward_nav.gif")); //$NON-NLS-1$
 		}
 
@@ -229,7 +230,7 @@ public class SystemTableViewPart extends ViewPart
 		public BackwardAction()
 		{
 			super(SystemResources.ACTION_HISTORY_MOVEBACKWARD_LABEL, getEclipseImageDescriptor("elcl16/backward_nav.gif")); //$NON-NLS-1$
-			setTitleToolTip(SystemResources.ACTION_HISTORY_MOVEBACKWARD_TOOLTIP);
+			setToolTipText(SystemResources.ACTION_HISTORY_MOVEBACKWARD_TOOLTIP);
 			setDisabledImageDescriptor(getEclipseImageDescriptor("dlcl16/backward_nav.gif")); //$NON-NLS-1$
 		}
 
