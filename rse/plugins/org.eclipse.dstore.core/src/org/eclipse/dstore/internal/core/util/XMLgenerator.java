@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight     (IBM)       - [232233] [dstore] Buffer in DataElement is not retained
  * David McKnight     (IBM)       - [245481] [dstore] CR/LF not restored for new client/old server
+ * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -81,7 +82,7 @@ public class XMLgenerator
 	{
 		_dataStore = dataStore;
 		_state = EMPTY;
-		_bufferSize = 100000;
+		_bufferSize = 200000;
 
 		_document = new StringBuffer(_bufferSize);
 
@@ -159,7 +160,7 @@ public class XMLgenerator
 			_document.append('\n');
 
 			int length = _document.length();
-			if (length > _bufferSize)
+			if (length +1000 > _bufferSize)
 			{
 				flushData();
 			}
@@ -519,32 +520,34 @@ public class XMLgenerator
 	 */
 	public synchronized void generate(DataElement object, byte[] bytes, int size, boolean isAppend, boolean binary)
 	{
-		String tagType = XMLparser.STR_FILE;
-		if (isAppend)
-		{
-			tagType += ".Append"; //$NON-NLS-1$
-		}
-		if (binary)
-		{
-			tagType += ".Binary"; //$NON-NLS-1$
-		}
-
-		if (object != null)
-		{
-			startTag(tagType);
-			addAttribute(DE.P_TYPE, object.getAttribute(DE.A_TYPE));
-			addAttribute(DE.P_ID, object.getAttribute(DE.A_ID));
-			addAttribute(DE.P_NAME, object.getAttribute(DE.A_NAME));
-			addAttribute(DE.P_VALUE, object.getAttribute(DE.A_VALUE));
-			addAttribute(DE.P_SOURCE, object.getAttribute(DE.A_SOURCE));
-			addAttribute(DE.P_SOURCE_LOCATION, object.getAttribute(DE.A_SOURCE_LOCATION));
-
-			addReferenceTypeAttribute(object);
-
-			addAttribute(DE.P_DEPTH, "" + size); //$NON-NLS-1$
-			addFile(bytes, size, binary);
-
-			endTag(tagType);
+		if (_dataStore != null && (_dataStore.isVirtual() || _dataStore.isConnected())){
+			String tagType = XMLparser.STR_FILE;
+			if (isAppend)
+			{
+				tagType += ".Append"; //$NON-NLS-1$
+			}
+			if (binary)
+			{
+				tagType += ".Binary"; //$NON-NLS-1$
+			}
+	
+			if (object != null)
+			{
+				startTag(tagType);
+				addAttribute(DE.P_TYPE, object.getAttribute(DE.A_TYPE));
+				addAttribute(DE.P_ID, object.getAttribute(DE.A_ID));
+				addAttribute(DE.P_NAME, object.getAttribute(DE.A_NAME));
+				addAttribute(DE.P_VALUE, object.getAttribute(DE.A_VALUE));
+				addAttribute(DE.P_SOURCE, object.getAttribute(DE.A_SOURCE));
+				addAttribute(DE.P_SOURCE_LOCATION, object.getAttribute(DE.A_SOURCE_LOCATION));
+	
+				addReferenceTypeAttribute(object);
+	
+				addAttribute(DE.P_DEPTH, "" + size); //$NON-NLS-1$
+				addFile(bytes, size, binary);
+	
+				endTag(tagType);
+			}
 		}
 	}
 	
@@ -557,24 +560,26 @@ public class XMLgenerator
 	 */
 	public synchronized void generate(DataElement object, byte[] bytes, int size)
 	{
-		String tagType = XMLparser.STR_CLASS;
-
-		if (object != null)
-		{
-			startTag(tagType);
-			addAttribute(DE.P_TYPE, object.getAttribute(DE.A_TYPE));
-			addAttribute(DE.P_ID, object.getAttribute(DE.A_ID));
-			addAttribute(DE.P_NAME, object.getAttribute(DE.A_NAME));
-			addAttribute(DE.P_VALUE, object.getAttribute(DE.A_VALUE));
-			addAttribute(DE.P_SOURCE, object.getAttribute(DE.A_SOURCE));
-			addAttribute(DE.P_SOURCE_LOCATION, object.getAttribute(DE.A_SOURCE_LOCATION));
-
-			addReferenceTypeAttribute(object);
-
-			addAttribute(DE.P_DEPTH, "" + size); //$NON-NLS-1$
-			addFile(bytes, size, true);
-
-			endTag(tagType);
+		if (_dataStore != null && (_dataStore.isVirtual() || _dataStore.isConnected())){
+			String tagType = XMLparser.STR_CLASS;
+	
+			if (object != null)
+			{
+				startTag(tagType);
+				addAttribute(DE.P_TYPE, object.getAttribute(DE.A_TYPE));
+				addAttribute(DE.P_ID, object.getAttribute(DE.A_ID));
+				addAttribute(DE.P_NAME, object.getAttribute(DE.A_NAME));
+				addAttribute(DE.P_VALUE, object.getAttribute(DE.A_VALUE));
+				addAttribute(DE.P_SOURCE, object.getAttribute(DE.A_SOURCE));
+				addAttribute(DE.P_SOURCE_LOCATION, object.getAttribute(DE.A_SOURCE_LOCATION));
+	
+				addReferenceTypeAttribute(object);
+	
+				addAttribute(DE.P_DEPTH, "" + size); //$NON-NLS-1$
+				addFile(bytes, size, true);
+	
+				endTag(tagType);
+			}
 		}
 	}
 
@@ -586,7 +591,8 @@ public class XMLgenerator
 	 */
 	public void generate(DataElement object, int depth)
 	{
-		if ((object != null) && (depth >= 0))
+		if ((object != null) && (depth >= 0) && 
+				(_dataStore != null && (_dataStore.isVirtual() || _dataStore.isConnected())))
 		{
 			String tagType = XMLparser.STR_DATAELEMENT;
 

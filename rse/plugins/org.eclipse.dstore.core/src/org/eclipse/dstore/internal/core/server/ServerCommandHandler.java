@@ -51,6 +51,7 @@ public class ServerCommandHandler extends CommandHandler
 	{
 		private long _timeout;
 		private boolean _serverTimedOut = false;
+		private boolean _serverDone = false;
 		
 		public ServerIdleThread(long timeout)
 		{
@@ -59,7 +60,7 @@ public class ServerCommandHandler extends CommandHandler
 		
 		public void run()
 		{	
-			while (!_serverTimedOut)
+			while (!_serverTimedOut && !_serverDone)
 			{
 				if (_dataStore.getClient() != null) {
 					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ServerIdleThread.waitForTimeout()..."); //$NON-NLS-1$
@@ -84,6 +85,12 @@ public class ServerCommandHandler extends CommandHandler
 				else {
 					_dataStore.getClient().disconnectServerReceiver();					
 				}
+			}
+			else if (_serverDone){
+				if (_dataStore.getClient() != null) {
+					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "Server complete so existing server idle thread"); //$NON-NLS-1$
+				}
+
 			}
 		}
 		
@@ -216,7 +223,7 @@ public class ServerCommandHandler extends CommandHandler
 			}
 			
 			if (_serverIdleThread.isAlive()){
-				_serverIdleThread._serverTimedOut = true;
+				_serverIdleThread._serverDone = true;
 				_serverIdleThread.interrupt();
 			}
 			_serverIdleThread = null;

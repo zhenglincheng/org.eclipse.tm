@@ -24,6 +24,7 @@
  * Noriaki Takatsu  (IBM) - [242968] [multithread] serverSocket must be closed when an exception happens in Accept
  * Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
  * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
+ * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -191,6 +192,9 @@ public class ConnectionEstablisher
 	 */
 	public void finished(ServerReceiver receiver)
 	{
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher.finished()"); //$NON-NLS-1$
+		}
 		_updateHandler.removeSenderWith(receiver.socket());
 		_receivers.remove(receiver);
 		_dataStore.removeDataStorePreferenceListener(receiver);
