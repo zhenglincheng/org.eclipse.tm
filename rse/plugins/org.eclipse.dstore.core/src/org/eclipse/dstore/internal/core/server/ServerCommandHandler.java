@@ -19,6 +19,7 @@
  *  David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
  *  David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
  *  David McKnight   (IBM) - [373459] [dstore][multithread] duplicate finish() calls during idle timeout
+ *  David McKnight   (IBM) - [378136] [dstore] miner.finish is stuck
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.server;
@@ -51,6 +52,7 @@ public class ServerCommandHandler extends CommandHandler
 	{
 		private long _timeout;
 		private boolean _serverTimedOut = false;
+		private boolean _serverDone = false;
 		
 		public ServerIdleThread(long timeout)
 		{
@@ -59,7 +61,7 @@ public class ServerCommandHandler extends CommandHandler
 		
 		public void run()
 		{	
-			while (!_serverTimedOut)
+			while (!_serverTimedOut && !_serverDone)
 			{
 				if (_dataStore.getClient() != null) {
 					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ServerIdleThread.waitForTimeout()..."); //$NON-NLS-1$
@@ -69,7 +71,7 @@ public class ServerCommandHandler extends CommandHandler
 			if (_serverTimedOut)
 			{
 				if (_dataStore.getClient() != null) {
-					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "Server timeout");
+					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "Server timeout"); //$NON-NLS-1$
 				}
 
 				// only exit if there's no service manager
@@ -80,7 +82,12 @@ public class ServerCommandHandler extends CommandHandler
 					System.exit(0);
 				}
 				else {
-					_dataStore.getClient().disconnectServerReceiver();
+					_dataStore.getClient().disconnectServerReceiver();					
+				}
+			}
+			else if (_serverDone){
+				if (_dataStore.getClient() != null) {
+					_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "Server complete so existing server idle thread"); //$NON-NLS-1$
 				}
 			}
 		}
@@ -214,7 +221,7 @@ public class ServerCommandHandler extends CommandHandler
 			}
 			
 			if (_serverIdleThread.isAlive()){
-				_serverIdleThread._serverTimedOut = true;
+				_serverIdleThread._serverDone = true;
 				_serverIdleThread.interrupt();
 			}
 			_serverIdleThread = null;

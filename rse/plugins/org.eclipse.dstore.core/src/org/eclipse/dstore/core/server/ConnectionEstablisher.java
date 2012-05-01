@@ -213,14 +213,38 @@ public class ConnectionEstablisher
 	 */
 	public void finished(ServerReceiver receiver)
 	{
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher:finished()"); //$NON-NLS-1$
+		}
+		_commandHandler.finish();
+		
+		
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing sender"); //$NON-NLS-1$
+		}
 		_updateHandler.removeSenderWith(receiver.socket());
+		
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing receiver"); //$NON-NLS-1$
+		}
 		_receivers.remove(receiver);
+		
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing preference listener"); //$NON-NLS-1$
+		}	
 		_dataStore.removeDataStorePreferenceListener(receiver);
 		//if (_receivers.size() == 0)
 		{
 			_continue = false;
-			_commandHandler.finish();
+
+			if (_dataStore.getClient() != null) {
+				_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - finishing update handler"); //$NON-NLS-1$
+			}
 			_updateHandler.finish();
+			
+			if (_dataStore.getClient() != null) {
+				_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - finishing DataStore"); //$NON-NLS-1$
+			}
 			_dataStore.finish();
 			System.out.println(ServerReturnCodes.RC_FINISHED);
 
