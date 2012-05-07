@@ -28,7 +28,7 @@ if [ "${SIGNED_JAR_SOURCE}" = "" ]; then
   SIGNED_JAR_SOURCE=${tmpdir}/eclipse_ext/tm
 fi
 if [ "${BASEBUILDER}" = "" ]; then
-  BASEBUILDER=$HOME/ws2/eclipse
+  BASEBUILDER=$HOME/ws_33x/eclipse
 fi
 if [ "${DROPDIR}" = "" ]; then
   DROPDIR=${curdir}
@@ -52,9 +52,7 @@ if [ "$1" != "-go" ]; then
 fi
 
 #Use Java5 on build.eclipse.org
-#export PATH=/shared/tools/tm/jdk-1.5/bin:$PATH
 export PATH=/shared/tools/tm/jdk-1.5/jre/bin:/shared/tools/tm/jdk-1.5/bin:$PATH
-#export PATH=${HOME}/ws2/IBMJava2-ppc-142/bin:$PATH
 
 if [ ! -d ${tmpdir} ]; then
   mkdir -p ${tmpdir}
@@ -219,11 +217,13 @@ echo "ls ${OUTPUT}"
 ls ${OUTPUT}
 echo ""
 cd "${DROPDIR}"
-if [ ! -d ${DROPDIR}.unsigned ]; then
-  DROPBASE=`basename "${DROPDIR}"`
-  mkdir ../${DROPBASE}.unsigned
-  tar cf - . | (cd ../${DROPBASE}.unsigned ; tar xf -) 
-  chmod -R g+w ../${DROPBASE}.unsigned
-fi
-echo "cp -f ${OUTPUT}/* ."
-echo "rm -rf ${tmpdir}"
+#if [ ! -d ${DROPDIR}.unsigned ]; then
+#  DROPBASE=`basename "${DROPDIR}"`
+#  mkdir ../${DROPBASE}.unsigned
+#  tar cf - . | (cd ../${DROPBASE}.unsigned ; tar xf -) 
+#  chmod -R g+w ../${DROPBASE}.unsigned
+#fi
+#echo "cp -f ${OUTPUT}/* ."
+#echo "rm -rf ${tmpdir}"
+cp -f ${OUTPUT}/* .
+rm -rf ${tmpdir}

@@ -5,18 +5,18 @@ Instructions for building TM and RSE
 -----------------------------
 ssh build.eclipse.org
 cd /shared/tools/tm/
-mkdir ws2_user
-cd ws2_user
-ln -s `pwd` $HOME/ws2
+mkdir ws_33x_user
+cd ws_33x_user
+ln -s `pwd` $HOME/ws_33x
 ln -s /home/data/httpd/download.eclipse.org/tm $HOME/downloads-tm
-wget -O setup.sh "http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?rev=HEAD&cvsroot=Tools_Project&content-type=text/plain"
+wget -O setup.sh "http://dev.eclipse.org/viewcvs/viewvc.cgi/org.eclipse.tm.rse/releng/org.eclipse.rse.build/setup.sh?view=co&root=Tools_Project&pathrev=R3_3_maintenance"
 chmod a+x setup.sh
 ./setup.sh
 
 
 2. Do an N-build
 ----------------
-cd $HOME/ws2
+cd $HOME/ws_33x
 ./doit_nightly.sh
 
 
@@ -30,7 +30,7 @@ Right-click > Team > Release...
 Select Mapfile "org.eclipse.rse.build"
 Press next ... tag and commit the Mapfiles
 ssh build.eclipse.org
-cd ws2
+cd ws_33x
 ./doit_irsbuild.sh I
 When build worked ok, tag org.eclipse.rse.build: e.g. I20070605-1200
 
@@ -39,33 +39,33 @@ When build worked ok, tag org.eclipse.rse.build: e.g. I20070605-1200
 Just like I-build, but also update 
    org.eclipse.rse.build/template/buildNotes.php
 ssh build.eclipse.org
-cd ws2
+cd ws_33x
 ./doit_irsbuild.sh S 2.0RC3
 
 3b) Promote an S-build to official
 ----------------------------------
 After testing the "invisible" S-build:
 ssh build.eclipse.org
-cd ws2/publish/S-3.1RC3*
+cd ws_33x/publish/S-3.1RC3*
 mv package.count.orig package.count
 
 3c) Promote an update site
 --------------------------
-Any build generates its update site in $HOME/downlads-tm/testUpdates
-and $HOME/downloads-tm/signedUpdates . You need to manually copy these
+Any build generates its update site in $HOME/downlads-tm/test33Updates
+and $HOME/downloads-tm/signed33Updates . You need to manually copy these
 to its target repository, then re-generate repository metadata:
 
 cd $HOME/downloads-tm/updates/3.1milestones
 rm -rf plugins features
-cp -R ../../signedUpdates/plugins .
-cp -R ../../signedUpdates/features .
+cp -R ../../signed33Updates/plugins .
+cp -R ../../signed33Updates/features .
 cd bin
 cvs update
 ./mkTestUpdates
 
 3d) Promote an S-build to Galileo
 --------------------------------
-After S-build has been prepared (on signedUpdates)
+After S-build has been prepared (on signed33Updates)
 On local Eclipse client, checkout Galileo projects according to
     http://wiki.eclipse.org/Galileo_Build
 and edit the build contribution.

@@ -30,7 +30,7 @@
   Local Terminal needs CDT Core.</li>
 
 <!--
-<li>Highlights of Fixes and Features since <a href="http://download.eclipse.org/tm/downloads/drops/S-3.3M7-201105022200/index.php">TM 3.3M7</a>:
+<li>Highlights of Fixes and Features since <a href="http://archive.eclipse.org/tm/downloads/drops/R-3.3.1-201109141310/">TM 3.3.1</a>:
 <ul>
   <li>Performance improvements were made to reduce the number of queries when an RSE Tableview is open
       [<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=215814">215814</a>]
@@ -38,13 +38,13 @@
 </ul>
 </li>
 -->
-<li>At least 4 bugs were resolved: Use 
-  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?type0-0-4=regexp;negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;field0-0-4=target_milestone;value0-0-2=backport;chfieldto=2011-09-30;chfield=resolution;query_format=advanced;type0-0-3=regexp;field0-0-3=target_milestone;value0-0-3=3\.3%20M[34567];chfieldfrom=2011-06-01;value0-0-4=3\.3%20RC[1234];field0-0-2=short_desc;value0-0-1=3\.2\.[12];type0-0-0=regexp;value0-0-0=[23]\.[01]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=substring"> -->
-  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced;component=Core;component=RSE;component=Terminal;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;target_milestone=3.3.1;product=Target%20Management">
+<li>At least 1 bug was resolved: Use 
+  <!-- <a href="https://bugs.eclipse.org/bugs/buglist.cgi?negate0=1;field0-0-0=target_milestone;type0-0-1=regexp;field0-0-1=target_milestone;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;value0-0-2=[1234]\.[012345678]%20[MR].*;chfieldto=2012-03-01;chfield=resolution;query_format=advanced;chfieldfrom=2011-09-27;field0-0-2=target_milestone;value0-0-1=3\.3\.[1];type0-0-0=regexp;value0-0-0=[23]\.[01245678]\..*;component=Core;component=RSE;component=Terminal;product=Target%20Management;type0-0-2=regexp"> -->
+  <a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced;component=Core;component=RSE;component=Terminal;resolution=FIXED;resolution=WONTFIX;resolution=WORKSFORME;target_milestone=3.3.2;product=Target%20Management">
   this query</a> to show the list of bugs fixed since
-  <a href="http://download.eclipse.org/tm/downloads/drops/R-3.3-201106080935/">
-  TM 3.3</a>
-  [<a href="http://download.eclipse.org/tm/downloads/drops/R-3.3-201106080935/buildNotes.php">build notes</a>].</li>
+  <a href="http://archive.eclipse.org/tm/downloads/drops/R-3.3.1-201109141310/">
+  TM 3.3.1</a>
+  [<a href="http://archive.eclipse.org/tm/downloads/drops/R-3.3.1-201109141310/buildNotes.php">build notes</a>].</li>
 <li>For details on checkins, see the
   <a href="http://download.eclipse.org/tm/downloads/drops/N-changelog/index.html">
   RSE CVS changelog</a>, and the
@@ -66,7 +66,7 @@
 </table>
 <table><tbody><tr><td>
 <p>The RSE User Documentation has a
-<a href="http://help.eclipse.org/helios/index.jsp?topic=/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
+<a href="http://help.eclipse.org/indigo/index.jsp?topic=/org.eclipse.rse.doc.user/gettingstarted/g_start.html">
 Tutorial</a> that guides you through installation, first steps,
 connection setup and important tasks.</p>
 <p>
