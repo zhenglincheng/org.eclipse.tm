@@ -25,6 +25,7 @@
  * David McKnight  (IBM]  - [330989] [dstore] OutOfMemoryError occurs when searching for a text in a large remote file
  * Noriaki Takatsu  (IBM) - [362025] [dstore] Search for text hung in encountering a device definition
  * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
+ * Noriaki Takatsu  (IBM) - [380562] [multithread][dstore] File Search is not canceled by the client UI on disconnect
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -376,7 +377,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 					long MAX_READ = MAX_FILE / 10; // read no more than a tenth of max file at a time
 					int offset = 0;
 					
-					while (offset < fileLength && !matched){
+					while (offset < fileLength && !matched && !_isCancelled){
 						long readSize = MAX_READ;
 						if (offset +  MAX_READ > fileLength){
 							readSize = fileLength - offset;
