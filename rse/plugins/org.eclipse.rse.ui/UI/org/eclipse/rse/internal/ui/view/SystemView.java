@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -70,6 +70,7 @@
  * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
  * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
  * David McKnight   (IBM)        - [350395] NPE in SystemView.updatePropertySheet()
+ * David McKnight   (IBM)        - [381884] SystemView.systemResourceChange event handling to should run on UI thread when triggered via UI thread
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -1780,8 +1781,12 @@ public class SystemView extends SafeTreeViewer
 		if (!getControl().isDisposed()) {
 			ResourceChangedJob job = new ResourceChangedJob(event, this);
 			job.setPriority(Job.INTERACTIVE);
-			//job.setUser(true);
-			job.schedule();
+			if (Display.getCurrent() != null) {
+				job.runInUIThread(null);
+			} else {
+				// job.setUser(true);
+				job.schedule();
+			}
 			/*
 			Display display = Display.getCurrent();
 			try {
