@@ -34,6 +34,7 @@
  * David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
  * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
  * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
+ * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -152,6 +153,7 @@ public final class DataStore
 	private RandomAccessFile _traceFile;
 	private boolean _tracingOn;
 
+	private boolean _queriedSpiritState = false; // for the client - so we don't keep sending down the same query
 	private boolean _spiritModeOn = false;
 	private boolean _spiritCommandReceived = false;
 	private File _memLoggingFileHandle;
@@ -2280,17 +2282,25 @@ public final class DataStore
 		return synchronizedCommand(cmd, _dummy);
 	}
 
-	public boolean queryServerSpiritState()
-	{
-		DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
-		if (spirittype == null) return false;
-		DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
-		if (cmd == null) return false;
-
-		DataElement status = synchronizedCommand(cmd, _dummy);
-		if ((status != null) && status.getName().equals(DataStoreResources.model_done))
-			return true;
-		else return false;
+	/**
+	+	 * Client calls this to start the spiriting mechanism on the server.  The return value shouldn't be reliable here.  
+	+	 * Originally this was a synchronized command but that can slow connect time.  Since no one should use the return value here,
+	+	 * 
+	+	 * @return whether the server spirit state has been queried
+	+	 */
+	 public boolean queryServerSpiritState()
+	 {
+		if (!_queriedSpiritState){
+			DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
+			if (spirittype != null){		
+				DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
+				if (cmd != null){
+					command(cmd, _dummy); // start 
+					_queriedSpiritState = true;
+				}
+			}
+		}
+		return _queriedSpiritState;
 	}
 
 	public DataElement queryHostJVM()
