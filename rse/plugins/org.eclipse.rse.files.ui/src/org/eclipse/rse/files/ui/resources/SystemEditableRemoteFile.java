@@ -45,6 +45,7 @@
  * David McKnight   (IBM)        - [249031] Last used editor should be set to SystemEditableRemoteFile
  * Rick Sawyer      (IBM)        - [376535] RSE does not respect editor overrides
  * David McKnight   (IBM)        - [357111] [DSTORE]File with invalid characters can't be opened in editor
+ * David McKnight   (IBM)        - [385420] double-click default editor problem
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -1736,6 +1737,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 			if (_usingDefaultDescriptor){
 				_editorDescriptor = IDE.getEditorDescriptor(file);
 				editorId = _editorDescriptor.getId();
+				_usingDefaultDescriptor = false;
 			}	
 			else {
 				editorId = _editorDescriptor.getId();
