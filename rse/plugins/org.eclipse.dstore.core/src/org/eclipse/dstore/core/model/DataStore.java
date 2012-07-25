@@ -41,6 +41,7 @@
  * David McKnight   (IBM) - [370260] [dstore] log the RSE version in server traces
  * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
  * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
+ * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -2871,7 +2872,7 @@ public final class DataStore
 					return results;
 				}
 
-				if (root.isDeleted())
+				if (root.isDeleted() && !results.contains(root))
 				{
 					results.add(root);
 				}
@@ -2890,7 +2891,6 @@ public final class DataStore
 							{
 								if (child.isDeleted() && !results.contains(child))
 								{
-
 									results.add(child);
 									if (!child.isReference())
 									{
