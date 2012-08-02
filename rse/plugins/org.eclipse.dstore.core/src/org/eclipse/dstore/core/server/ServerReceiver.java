@@ -55,6 +55,7 @@ public class ServerReceiver extends Receiver
 	{
 		super(socket, connection.getDataStore());
 		_connection = connection;
+		_log = _dataStore.getLogRoot();		
 	}
 
 
@@ -72,23 +73,25 @@ public class ServerReceiver extends Receiver
 			DataElement rootOutput = documentObject.get(a);
 
 			// max log 
-			List logged = _log.getNestedData();
-			if (logged == null){
-				_log.addNestedData(rootOutput, false);
-				_logIndex++;
-			}
-			else {
-				if (_logIndex > _maxLog){
-					_logIndex = 0; // reset logindex
-				}
-			
-				if (logged.size() > _logIndex){
-					logged.set(_logIndex, rootOutput);
+			if (_log != null){
+				List logged = _log.getNestedData();
+				if (logged == null){
+					_log.addNestedData(rootOutput, false);
+					_logIndex++;
 				}
 				else {
-					logged.add(_logIndex, rootOutput);
+					if (_logIndex > _maxLog){
+						_logIndex = 0; // reset logindex
+					}
+				
+					if (logged.size() > _logIndex){
+						logged.set(_logIndex, rootOutput);
+					}
+					else {
+						logged.add(_logIndex, rootOutput);
+					}
+					_logIndex++;
 				}
-				_logIndex++;
 			}
 			
 			if (rootOutput.getName().equals("C_EXIT")) //$NON-NLS-1$
