@@ -62,6 +62,7 @@
  * David McKnight     (IBM)      - [298440] jar files in a directory can't be pasted to another system properly
  * David McKnight     (IBM)      - [311218] Content conflict dialog pops up when it should not
  * David McKnight     (IBM)      - [376410] cross-system copy/paste operation doesn't transfer remote encodings for binary files
+ * David McKnight     (IBM)      - [386486] when the original timestamp of a file is 0 don't set it after an upload
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -1760,12 +1761,15 @@ public class UniversalFileTransferUtility {
 						if (RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.PRESERVETIMESTAMPS))
 						{
 							SystemIFileProperties properties = new SystemIFileProperties(srcFileOrFolder);
-							try {
-								targetFS.setLastModified(newFile, properties.getRemoteFileTimeStamp(), monitor);						
-							}
-							catch (SystemUnsupportedOperationException e){
-								// service doesn't support setLastModified
-								SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+							long ts = properties.getRemoteFileTimeStamp();
+							if (ts != 0){ // don't set 0 timestamp
+								try {
+									targetFS.setLastModified(newFile, properties.getRemoteFileTimeStamp(), monitor);						
+								}
+								catch (SystemUnsupportedOperationException e){
+									// service doesn't support setLastModified
+									SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+								}
 							}
 						}
 					}
@@ -2017,12 +2021,14 @@ public class UniversalFileTransferUtility {
 					if (timestamp == 0)
 						timestamp = srcFileOrFolder.getLocalTimeStamp();
 
-					try {
-						targetFS.setLastModified(copiedFile, timestamp, monitor);
-					}
-					catch (SystemUnsupportedOperationException e){
-						// service doesn't support setLastModified
-						SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+					if (timestamp != 0){ // don't set 0 timestamps
+						try {
+							targetFS.setLastModified(copiedFile, timestamp, monitor);
+						}
+						catch (SystemUnsupportedOperationException e){
+							// service doesn't support setLastModified
+							SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+						}
 					}
 	  		    }
 
@@ -2260,7 +2266,10 @@ public class UniversalFileTransferUtility {
 		{
 			SystemIFileProperties properties = new SystemIFileProperties(source);
 			try {
-				target.getParentRemoteFileSubSystem().setLastModified(target, properties.getRemoteFileTimeStamp(), monitor);
+				long ts = properties.getRemoteFileTimeStamp();
+				if (ts != 0){ // don't set 0 timestamps
+					target.getParentRemoteFileSubSystem().setLastModified(target, ts, monitor);
+				}
 			}
 			catch (SystemUnsupportedOperationException e){
 				// service doesn't support setLastModified
