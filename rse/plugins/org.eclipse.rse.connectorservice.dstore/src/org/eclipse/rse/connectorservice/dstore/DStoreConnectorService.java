@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,6 +40,7 @@
  * David McKnight   (IBM)        - [258529] Unable to display connection failure error message
  * David McKnight   (IBM)        - [306989] [dstore] workspace in strange condition if expanding projects during  logon
  * David McKnight   (IBM)        - [313653] [dstore] Not Secured using SSL message appears twice per connect
+ * David McKnight   (IBM)        - [384301] (DSTORE)Cached password revokes the user ID
  *******************************************************************************/
 
 package org.eclipse.rse.connectorservice.dstore;
@@ -578,7 +579,7 @@ public class DStoreConnectorService extends StandardConnectorService implements 
 			}
 			else
 			{
-				errorMsg = msg.getLevelTwoText();
+				errorMsg = msg.getLevelOneText();
 			}
 			connectStatus.setMessage(errorMsg);
 		}
@@ -1249,10 +1250,7 @@ public class DStoreConnectorService extends StandardConnectorService implements 
 				// tODO use ID or something instead of string
 				msg.getLevelOneText().startsWith(NLS.bind(ConnectorServiceResources.MSG_COMM_INVALID_LOGIN, getHostName())))
 		{
-			if (launchFailed)
-		    {
-		        clearPassword(true, true);
-		    }
+			clearPassword(true, true);
 
 			DisplaySystemMessageAction msgAction = new DisplaySystemMessageAction(msg);
 			Display.getDefault().syncExec(msgAction);
