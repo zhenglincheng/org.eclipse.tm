@@ -14,6 +14,8 @@
  * Contributors:
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight    (IBM)  - [373507] [dstore][multithread] reduce heap memory on disconnect for server
+ * David McKnight   (IBM) - [380158] [dstore] DataStore.command() fails when multiple commands issue simultaneously
+ * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -589,20 +591,20 @@ public final class DataElement implements IDataElement
 	 */
 	public DataElement get(int index)
 	{
-		if (_nestedData == null)
-		{
+		if (_nestedData == null){
 			return null;
 		}
 		else
 		{
-			if (getNestedSize() > index)
-			{
-				Object obj = _nestedData.get(index);
-				return (DataElement) obj;
-			}
-			else
-			{
-				return null;
+			synchronized(_nestedData){ // bug 380158, sync needed to properly do concurrent commands
+			                           // safe trivial fix that should be here so adding to 3.0.x via bug 388270
+				if (_nestedData.size() > index){
+					Object obj = _nestedData.get(index);
+					return (DataElement) obj;
+				}
+				else {
+					return null;
+				}
 			}
 		}
 	}
@@ -1628,11 +1630,7 @@ public final class DataElement implements IDataElement
 		{
 			for (int i = 0; i < _attributes.length; i++)
 			{
-				String att = _attributes[i];
-				if (att != null)
-				{
-					att = null;
-				}
+				_attributes[i] = null;
 			}
 
 		}

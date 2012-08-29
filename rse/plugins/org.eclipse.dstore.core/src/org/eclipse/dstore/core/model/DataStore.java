@@ -35,6 +35,7 @@
  * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
  * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
  * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
+ * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -2858,7 +2859,7 @@ public final class DataStore
 					return results;
 				}
 
-				if (root.isDeleted())
+				if (root.isDeleted() && !results.contains(root))
 				{
 					results.add(root);
 				}
@@ -2877,7 +2878,6 @@ public final class DataStore
 							{
 								if (child.isDeleted() && !results.contains(child))
 								{
-
 									results.add(child);
 									if (!child.isReference())
 									{
@@ -3962,6 +3962,7 @@ public final class DataStore
 		}
 
 		newObject.setUpdated(false);
+		newObject.setSpirit(false); // safe trivial fix that was in 3.2.x so a recycled element isn't marked spirited
 		updateLastCreated(newObject);
 		return newObject;
 	}
