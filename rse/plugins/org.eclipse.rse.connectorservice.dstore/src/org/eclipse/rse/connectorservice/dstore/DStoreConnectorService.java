@@ -41,6 +41,7 @@
  * David McKnight   (IBM)        - [306989] [dstore] workspace in strange condition if expanding projects during  logon
  * David McKnight   (IBM)        - [313653] [dstore] Not Secured using SSL message appears twice per connect
  * David McKnight   (IBM)        - [384301] (DSTORE)Cached password revokes the user ID
+ * David McKnight   (IBM)        - [388506] [dstore] [multithread] RSEC1001error window after the expired password has been changed
  *******************************************************************************/
 
 package org.eclipse.rse.connectorservice.dstore;
@@ -716,8 +717,12 @@ public class DStoreConnectorService extends StandardConnectorService implements 
 				}
 				if (newCredentials != null){
 					info = newCredentials;
+					if (clientConnection != null){
+						clientConnection.setPort(Integer.toString(getPort())); //reset port to default
+					}
 				}
-				if (launchMsg != null && launchMsg.equals(IDataStoreConstants.ATTEMPT_RECONNECT)){
+				// need to reconnect if there are new credentials
+				if (newCredentials != null || (launchMsg != null && launchMsg.equals(IDataStoreConstants.ATTEMPT_RECONNECT))){
 					return connectWithDaemon(info, serverLauncher, alertedNONSSL, monitor);
 				}
 			}
