@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,6 +71,7 @@
  * David McKnight   (IBM)        - [324192] Cannot open a renamed file
  * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
  * Rick Sawyer      (IBM)        - [376535] RSE does not respect editor overrides
+ * David McKnight   (IBM)        - [389838] Fast folder transfer does not account for code page
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -1763,7 +1764,8 @@ public class SystemViewRemoteFileAdapter
 	{
 
 		boolean supportsSearch = ((IRemoteFileSubSystemConfiguration)set.getSubSystem().getSubSystemConfiguration()).supportsSearch();
-		boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
+		// boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
+		boolean doSuperTransferProperty = false;  // disabling due to potential corruption
 		if (!doSuperTransferProperty && supportsSearch)
 		{
 			//flatset will contain all FILES that will be copied to workspace in UniversalFileTransferUtility and create corresponding folders.  Empty folders will be ignored
@@ -2117,7 +2119,8 @@ public class SystemViewRemoteFileAdapter
 			{
 				if (fromSet instanceof SystemWorkspaceResourceSet)
 				{
-					boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
+					//boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
+					boolean doSuperTransferProperty = false;  // disabling due to potential corruption
 					if (!doSuperTransferProperty)
 					{
 						SystemWorkspaceResourceSet flatFromSet = new SystemWorkspaceResourceSet();
