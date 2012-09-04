@@ -1632,7 +1632,7 @@ public final class DataElement implements IDataElement
 			{
 				_attributes[i] = null;
 			}
-
+			_attributes = null;
 		}
 
 		if (_nestedData != null)
