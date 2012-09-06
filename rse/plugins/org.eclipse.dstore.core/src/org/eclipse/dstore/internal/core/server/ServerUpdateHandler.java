@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
  * Contributors:
  * David McKnight  (IBM)   [222168][dstore] Buffer in DataElement is not sent
  * David McKnight   (IBM) - [225507][api][breaking] RSE dstore API leaks non-API types
+ * David McKnight  (IBM)   [388873][dstore] ServerUpdateHandler _senders list should be synchronized
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.server;
@@ -157,7 +158,9 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void addSender(Sender sender)
 	{
+		synchronized (_senders){
 		_senders.add(sender);
+		}
 	}
 
 	/**
@@ -166,7 +169,9 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void removeSender(Sender sender)
 	{
+		synchronized (_senders){
 		_senders.remove(sender);
+		}
 		if (_senders.size() == 0)
 		{
 			finish();
@@ -206,10 +211,12 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setPendingTransfer(true);
 		document.setParent(null);
 
+		synchronized (_senders){
 		for (int j = 0; j < _senders.size(); j++)
 		{
 			Sender sender = (Sender) _senders.get(j);
 			sender.sendFile(document, bytes, size, binary);
+		}
 		}
 	}
 
@@ -244,11 +251,13 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setAttribute(DE.A_SOURCE, path);
 		document.setPendingTransfer(true);
 		document.setParent(null);
-		
+	
+		synchronized (_senders){
 		for (int j = 0; j < _senders.size(); j++)
 		{
 			Sender sender = (Sender) _senders.get(j);
 			sender.sendAppendFile(document, bytes, size, binary);
+		}
 		}
 	}
 	
@@ -280,6 +289,7 @@ public class ServerUpdateHandler extends UpdateHandler
 			
 			_commandGenerator.generateResponse(document, _dataObjects);
 
+			synchronized (_senders){
 			for (int j = 0; j < _senders.size(); j++)
 			{
 				Sender sender = (Sender) _senders.get(j);
@@ -294,6 +304,7 @@ public class ServerUpdateHandler extends UpdateHandler
 					sender.sendKeepAliveRequest(_pendingKeepAliveRequest);
 					_pendingKeepAliveRequest = null;
 				}
+			}
 			}
 
 			for (int i = 0; i < _dataObjects.size(); i++)
@@ -315,10 +326,12 @@ public class ServerUpdateHandler extends UpdateHandler
 			synchronized (_classesToSend)
 			{
 				document = (DataElement)_classesToSend.remove(0);
+				synchronized (_senders){
 				for (int i = 0; i < _senders.size(); i++)
 				{
 					Sender sender = (Sender) _senders.get(i);
 					sender.sendClass(document);
+				}
 				}
 			}
 		}
@@ -333,6 +346,7 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void removeSenderWith(Socket socket)
 	{
+		synchronized (_senders){
 		for (int i = 0; i < _senders.size(); i++)
 		{
 			Sender sender = (Sender) _senders.get(i);
@@ -343,6 +357,7 @@ public class ServerUpdateHandler extends UpdateHandler
 				sender.sendDocument(document, 2);
 				removeSender(sender);
 			}
+		}
 		}
 	}
 	
@@ -359,13 +374,13 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setAttribute(DE.A_VALUE, className);
 		document.setParent(null);
 		//DataElement document = _dataStore.createObject(null, DataStoreResources.REQUEST_CLASS_TYPE, className);
-
+		synchronized (_senders){
 		for (int j = 0; j < _senders.size(); j++)
 		{
 			Sender sender = (Sender) _senders.get(j);
 			sender.requestClass(document);
 		}
-		
+		}
 	}
 	
 
@@ -377,10 +392,12 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setPendingTransfer(true);
 		document.setParent(null);		
 
+		synchronized (_senders){
 		for (int j = 0; j < _senders.size(); j++)
 		{
 			Sender sender = (Sender) _senders.get(j);
 			sender.sendRemoteClassRunnable(document, runnable);
+		}
 		}
 		notifyInput();
 	}
@@ -468,10 +485,12 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void setGenerateBuffer(boolean flag)
 	{
+		synchronized (_senders){
 		for (int i = 0; i < _senders.size(); i++)
 		{
 			Sender sender = (Sender)_senders.get(i);
 			sender.setGenerateBuffer(flag);
+		}
 		}
 	}
 }
