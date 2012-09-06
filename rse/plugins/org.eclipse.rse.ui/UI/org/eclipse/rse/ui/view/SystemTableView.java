@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2012 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -29,6 +29,7 @@
  * David McKnight   (IBM)        - [329170] Show in table does not work after showing empty folder in table
  * David McKnight   (IBM)        - [357587] Custom sorter is changed to SystemTableViewSorter
  * David McKnight   (IBM)        - [363392] system table views shows open view actions when they shouldn't
+ * David McKnight   (IBM)        - [388947] column sort icon issue with Remote Systems Details view
  ********************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -239,6 +240,7 @@ public class SystemTableView
 					}
 					else {
 						oldSorter.setColumnNumber(column);
+						tcolumn.setImage(_downI);  
 					}
 				}
 				else
