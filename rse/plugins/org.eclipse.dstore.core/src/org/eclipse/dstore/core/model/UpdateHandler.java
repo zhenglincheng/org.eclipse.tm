@@ -212,7 +212,7 @@ public abstract class UpdateHandler extends Handler
 				}
 			}
 			if (_dataStore != null && !_dataStore.isVirtual() && isStatus){
-				_dataStore.disconnectObjects(object.getParent()); // spirit the command
+				_dataStore.disconnectObjects(object); // spirit the command
 			}
 			}
 		}
