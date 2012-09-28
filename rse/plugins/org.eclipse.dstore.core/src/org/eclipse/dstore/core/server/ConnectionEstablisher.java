@@ -28,6 +28,7 @@
  * David McKnight   (IBM) - [368072] [dstore][ssl] no exception logged upon bind error
  * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
  * David McKnight    (IBM) - [388472] [dstore] need alternative option for getting at server hostname
+ * David McKnight   (IBM)  - [390681] [dstore] need to merge differences between HEAD stream and 3.2 in ConnectionEstablisher.finished()
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -215,11 +216,8 @@ public class ConnectionEstablisher
 	public void finished(ServerReceiver receiver)
 	{
 		if (_dataStore.getClient() != null) {
-			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher:finished()"); //$NON-NLS-1$
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher.finished()"); //$NON-NLS-1$
 		}
-		_commandHandler.finish();
-		
-		
 		if (_dataStore.getClient() != null) {
 			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing sender"); //$NON-NLS-1$
 		}
@@ -237,7 +235,8 @@ public class ConnectionEstablisher
 		//if (_receivers.size() == 0)
 		{
 			_continue = false;
-
+			_commandHandler.finish();			
+			
 			if (_dataStore.getClient() != null) {
 				_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - finishing update handler"); //$NON-NLS-1$
 			}
