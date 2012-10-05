@@ -1210,7 +1210,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		DataElement de = null;
 		if (name.equals(".") && name.equals(remoteParent)) //$NON-NLS-1$
 		{
-			de = getElementFor(name);
+			de = getElementFor(name, true);
 		}
 		else
 		{
@@ -1220,7 +1220,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			    buf.append(sep);
 			}
 			buf.append(name);
-			de = getElementFor(buf.toString());
+			de = getElementFor(buf.toString(), true);
 		}
 		return de;
 	}
@@ -2094,8 +2094,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 		return results;
 	}
+	
+	protected DataElement getElementFor(String path){
+		return getElementFor(path, false);
+	}
 
-	protected DataElement getElementFor(String path)
+	protected DataElement getElementFor(String path, boolean forceReuse)
 	{
 		if (!isInitialized())
 		{
@@ -2113,7 +2117,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		DataElement element = (DataElement)_fileElementMap.get(normalizedPath);
 		if (element != null)
 		{
-			if (element.isDeleted() 
+			if (forceReuse || element.isDeleted() 
 					|| element.isSpirit()){ // when using spirit, don't use element cache 
 				_fileElementMap.remove(normalizedPath);
 				element = null;
@@ -2407,6 +2411,9 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			*/
 
 			DataElement remoteFile = file.getDataElement();
+			if (remoteFile.isSpirit()){
+				remoteFile = getElementFor(rfile.getAbsolutePath());
+			}
 
 			DataElement status = dsStatusCommand(remoteFile, IUniversalDataStoreConstants.C_QUERY_FILE_PERMISSIONS, monitor);
 			if (status != null) {
