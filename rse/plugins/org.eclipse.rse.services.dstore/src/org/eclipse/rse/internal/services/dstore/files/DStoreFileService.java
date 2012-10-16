@@ -66,6 +66,7 @@
  * David McKnight    (IBM)       - [365780] [dstore] codepage conversion should only occur for different encodings
  * David McKnight   (IBM)        - [390037] [dstore] Duplicated items in the System view
  * David McKnight   (IBM)        - [391164] [dstore] don't clear cached elements when they're not spirited or deleted
+ * David McKnight   (IBM)        - [392012] [dstore] make server safer for delete operations
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -1523,7 +1524,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 	public void delete(String remoteParent, String fileName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String remotePath = remoteParent + getSeparator(remoteParent) + fileName;
-		DataElement de = getElementFor(remotePath);
+		
+		// always get a fresh element for deletions (spiriting could cause issues on server-side)
+		DataElement universaltemp = getMinerElement();
+		String normalizedPath = PathUtility.normalizeUnknown(remotePath);
+		DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+
 		// if we don't have a proper element, we won't have a command descriptor
 		if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 			// need to fetch
@@ -1568,11 +1574,16 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			return;
 		}
 
+		DataElement universaltemp = getMinerElement();
 		ArrayList dataElements = new ArrayList(remoteParents.length);
 		for (int i = 0; i < remoteParents.length; i++)
 		{
 			String remotePath = remoteParents[i] + getSeparator(remoteParents[i]) + fileNames[i];
-			DataElement de = getElementFor(remotePath);
+			
+			// always get a fresh element for deletions (spiriting could cause issues on server-side)
+			String normalizedPath = PathUtility.normalizeUnknown(remotePath);
+			DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+			
 			// if we don't have a proper element, we won't have a command descriptor
 			if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 				// need to fetch
@@ -1632,7 +1643,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
  			 newPath = remoteParent + getSeparator(remoteParent) + newName;
  		}
 
- 		DataElement de = getElementFor(oldPath);
+ 		// always get a fresh element for renames (spiriting could cause issues on server-side)
+		DataElement universaltemp = getMinerElement();
+		String normalizedPath = PathUtility.normalizeUnknown(oldPath);
+		DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+
+ 		
 		// if we don't have a proper element, we won't have a command descriptor
 		if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 			// need to fetch
