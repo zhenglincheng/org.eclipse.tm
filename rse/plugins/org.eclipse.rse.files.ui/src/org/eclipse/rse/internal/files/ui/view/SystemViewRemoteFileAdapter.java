@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,15 +69,10 @@
  * David McKnight   (IBM)        - [317541] Show blank as the last modified for a file with no last modified
  * David McKnight   (IBM)        - [323299] [files] remote file view adapter needs to use the latest version of IRemoteFile
  * David McKnight   (IBM)        - [324192] Cannot open a renamed file
- * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
- * Rick Sawyer      (IBM)        - [376535] RSE does not respect editor overrides
- * David McKnight   (IBM)        - [389838] Fast folder transfer does not account for code page
- * David Mcknight   (IBM)        - [374681] Incorrect number of children on the properties page of a directory
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,7 +92,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -201,15 +195,11 @@ import org.eclipse.rse.ui.view.ISystemViewElementAdapter;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.IElementCollector;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -514,31 +504,6 @@ public class SystemViewRemoteFileAdapter
 		IRemoteFile file = (IRemoteFile) element;
 		if (file.isFile() || file.isArchive()) // hack to show zips without folder icons
 		{
-			// bug #376535 - need to respect editor overrides
-			IFile localFile = getLocalResource(file);
-			if (localFile != null) {
-				IEditorDescriptor editorDesc = getEditorRegistry().getDefaultEditor(file.getName(), IDE.guessContentType(localFile));
-				// Using reflection in case IDE is older version, without this method
-				//editorDesc = IDE.overrideDefaultEditorAssociation(new FileEditorInput(localFile), IDE.guessContentType(localFile), editorDesc);
-				Class clazz = IDE.class;
-				try {  
-					Class parmtypes[] = {IEditorInput.class, IContentType.class, IEditorDescriptor.class};
-					Method method = clazz.getMethod("overrideDefaultEditorAssociation", parmtypes); //$NON-NLS-1$
-					if (method != null) {
-						Object args[] = {new FileEditorInput(localFile), IDE.guessContentType(localFile), editorDesc};
-						editorDesc = (IEditorDescriptor) method.invoke(null, args);
-					}
-				} catch (Exception e) {
-				}
-				
-				if (editorDesc != null) {
-					ImageDescriptor image = editorDesc.getImageDescriptor();
-					if (image != null) {
-						return image;
-					}
-				}
-			}
-			
 			return getEditorRegistry().getImageDescriptor(file.getName());
 		}
 		else
@@ -566,16 +531,6 @@ public class SystemViewRemoteFileAdapter
 		}
 	}
 
-	/**
-	 * Get the local cache of the remote file, or <code>null</code> if none.
-	 * @param remoteFile the remote file.
-	 * @return the local cached resource, or <code>null</code> if none.
-	 */
-	private IFile getLocalResource(IRemoteFile remoteFile) 
-	{
-	    return (IFile)UniversalFileTransferUtility.getTempFileFor(remoteFile);
-	}
-	
 	/**
 	 * Return the label for this object. Uses getName() on the remote file object.
 	 */
@@ -700,7 +655,7 @@ public class SystemViewRemoteFileAdapter
 		IRemoteFile originalFile = file;
 		if (ss instanceof RemoteFileSubSystem){
 			IRemoteFile cachedFile = ((RemoteFileSubSystem)ss).getCachedRemoteFile(file.getAbsolutePath());
-			if (cachedFile != null && cachedFile != file){
+			if (cachedFile != null){
 				file = cachedFile;
 				if (originalFile.isStale()){ // the original file was marked stale, so the cached one should be too
 					file.markStale(true);
@@ -922,20 +877,6 @@ public class SystemViewRemoteFileAdapter
 	{
 		IRemoteFile file = (IRemoteFile) element;
 
-		IRemoteFileSubSystem ss = file.getParentRemoteFileSubSystem();
-		
-		// make sure we have the lastest cached version otherwise could be working with a bad file that never got marked as stale
-		IRemoteFile originalFile = file;
-		if (ss instanceof RemoteFileSubSystem){
-			IRemoteFile cachedFile = ((RemoteFileSubSystem)ss).getCachedRemoteFile(file.getAbsolutePath());
-			if (cachedFile != null && cachedFile != file){
-				file = cachedFile;
-				if (originalFile.isStale()){ // the original file was marked stale, so the cached one should be too
-					file.markStale(true);
-				}
-			}
-		}		
-		
 		if (!file.exists())
 			return false;
 
@@ -1765,8 +1706,7 @@ public class SystemViewRemoteFileAdapter
 	{
 
 		boolean supportsSearch = ((IRemoteFileSubSystemConfiguration)set.getSubSystem().getSubSystemConfiguration()).supportsSearch();
-		// boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
-		boolean doSuperTransferProperty = false;  // disabling due to potential corruption
+		boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
 		if (!doSuperTransferProperty && supportsSearch)
 		{
 			//flatset will contain all FILES that will be copied to workspace in UniversalFileTransferUtility and create corresponding folders.  Empty folders will be ignored
@@ -2120,8 +2060,7 @@ public class SystemViewRemoteFileAdapter
 			{
 				if (fromSet instanceof SystemWorkspaceResourceSet)
 				{
-					//boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
-					boolean doSuperTransferProperty = false;  // disabling due to potential corruption
+					boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER);
 					if (!doSuperTransferProperty)
 					{
 						SystemWorkspaceResourceSet flatFromSet = new SystemWorkspaceResourceSet();
@@ -3405,30 +3344,7 @@ public class SystemViewRemoteFileAdapter
 					
 					// open new editor for correct replica
 					editable = getEditableRemoteObject(remoteFile);
-				}
-				
-				/* Commenting out - no longer needed with fix to bug #376535
-				if (editable instanceof SystemEditableRemoteFile){
-					SystemEditableRemoteFile edit = (SystemEditableRemoteFile)editable;
-					IEditorDescriptor oldDescriptor = edit.getEditorDescriptor();
-					IEditorDescriptor curDescriptor = null;
-					IFile file = editable.getLocalResource();
-					
-					if (file == null || !file.exists()){
-						curDescriptor = registry.getDefaultEditor(remoteFile.getName());						
-					}
-					if (curDescriptor == null){
-						try {
-							curDescriptor = IDE.getEditorDescriptor(file);
-						} catch (PartInitException e) {
-							curDescriptor = IDE.getDefaultEditor(file);
-						}
-					}
-					if (oldDescriptor != curDescriptor){
-						edit.setEditorDescriptor(curDescriptor);
-					}								
-				}
-				*/
+				}											
 				
 				try
 				{

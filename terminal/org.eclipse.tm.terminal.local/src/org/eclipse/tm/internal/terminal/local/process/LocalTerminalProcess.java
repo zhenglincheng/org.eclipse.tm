@@ -67,7 +67,7 @@ import org.eclipse.debug.core.model.RuntimeProcess;
  * extension point as proposed in bug 242373 (https://bugs.eclipse.org/bugs/show_bug.cgi?id=242373).
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public final class LocalTerminalProcess extends RuntimeProcess {
 

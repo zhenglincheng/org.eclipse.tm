@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2012 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,9 +22,6 @@
  * David McKnight   (IBM)     [302996] [dstore] null checks and performance issue with shell output
  * David McKnight   (IBM)     [309338] [dstore] z/OS USS - invocation of 'env' shell command returns inconsistently organized output
  * David McKnight   (IBM)     [312415] [dstore] shell service interprets &lt; and &gt; sequences - handle old client/new server case
- * David McKnight   (IBM)     [341366] [dstore][shells] codepage IBM-1141 has faulty display of \ character
- * David McKnight   (IBM)     [343421] [dstore] Man page was not displayed properly in the shell
- * David McKnight   (IBM)     [372968] [dstore][shell] provide support for csh and tcsh shells
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -78,12 +75,6 @@ public class OutputHandler extends Handler {
 		_encodings = new ArrayList();
 		String system = System.getProperty("os.name").toLowerCase(); //$NON-NLS-1$
 
-		// use special encoding first if it exists
-		String specialEncoding = System.getProperty("dstore.stdin.encoding"); //$NON-NLS-1$
-		if (specialEncoding != null) {
-			_encodings.add(specialEncoding);
-		}
-		
 		if (system.startsWith("z")) { //$NON-NLS-1$
 			_encodings.add("IBM-1047"); //$NON-NLS-1$
 			/*
@@ -91,6 +82,11 @@ public class OutputHandler extends Handler {
 			 * _encodings.add("UTF8");
 			 */
 		} else {
+			String specialEncoding = System
+					.getProperty("dstore.stdin.encoding"); //$NON-NLS-1$
+			if (specialEncoding != null) {
+				_encodings.add(specialEncoding);
+			}
 			_encodings.add(System.getProperty("file.encoding")); //$NON-NLS-1$
 		}
 
@@ -144,14 +140,10 @@ public class OutputHandler extends Handler {
 				switch (currChar)
 				{
 				case '&' :
-					output.append("&#38;"); //$NON-NLS-1$
+					output.append("&#38;");
 					break;
 				case ';' :
-					output.append("&#59;"); //$NON-NLS-1$
-					break;
-				case '\b': // special case for backspace control char
-					int len = output.length()-1;
-					if (len>=0) output.deleteCharAt(len);
+					output.append("&#59;");
 					break;
 				default :
 					output.append(currChar);
@@ -295,9 +287,8 @@ public class OutputHandler extends Handler {
 
 						String lastLine = output[index - 1];
 
-						boolean endLine = fullOutput.endsWith("\n") || fullOutput.endsWith("\r") ||   //$NON-NLS-1$//$NON-NLS-2$
-										fullOutput.endsWith(">") || //$NON-NLS-1$
-										fullOutput.endsWith("% "); // csh/tcsh //$NON-NLS-1$
+						boolean endLine = fullOutput.endsWith("\n") || fullOutput.endsWith("\r") || fullOutput.endsWith(">");
+						
 						if (!_endOfStream && !endLine)
 						{
 							// our last line may be cut off		

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,8 +25,6 @@
  * David McKnight   (IBM)        - [235221] Files truncated on exit of Eclipse
  * David McKnight   (IBM)        - [251631] NullPointerException in SystemTempFileListener
  * David McKnight   (IBM)        - [256048] Saving a member open in Remote LPEX editor while Working Offline doesn't set the dirty property
- * David McKnight   (IBM)        - [381482] Improper use of save participant is causing a workspace hang
- * David McKnight   (IBM)        - [390609] Cached file opened twice in case of eclipse linked resource..
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -70,7 +68,6 @@ import org.eclipse.rse.ui.RSEUIPlugin;
 import org.eclipse.rse.ui.SystemBasePlugin;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.progress.WorkbenchJob;
 
@@ -98,15 +95,14 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 		}
 
 		public void saving(ISaveContext context) throws CoreException {
+			
 			// wait for completion of synch
-			if (PlatformUI.getWorkbench().isClosing() &&
-					context.getKind() == ISaveContext.FULL_SAVE) {
-				while (isSynching()){
-					try {
-						Thread.sleep(1000);				
-					}
-					catch (Exception e){					
-					}
+			while (isSynching()){
+				try {
+					Thread.sleep(1000);				
+				}
+				catch (Exception e){
+					
 				}
 			}
 		}
@@ -785,9 +781,9 @@ public abstract class SystemTempFileListener implements IResourceChangeListener
 			return false;
 		
 		IResourceDelta[] subdeltas = delta.getAffectedChildren();
-		for (int i = 0; i < subdeltas.length; i++)
+		if (subdeltas.length > 0)
 		{
-			IResource resource = subdeltas[i].getResource();
+			IResource resource = subdeltas[0].getResource();
 			if ((resource != null) && (resource.getType() == IResource.PROJECT))
 			{
 				if (resource.getName().equals(SystemRemoteEditManager.REMOTE_EDIT_PROJECT_NAME))

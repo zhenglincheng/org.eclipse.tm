@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -77,15 +77,6 @@
  * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
  * David McKnight   (IBM)        - [333196] New member filter dialogue keep popping up when creating a shared member filter.
  * David McKnight   (IBM)        - [241726] Move doesn't select the moved items
- * David McKnight   (IBM)        - [341281] amendment to fix for bug 308983
- * David McKnight   (IBM)        - [342208] potential NPE in SystemView$ExpandRemoteObjects.execute()
- * David McKnight   (IBM)        - [342095] Properties in Properties view remain "Pending..." in some cases
- * David McKnight   (IBM)        - [372976] ClassCastException when SystemView assumes widget a TreeItem when it's a Tree
- * David Dykstal    (IBM)        - [257110] Prompting filter called twice on double click rather than just once
- * David McKnight   (IBM)        - [380613] Problem in SystemView with disposed TreeItem when Link With Editor toolbar icon is used
- * David McKnight   (IBM)        - [385774] select folder dialog doesn't update enablement properly after new folder created
- * David McKnight   (IBM)        - [388364] RDz property view flickers when a user disconnects from zOS system
- * David Mcknight   (IBM)        - [374681] Incorrect number of children on the properties page of a directory
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -228,7 +219,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -242,7 +232,6 @@ import org.eclipse.ui.progress.PendingUpdateAdapter;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.framelist.GoIntoAction;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 /**
  * This subclass of the standard JFace tree viewer is used to show a tree
@@ -297,10 +286,8 @@ public class SystemView extends SafeTreeViewer
 					// if found, re-expand it
 					if (item != null && !item.isDisposed()) {
 						IRSECallback callback = getCallbackForSubChildren(itemToExpand, _toExpand);
-						if (callback != null){
-							createChildren(item, callback);
-							((TreeItem) item).setExpanded(true);
-						}
+						createChildren(item, callback);
+						((TreeItem) item).setExpanded(true);
 					}
 				} else if (itemToExpand.data!=null) {
 					setExpandedState(itemToExpand.data, true);
@@ -416,8 +403,6 @@ public class SystemView extends SafeTreeViewer
 	protected List _setList;
 
 	protected boolean _allowAdapterToHandleDoubleClick = true;
-	
-	private Object[] _lastPropertyValues = null; // to reduce duplicate property sheet updates
 
 	/**
 	 * Constructor
@@ -679,8 +664,7 @@ public class SystemView extends SafeTreeViewer
 
 		if (!alreadyHandled && isExpandable(element)) {
 			boolean expandedState = getExpandedState(elementPath);
-			// TL: need postpone this ExpandState change to avoid an extra createfilter
-			//setExpandedState(elementPath, !expandedState);
+			setExpandedState(elementPath, !expandedState);
 			// DWD:  fire collapse / expand event
 			Event baseEvent = new Event();
 			baseEvent.item = findItem(element);
@@ -691,8 +675,6 @@ public class SystemView extends SafeTreeViewer
 			} else {
 				handleTreeExpand(treeEvent);
 			}
-			// TL: post-change ExpandState
-			setExpandedState(elementPath, !expandedState);
 			return;
 		}
 	}
@@ -2701,7 +2683,6 @@ public class SystemView extends SafeTreeViewer
 			if (originatedHere){
 				// first, restore previous selection...
 				if (prevSelection != null) selectRemoteObjects(prevSelection, ss, parentSelectionItem);
-				
 				TreeItem selectedItem = null;
 				if (remoteResourceParent instanceof String)
 					selectedItem = (TreeItem)findFirstRemoteItemReference((String)remoteResourceParent, ss, parentSelectionItem);
@@ -3404,12 +3385,9 @@ public class SystemView extends SafeTreeViewer
 			String newText = adapter.getText(element);
 			if (oldText == null || !oldText.equals(newText))
 			{
-				if (newText != null){
+				//if (newText != null){
 					item.setText(newText);
-				}
-				else {
-					SystemBasePlugin.logInfo("SystemView.doUpdateItem() - text for " + element + " is null!");  //$NON-NLS-1$//$NON-NLS-2$
-				}
+				//}
 			}
 		}
 
@@ -3738,16 +3716,8 @@ public class SystemView extends SafeTreeViewer
 					if ((parentItem == null) && (selItem instanceof TreeItem)) parentItem = ((TreeItem) selItem).getParentItem();
 				}
 			}
-			if (selItems.size() > 0) {		
-				List dataList = new ArrayList();
-				for (int i = 0; i < selItems.size(); i++){
-					Item item = (Item)selItems.get(i);
-					if (item != null){
-						dataList.add(item.getData());
-					}
-				}
-				IStructuredSelection sel = new StructuredSelection(dataList);				
-				setSelection(sel);
+			if (selItems.size() > 0) {
+				setSelection(selItems);
 				updatePropertySheet();
 				return true;
 			}
@@ -3759,9 +3729,9 @@ public class SystemView extends SafeTreeViewer
 				selItem = findFirstRemoteItemReference(src, parentItem);
 
 			if (selItem != null) {
-
-				IStructuredSelection sel = new StructuredSelection(selItem.getData());
-				setSelection(sel);
+				ArrayList selItems = new ArrayList();
+				selItems.add(selItem);
+				setSelection(selItems);
 				updatePropertySheet();
 				return true;
 			}
@@ -4376,10 +4346,10 @@ public class SystemView extends SafeTreeViewer
 				}
 			} else // add operation
 			{
-				if (parentRefItem instanceof TreeItem && (!((TreeItem) parentRefItem).getExpanded())){
+				if (!(((TreeItem) parentRefItem).getExpanded())) {
 					refresh(parentRefItem.getData()); // delete cached GUIs
-				}			
-				else if (afilterstring) {
+					//setExpandedState(parentRefItem,true); // not our job to expand here.
+				} else if (afilterstring) {
 					ISystemFilterReference fr = (ISystemFilterReference) parentRefItem.getData();
 					ISystemFilterStringReference fsr = fr.getSystemFilterStringReference(filterstring);
 					createTreeItem(parentRefItem, fsr, event.getPosition());
@@ -4618,7 +4588,7 @@ public class SystemView extends SafeTreeViewer
 	public Item findFirstRemoteItemReference(Object remoteObject, Item parentItem) {
 
 		Item match = mappedFindFirstRemoteItemReference(remoteObject);
-		if (match != null && !match.isDisposed())
+		if (match != null)
 			return match;
 
 		//List matches = new Vector();
@@ -4793,7 +4763,7 @@ public class SystemView extends SafeTreeViewer
 		// use map first
 		Item match = mappedFindFirstRemoteItemReference(elementObject);
 
-		for (int idx = 0; (match == null || match.isDisposed()) && (idx < roots.length); idx++) {
+		for (int idx = 0; (match == null) && (idx < roots.length); idx++) {
 			//System.out.println("recursiveFindFirstRemoteItemReference(parentItem, remoteObjectName, remoteObject, subsystem)");
 			match = recursiveFindFirstRemoteItemReference(roots[idx], searchString, elementObject, subsystem);
 		}
@@ -5819,7 +5789,7 @@ public class SystemView extends SafeTreeViewer
 	 */
 	public Object[] getElementNodes(Object element) {
 		Widget w = findItem(element);
-		if ((w != null) && (!w.isDisposed()) && (w instanceof TreeItem)) return getElementNodes((TreeItem) w);
+		if ((w != null) && (w instanceof TreeItem)) return getElementNodes((TreeItem) w);
 		return null;
 	}
 
@@ -5982,81 +5952,32 @@ public class SystemView extends SafeTreeViewer
 	 */
 	private void updatePropertySheet(boolean force) {
 		ISelection selection = getSelection();
-		if (selection == null || !(selection instanceof IStructuredSelection)) return;
+		if (selection == null) return;
 
 		// only fire this event if the view actually has focus
 		if (force || getControl().isFocusControl())
-		{		
-			Object object = ((IStructuredSelection)selection).getFirstElement();
-			if (object != null){
-				ISystemViewElementAdapter adapter = getViewAdapter(object);
-				if (adapter != null){	
-					// figure out what properties this object has
-					adapter.setPropertySourceInput(object);
-					IPropertyDescriptor[] descriptors = adapter.getPropertyDescriptors();
-					Object[] propertyValues = new Object[descriptors.length];
-					for (int i = 0; i < descriptors.length; i++){
-						IPropertyDescriptor descriptor = descriptors[i];
-						propertyValues[i] = adapter.getPropertyValue(descriptor.getId());							
-					}						
-					
-					if (_lastPropertyValues != null){
-						if (_lastPropertyValues.length == propertyValues.length){
-							boolean theSame = true;					
-							// check to see if anything has changed
-							for (int i = 0; i < _lastPropertyValues.length && theSame; i++){
-								Object lastPropertyValue = _lastPropertyValues[i];
-								Object propertyValue = propertyValues[i];
-								if (lastPropertyValue != null && !lastPropertyValue.equals(propertyValue)){
-									theSame = false;
-								}
-							}
-							if (theSame){
-								// no need to refresh anything
-								return;
-							}
-						}
-					}
-					_lastPropertyValues = propertyValues;					
+		{
+			IStructuredSelection parentSelection = null;
+			// create events in order to update the property sheet
+			if (selection instanceof IStructuredSelection){
+				Object first = ((IStructuredSelection)selection).getFirstElement();
+				ISystemViewElementAdapter adapter = getViewAdapter(first);
+				if (adapter != null){
+					Object parent = adapter.getParent(first);
+					if (parent != null){
+						parentSelection = new StructuredSelection(parent);
 						
-				}
-														
-				
-				IWorkbenchPart ourPart = getWorkbenchPart();
-				IWorkbenchPart activePart = null;
-				IWorkbenchWindow win = getWorkbenchWindow(); // from dialog it's possible to not have an active part
-				if (win != null){
-					IWorkbenchPage page = win.getActivePage();
-					if (page != null){
-						activePart = page.getActivePart();
-					}
-				}
-				if (activePart != null){
-					if (activePart != ourPart){
-						ourPart.setFocus(); // without part focus, there are no post selection change listeners
-					}	
-							
-					// create events in order to update the property sheet
-					 IStructuredSelection fakeSelection = new StructuredSelection(new Object());		
-					
-					if (fakeSelection != null){
-						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, fakeSelection);
+						SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
 						// first change the selection, then change it back (otherwise the property sheet ignores the event)
 						fireSelectionChanged(dummyEvent);
-						firePostSelectionChanged(dummyEvent);
-					}
-					SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-					
-					// fire the event
-					fireSelectionChanged(event);
-					firePostSelectionChanged(event);
-					
-					if (ourPart != activePart){
-						activePart.setFocus();
 					}
 				}
 			}
 			
+			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+			
+			// fire the event
+			fireSelectionChanged(event);
 		}
 	}
 

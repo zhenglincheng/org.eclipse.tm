@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2011 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -42,10 +42,6 @@
  * Kevin Doyle 		(IBM)		 - [242431] Register a new unique context menu id, so contributions can be made to all our views
  * David McKnight   (IBM)        - [260346] RSE view for jobs does not remember resized columns
  * David McKnight   (IBM)        - [333702] Remote Systems details view does not maintain column width settings across sessions
- * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
- * David McKnight   (IBM)        - [341240] Remote Systems Details view not remembering locked/unlocked state between sessions
- * David McKnight   (IBM)        - [341244] folder selection input to unlocked Remote Systems Details view sometimes fails
- * David McKnight   (IBM)        - [373673] Remote Systems Details view calling wrong method for setting action tooltips
 *******************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -198,7 +194,7 @@ public class SystemTableViewPart extends ViewPart
 		{
 			super(SystemResources.ACTION_HISTORY_MOVEFORWARD_LABEL, getEclipseImageDescriptor("elcl16/forward_nav.gif")); //$NON-NLS-1$
 
-			setToolTipText(SystemResources.ACTION_HISTORY_MOVEFORWARD_TOOLTIP);
+			setTitleToolTip(SystemResources.ACTION_HISTORY_MOVEFORWARD_TOOLTIP);
 			setDisabledImageDescriptor(getEclipseImageDescriptor("dlcl16/forward_nav.gif")); //$NON-NLS-1$
 		}
 
@@ -230,7 +226,7 @@ public class SystemTableViewPart extends ViewPart
 		public BackwardAction()
 		{
 			super(SystemResources.ACTION_HISTORY_MOVEBACKWARD_LABEL, getEclipseImageDescriptor("elcl16/backward_nav.gif")); //$NON-NLS-1$
-			setToolTipText(SystemResources.ACTION_HISTORY_MOVEBACKWARD_TOOLTIP);
+			setTitleToolTip(SystemResources.ACTION_HISTORY_MOVEBACKWARD_TOOLTIP);
 			setDisabledImageDescriptor(getEclipseImageDescriptor("dlcl16/backward_nav.gif")); //$NON-NLS-1$
 		}
 
@@ -732,21 +728,14 @@ public class SystemTableViewPart extends ViewPart
 					_viewer.setCachedColumnWidths(cachedColumnWidths);
 				}
 			}
-				
+			
+			
 			String profileId = memento.getString(TAG_TABLE_VIEW_PROFILE_ID);
 			String connectionId = memento.getString(TAG_TABLE_VIEW_CONNECTION_ID);
 			String subsystemId = memento.getString(TAG_TABLE_VIEW_SUBSYSTEM_ID);
 			final String filterID = memento.getString(TAG_TABLE_VIEW_FILTER_ID);
 			final String objectID = memento.getString(TAG_TABLE_VIEW_OBJECT_ID);
-			Boolean locked = memento.getBoolean(TAG_TABLE_VIEW_LOCKED_ID);
 
-			if (locked == null || locked.booleanValue()){
-				_isLocked = true;
-			}
-			else {
-				_isLocked = false;
-			}
-			
 			ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
 
 			Object input = null;
@@ -885,29 +874,21 @@ public class SystemTableViewPart extends ViewPart
 			private Button _removeButton;
 			private Button _upButton;
 			private Button _downButton;
-			
-			private boolean _changed = false;
 
 
-			public SelectColumnsDialog(Shell shell, ISystemViewElementAdapter viewAdapter, ISystemTableViewColumnManager columnManager, int[] originalOrder)
+			public SelectColumnsDialog(Shell shell, ISystemViewElementAdapter viewAdapter, ISystemTableViewColumnManager columnManager)
 			{
 				super(shell, SystemResources.RESID_TABLE_SELECT_COLUMNS_LABEL);
 				setToolTipText(SystemResources.RESID_TABLE_SELECT_COLUMNS_TOOLTIP);
-				setInitialOKButtonEnabledState(_changed);
 				_adapter = viewAdapter;
 				_columnManager = columnManager;
 				_uniqueDescriptors = viewAdapter.getUniquePropertyDescriptors();
 				IPropertyDescriptor[] initialDisplayedDescriptors = _columnManager.getVisibleDescriptors(_adapter);
-								
-				IPropertyDescriptor[] sortedDisplayedDescriptors = new IPropertyDescriptor[initialDisplayedDescriptors.length];
-				for (int i = 0; i < initialDisplayedDescriptors.length; i++){
-					int position = originalOrder[i+1];
-					sortedDisplayedDescriptors[i] = initialDisplayedDescriptors[position-1];
-				}				
 				_currentDisplayedDescriptors = new ArrayList(initialDisplayedDescriptors.length);
-				for (int i = 0; i < sortedDisplayedDescriptors.length;i++)
-				{					
-					_currentDisplayedDescriptors.add(sortedDisplayedDescriptors[i]);				
+				for (int i = 0; i < initialDisplayedDescriptors.length;i++)
+				{
+					if (!_currentDisplayedDescriptors.contains(initialDisplayedDescriptors[i]))
+				    _currentDisplayedDescriptors.add(initialDisplayedDescriptors[i]);
 				}
 				_availableDescriptors = new ArrayList(_uniqueDescriptors.length);
 				for (int i = 0; i < _uniqueDescriptors.length;i++)
@@ -927,27 +908,23 @@ public class SystemTableViewPart extends ViewPart
 			    {
 			        int[] toAdd = _availableList.getSelectionIndices();
 			        addToDisplay(toAdd);
-			        _changed = true;
 			    }
 			    else if (source == _removeButton)
 			    {
 			        int[] toAdd = _displayedList.getSelectionIndices();
 			        removeFromDisplay(toAdd);
-			        _changed = true;
 			    }
 			    else if (source == _upButton)
 			    {
 			        int index = _displayedList.getSelectionIndex();
 			        moveUp(index);
 			        _displayedList.select(index - 1);
-			        _changed = true;
 			    }
 			    else if (source == _downButton)
 			    {
 			        int index = _displayedList.getSelectionIndex();
 			        moveDown(index);
 			        _displayedList.select(index + 1);
-			        _changed = true;
 			    }
 
 			    // update button enable states
@@ -1001,7 +978,7 @@ public class SystemTableViewPart extends ViewPart
 			    _removeButton.setEnabled(enableRemove);
 			    _upButton.setEnabled(enableUp);
 			    _downButton.setEnabled(enableDown);
-			    enableOkButton(_changed);
+
 			}
 
 			private void moveUp(int index)
@@ -1173,23 +1150,11 @@ public class SystemTableViewPart extends ViewPart
 		{
 		    ISystemTableViewColumnManager mgr = _viewer.getColumnManager();
 		    ISystemViewElementAdapter adapter = _viewer.getAdapterForContents();
-		    Table table = _viewer.getTable();
-		    int[] originalOrder = table.getColumnOrder();
-		    SelectColumnsDialog dlg = new SelectColumnsDialog(getShell(), adapter, mgr, originalOrder);
+		    SelectColumnsDialog dlg = new SelectColumnsDialog(getShell(), adapter, mgr);
 		    if (dlg.open() == Window.OK)
 		    {
-		    	IPropertyDescriptor[] newDescriptors = dlg.getDisplayedColumns();
-		    	// reset column order
-		    	int n = newDescriptors.length + 1;
-		    	int[] newOrder = new int[n];		    	
-		    	for (int i = 0; i < n; i++){	
-		    		newOrder[i] = i;
-		    	}
-		    			    	
-		    	mgr.setCustomDescriptors(adapter, newDescriptors);	
+		        mgr.setCustomDescriptors(adapter, dlg.getDisplayedColumns());
 		        _viewer.computeLayout(true);
-		        table.setColumnOrder(newOrder);
-
 		        _viewer.refresh();
 		    }
 		}
@@ -1243,15 +1208,12 @@ public class SystemTableViewPart extends ViewPart
 	public static final String TAG_TABLE_VIEW_OBJECT_ID = "tableViewObjectID"; //$NON-NLS-1$
 	public static final String TAG_TABLE_VIEW_FILTER_ID = "tableViewFilterID"; //$NON-NLS-1$
 
-	public static final String TAG_TABLE_VIEW_LOCKED_ID = "tableViewLockedID"; //$NON-NLS-1$
-	
 	// Subset memento tags
 	public static final String TAG_TABLE_VIEW_SUBSET = "subset"; //$NON-NLS-1$
 
 	// layout memento tags
 	public static final String TAG_TABLE_VIEW_COLUMN_WIDTHS_ID = "columnWidths"; //$NON-NLS-1$
 
-	
 	public void setFocus()
 	{
 	    if (_viewer.getInput() == null)
@@ -1346,7 +1308,8 @@ public class SystemTableViewPart extends ViewPart
 				{
 					Object first = ((IStructuredSelection) sel).getFirstElement();
 					if (_lastSelection != first)
-					{						
+					{
+						_lastSelection = first;
 						if (first instanceof IAdaptable)
 						{
 							{
@@ -1357,7 +1320,6 @@ public class SystemTableViewPart extends ViewPart
 									if (va.hasChildren(adapt) && adapt != _viewer.getInput())
 									{
 										setInput(adapt);
-										_lastSelection = first;
 									}
 								}
 							}
@@ -1958,7 +1920,6 @@ public class SystemTableViewPart extends ViewPart
 					columnWidths.append(';');
 				}
 				memento.putString(TAG_TABLE_VIEW_COLUMN_WIDTHS_ID, columnWidths.toString());
-				memento.putBoolean(TAG_TABLE_VIEW_LOCKED_ID, _isLocked);
 			}
 		}
 	}

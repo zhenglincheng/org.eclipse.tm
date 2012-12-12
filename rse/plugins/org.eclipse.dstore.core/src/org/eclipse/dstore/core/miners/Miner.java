@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,10 +19,6 @@
  * Martin Oberhuber (Wind River) - [199854][api] Improve error reporting for archive handlers
  * David McKnight    (IBM)  - [232004] [dstore][multithread] some miner finish() is not terminated sometimes
  * David McKnight    (IBM)  - [328060] [dstore] command queue in Miner should be synchronized
- * David McKnight    (IBM)  - [358301] [DSTORE] Hang during debug source look up
- * David McKnight    (IBM)  - [373507] [dstore][multithread] reduce heap memory on disconnect for server
- * David McKnight    (IBM)  - [378136] [dstore] miner.finish is stuck
- * David McKnight    (IBM)  - [383544] [dstore] Better handling needed for Errors in miners
  *******************************************************************************/
 
 package org.eclipse.dstore.core.miners;
@@ -31,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import org.eclipse.dstore.core.model.Client;
 import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStore;
@@ -59,6 +54,7 @@ implements ISchemaExtender
 	public DataElement _minerElement;
 	public DataElement _minerData;
 	public DataElement _minerTransient;
+
 
 
 	private boolean _initialized;
@@ -132,22 +128,21 @@ implements ISchemaExtender
 	 */
 	public void finish()
 	{
-		if (_dataStore.getClient() != null) {
-			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "Miner.finish()"); //$NON-NLS-1$
-		}
-
-		synchronized (_commandQueue){
-			_commandQueue.clear();
-		}
 		DataElement root = _dataStore.getMinerRoot();
+
 		_minerData.removeNestedData();
 		_minerElement.removeNestedData();
+		_dataStore.update(_minerElement);
 
-		if (root != null && root.getNestedData() != null){
+		if (root.getNestedData() != null)
+		{
 			root.getNestedData().remove(_minerElement);
-			root.setExpanded(false);
-			root.setUpdated(false);
 		}
+		root.setExpanded(false);
+		root.setUpdated(false);
+
+		_dataStore.update(root);
+
 		super.finish();
 	}
 
@@ -309,7 +304,6 @@ implements ISchemaExtender
 		}
 		else
 		{
-			Client client = _dataStore.getClient();
 			try
 			{
 				status = handleCommand(command);
@@ -318,11 +312,6 @@ implements ISchemaExtender
 			{
 				//e.printStackTrace();
 				_dataStore.trace(e);
-				if (client != null) {
-					client.getLogger().logError(this.getClass().toString(), "Exception in Miner.command()", e); //$NON-NLS-1$
-				}
-				
-				
 				status.setAttribute(DE.A_VALUE, "Failed with Exception:"+getStack(e)); //$NON-NLS-1$
 				status.setAttribute(DE.A_NAME, DataStoreResources.model_done);
 				//status.setAttribute(DE.A_SOURCE, getStack(e));
@@ -335,17 +324,10 @@ implements ISchemaExtender
 					exc = "Exception"; //$NON-NLS-1$
 				_dataStore.createObject(status, DataStoreResources.model_error, exc);
 			}
-			catch (OutOfMemoryError e){
-				System.exit(-1);
-			}
 			catch (Error er)
 			{
 			    er.printStackTrace();
 				_dataStore.trace(er);
-				if (client != null) {
-					client.getLogger().logError(this.getClass().toString(), "Error in Miner.command()", er); //$NON-NLS-1$
-					client.getLogger().logInfo(this.getClass().toString(), "Finishing due to error condition"); //$NON-NLS-1$
-				}
 				_dataStore.finish();
 
 				if (SystemServiceManager.getInstance().getSystemService() == null)

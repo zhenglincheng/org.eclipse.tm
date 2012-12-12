@@ -19,7 +19,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.ISettingsStore;
  * {@link LocalTerminalSettings}.
  *
  * @author Mirko Raner
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  */
 public interface ILocalTerminalSettings {
 

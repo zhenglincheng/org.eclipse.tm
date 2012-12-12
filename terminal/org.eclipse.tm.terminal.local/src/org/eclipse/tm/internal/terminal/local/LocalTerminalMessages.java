@@ -18,7 +18,7 @@ import org.eclipse.osgi.util.NLS;
  * messages used by the Local Terminal Connector.
  *
  * @author Mirko Raner
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LocalTerminalMessages extends NLS {
 

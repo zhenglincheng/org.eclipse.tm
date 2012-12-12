@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,11 +20,6 @@
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
  * David McKnight  (IBM)   [322407][dstore] Connection dropped automatically when idle
- * David McKnight  (IBM)   [350315][dstore] regress change made for bug 305218
- * David McKnight    (IBM)  - [358301] [DSTORE] Hang during debug source look up
- * David McKnight   (IBM)  - [367449] [dstore] allow custom encoding for data transport layer
- * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
- * David McKnight   (IBM)   - [391966][dstore][performance] unnecessary call slows down large queries
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -464,10 +459,14 @@ public class XMLparser
 			String result = null;	
 			
 			String encoding = DE.ENCODING_UTF_8;
-			String serverEncoding = System.getProperty("DSTORE_SERVER_ENCODING"); //$NON-NLS-1$
-			if (serverEncoding != null && serverEncoding.length() > 0){
-				encoding = serverEncoding;				
+			if (!_dataStore.isVirtual()){
+				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
+				String theOS = System.getProperty("os.name"); //$NON-NLS-1$
+				if (theOS.startsWith("z")){ //$NON-NLS-1$
+					encoding = DE.ENCODING_UTF_8;
+				}
 			}
+
 			try
 			{
 				result = new String(_byteBuffer, 0, offset, encoding);
@@ -532,237 +531,232 @@ public class XMLparser
 		String matchTag = null;
 
 		boolean done = false;
-		try {
-			while (!done && (_dataStore != null && _dataStore.isConnected()))	
+		while (!done)
+		{
+			String xmlTag = readLine(reader, socket);
+			
+			if (xmlTag != null)
 			{
-				String xmlTag = readLine(reader, socket);
+				String trimmedTag = xmlTag.trim();
+				if (trimmedTag.length() > 0){
 				
-				if (xmlTag != null)
+				if (_dataStore.getReferenceTag() == null)
 				{
-					String trimmedTag = xmlTag.trim();
-					if (trimmedTag.length() > 0){
-					
-					if (_dataStore.getReferenceTag() == null)
+					if (trimmedTag.indexOf(DE.P_ISREF + "=") > -1) _dataStore.setReferenceTag(DE.P_ISREF); //$NON-NLS-1$
+					else if (trimmedTag.indexOf(DE.P_REF_TYPE + "=") > -1) _dataStore.setReferenceTag(DE.P_REF_TYPE); //$NON-NLS-1$
+				}
+
+				if (!_tagStack.empty())
+				{
+					matchTag = (String) _tagStack.peek();
+				}
+				if (trimmedTag.equals(STR_BUFFER_START))
+				{
+					_tagType = STR_BUFFER;
+					_tagStack.push(STR_BUFFER_END);
+				}
+				else if (trimmedTag.equals(STR_BUFFER_END))
+				{
+					_tagType = STR_DATAELEMENT;
+					_tagStack.pop();
+				}
+				else if (_tagType.equals(STR_BUFFER))
+				{
+					String buffer = convertStringFromXML(xmlTag);
+					if (parent != null)
+						parent.appendToBuffer(buffer);
+				}
+				else if ((matchTag != null) && trimmedTag.equals(matchTag))
+				{
+					if (parent != null && parent.getType().equals(STR_STATUS))
 					{
-						if (trimmedTag.indexOf(DE.P_ISREF + "=") > -1) _dataStore.setReferenceTag(DE.P_ISREF); //$NON-NLS-1$
-						else if (trimmedTag.indexOf(DE.P_REF_TYPE + "=") > -1) _dataStore.setReferenceTag(DE.P_REF_TYPE); //$NON-NLS-1$
-					}
-	
-					if (!_tagStack.empty())
-					{
-						matchTag = (String) _tagStack.peek();
-					}
-					if (trimmedTag.equals(STR_BUFFER_START))
-					{
-						_tagType = STR_BUFFER;
-						_tagStack.push(STR_BUFFER_END);
-					}
-					else if (trimmedTag.equals(STR_BUFFER_END))
-					{
-						_tagType = STR_DATAELEMENT;
-						_tagStack.pop();
-					}
-					else if (_tagType.equals(STR_BUFFER))
-					{
-						String buffer = convertStringFromXML(xmlTag);
-						if (parent != null)
-							parent.appendToBuffer(buffer);
-					}
-					else if ((matchTag != null) && trimmedTag.equals(matchTag))
-					{
-						if (parent != null && parent.getType().equals(STR_STATUS))
+						if (parent.getName().equals(STR_STATUS_ALMOST_DONE))
 						{
-							if (parent.getName().equals(STR_STATUS_ALMOST_DONE))
+							
+							parent.setAttribute(DE.A_NAME, STR_STATUS_DONE);
+							if (parent.getValue().equals(STR_STATUS_ALMOST_DONE))
 							{
-								
-								parent.setAttribute(DE.A_NAME, STR_STATUS_DONE);
-								if (parent.getValue().equals(STR_STATUS_ALMOST_DONE))
-								{
-									parent.setAttribute(DE.A_VALUE,STR_STATUS_DONE);
-								}
-								if (_dataStore.isWaiting(parent))
-								{
-									_dataStore.stopWaiting(parent);
-									parent.notifyUpdate();
-								}
+								parent.setAttribute(DE.A_VALUE,STR_STATUS_DONE);
+							}
+							if (_dataStore.isWaiting(parent))
+							{
+								_dataStore.stopWaiting(parent);
+								parent.notifyUpdate();
 							}
 						}
-						
-						if (parent != null && parent.getNestedSize() > 0 && _dataStore.isVirtual())
+					}
+					
+					if (parent != null && parent.getNestedSize() > 0 && _dataStore.isVirtual())
+					{
+						List toDelete = new ArrayList();
+						List nested = parent.getNestedData();
+						synchronized (nested)
 						{
-							List toDelete = new ArrayList();
-							List nested = parent.getNestedData();
-							synchronized (nested)
+							for (int s= 0; s < nested.size(); s++)
 							{
-								for (int s= 0; s < nested.size(); s++)
+								DataElement element = (DataElement)nested.get(s);
+								if (element.isSpirit())
 								{
-									DataElement element = (DataElement)nested.get(s);
-									if (element.isSpirit())
+									boolean addedToDelete = false;
+									String name = element.getName();
+									String value = element.getValue();
+									
+									// delete this element if there's another one with the same name and value
+									for (int n = 0; n < parent.getNestedSize() && !addedToDelete; n++)
 									{
-										boolean addedToDelete = false;
-										String name = element.getName();
-										String value = element.getValue();
-										
-										// delete this element if there's another one with the same name and value
-										for (int n = 0; n < parent.getNestedSize() && !addedToDelete; n++)
+										if (n != s)
 										{
-											if (n != s)
+											DataElement compare = parent.get(n);
+											String cname = compare.getName();
+											String cvalue = compare.getValue();
+											if (!compare.isSpirit() &&  cname.equals(name) && cvalue.equals(value))										
 											{
-												DataElement compare = parent.get(n);
-												String cname = compare.getName();
-												String cvalue = compare.getValue();
-												if (!compare.isSpirit() &&  cname.equals(name) && cvalue.equals(value))										
-												{
-													toDelete.add(element);
-													addedToDelete = true;
-												}
+												toDelete.add(element);
+												addedToDelete = true;
 											}
 										}
 									}
-								}					
-								
-								// delete elements
-								for (int d = 0; d < toDelete.size(); d++)
-								{
-									DataElement delement = (DataElement)toDelete.get(d);
-									_dataStore.deleteObject(parent,delement);
 								}
+							}					
+							
+							// delete elements
+							for (int d = 0; d < toDelete.size(); d++)
+							{
+								DataElement delement = (DataElement)toDelete.get(d);
+								_dataStore.deleteObject(parent,delement);
 							}
 						}
-	
-						_tagStack.pop();
-						if (_tagStack.empty())
-						{
-							done = true;
-						}
-						else if (_tagStack.size() == 1)
-						{
-							parent = _rootDataElement;
-						}
-						else
-						{
-							parent = (DataElement) _objStack.pop();
-						}
-	
+					}
+
+					_tagStack.pop();
+					if (_tagStack.empty())
+					{
+						done = true;
+					}
+					else if (_tagStack.size() == 1)
+					{
+						parent = _rootDataElement;
 					}
 					else
 					{
-						xmlTag = xmlTag.trim();
-	
-						if (xmlTag.length() > 3)
+						parent = (DataElement) _objStack.pop();
+					}
+
+				}
+				else
+				{
+					xmlTag = xmlTag.trim();
+
+					if (xmlTag.length() > 3)
+					{
+
+						try
 						{
-	
-							try
+							if (parent != null)
 							{
-								if (parent != null)
+								if (_objStack.contains(parent))
 								{
-									if (_objStack.contains(parent))
-									{
-									}
-									else
-									{
-										_objStack.push(parent);
-									}
 								}
-	
-								DataElement result = parseTag(xmlTag, parent);
-	
-								if (_panic)
+								else
 								{
-									return null;
-								}
-	
-								if (result != null)
-								{
-								    result.setUpdated(true);
-	
-									if (parent == null && _rootDataElement == null)
-									{
-										_rootDataElement = result;
-										_rootDataElement.setParent(null);
-									}
-	
-									parent = result;
-	
-									if (_isFile)
-									{
-										int size = result.depth();
-										String path = result.getSource();
-										
-										String  byteStreamHandler = result.getName();
-										if (path.equals(byteStreamHandler))
-										{
-										    // older client or server, fall back to default
-										    byteStreamHandler = DataStoreResources.DEFAULT_BYTESTREAMHANDLER;
-										}
-										readFile(reader, size, path, byteStreamHandler);
-										
-										_isFile = false;
-										//_dataStore.deleteObject(parent, result);
-									}
-									else if (_isClass)
-									{
-										int size = result.depth();
-										
-										String classbyteStreamHandler = result.getSource();
-	
-										if (result.getName() != null)
-										{
-											readClass(reader, size, result.getName(), classbyteStreamHandler);
-										}
-										_isClass = false;
-									}
-									else if (_isRequestClass)
-									{
-										result.getDataStore().sendClass(result.getName());
-										_isRequestClass = false;
-									}
-									else if (_isKeepAlive)
-									{
-										if (VERBOSE_KEEPALIVE) System.out.println("KeepAlive request received, sending confirmation."); //$NON-NLS-1$									
-										result.getDataStore().sendKeepAliveConfirmation();
-										_isKeepAlive = false;
-									}
-									else if (_isKeepAliveConfirm )
-									{
-										if (VERBOSE_KEEPALIVE) System.out.println("KeepAlive confirmation received."); //$NON-NLS-1$
-										if (_initialKart != null) _initialKart.interrupt();
-										_isKeepAliveConfirm = false;
-									}
-									else if (_isSerialized)
-									{
-										int size = result.depth();
-										String classbyteStreamHandler = result.getSource();
-										if (result.getName() != null)
-										{
-											readInstance(reader, size, classbyteStreamHandler);
-										}
-										_isSerialized = false;
-									}
-	
-									StringBuffer endTag = new StringBuffer("</"); //$NON-NLS-1$
-									endTag.append(_tagType);
-									endTag.append('>');
-									_tagStack.push(endTag.toString());
+									_objStack.push(parent);
 								}
 							}
-							catch (Exception e)
+
+							DataElement result = parseTag(xmlTag, parent);
+
+							if (_panic)
 							{
-								e.printStackTrace();
-								_dataStore.trace(e);
-								return _rootDataElement;
+								return null;
 							}
+
+							if (result != null)
+							{
+							    result.setUpdated(true);
+
+								if (parent == null && _rootDataElement == null)
+								{
+									_rootDataElement = result;
+									_rootDataElement.setParent(null);
+								}
+
+								parent = result;
+
+								if (_isFile)
+								{
+									int size = result.depth();
+									String path = result.getSource();
+									
+									String  byteStreamHandler = result.getName();
+									if (path.equals(byteStreamHandler))
+									{
+									    // older client or server, fall back to default
+									    byteStreamHandler = DataStoreResources.DEFAULT_BYTESTREAMHANDLER;
+									}
+									readFile(reader, size, path, byteStreamHandler);
+									
+									_isFile = false;
+									//_dataStore.deleteObject(parent, result);
+								}
+								else if (_isClass)
+								{
+									int size = result.depth();
+									
+									String classbyteStreamHandler = result.getSource();
+
+									if (result.getName() != null)
+									{
+										readClass(reader, size, result.getName(), classbyteStreamHandler);
+									}
+									_isClass = false;
+								}
+								else if (_isRequestClass)
+								{
+									result.getDataStore().sendClass(result.getName());
+									_isRequestClass = false;
+								}
+								else if (_isKeepAlive)
+								{
+									if (VERBOSE_KEEPALIVE) System.out.println("KeepAlive request received, sending confirmation."); //$NON-NLS-1$									
+									result.getDataStore().sendKeepAliveConfirmation();
+									_isKeepAlive = false;
+								}
+								else if (_isKeepAliveConfirm )
+								{
+									if (VERBOSE_KEEPALIVE) System.out.println("KeepAlive confirmation received."); //$NON-NLS-1$
+									if (_initialKart != null) _initialKart.interrupt();
+									_isKeepAliveConfirm = false;
+								}
+								else if (_isSerialized)
+								{
+									int size = result.depth();
+									String classbyteStreamHandler = result.getSource();
+									if (result.getName() != null)
+									{
+										readInstance(reader, size, classbyteStreamHandler);
+									}
+									_isSerialized = false;
+								}
+
+								StringBuffer endTag = new StringBuffer("</"); //$NON-NLS-1$
+								endTag.append(_tagType);
+								endTag.append('>');
+								_tagStack.push(endTag.toString());
+							}
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+							_dataStore.trace(e);
+							return _rootDataElement;
 						}
 					}
 				}
-				}
-	
-				if (_panic)
-					return null;
 			}
-		}
-		catch (OutOfMemoryError e){
-			System.exit(-1);
+			}
+
+			if (_panic)
+				return null;
 		}
 
 		DataElement result = _rootDataElement;
@@ -973,6 +967,10 @@ public class XMLparser
 						else
 						{
 							// new object
+							if (_dataStore.isVirtual()) 
+							{
+								result = _dataStore.find(parent, DE.A_NAME, attributes[DE.A_NAME], 1);
+							}
 							if (isSpirit)
 							{
 								if (!_dataStore.isVirtual()) attributes[DE.A_REF_TYPE] = DataStoreResources.VALUE;

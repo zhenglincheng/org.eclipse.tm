@@ -42,7 +42,7 @@ import org.eclipse.ui.IWorkbenchWindow;
  * mechanism.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LocalTerminalStillRunningListener implements IWorkbenchListener {
 

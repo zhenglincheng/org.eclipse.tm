@@ -30,7 +30,7 @@ import org.eclipse.tm.internal.terminal.local.process.LocalTerminalProcess;
  *       (based on the local echo setting) is really necessary
  *
  * @author Mirko Raner
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.1 $
  */
 public class LocalTerminalOutputStream extends OutputStream {
 

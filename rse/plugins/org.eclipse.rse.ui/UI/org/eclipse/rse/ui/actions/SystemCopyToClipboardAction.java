@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,6 @@
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * David McKnight   (IBM)        - [223103] [cleanup] fix broken externalized strings
  * David McKnight   (IBM)        - [248339] [dnd][encodings] Cannot drag&drop / copy&paste files or folders with turkish or arabic names
- * David McKnight   (IBM)        - [368304] Copy paste from Remote System Explorer view has CR/LF
  *******************************************************************************/
 
 package org.eclipse.rse.ui.actions;
@@ -172,13 +171,9 @@ public class SystemCopyToClipboardAction extends SystemBaseAction implements  IV
 				if (adapter != null)
 				{					
 					String text = adapter.getAlternateText(dragObject);
-					if (textStream.length() > 0){
-						// append new line only if we've already got previous lines
-						textStream.append(getTextTransferAppend(dragObject, adapter));
-					}
-					
 					textStream.append(getTextTransferPrepend(dragObject, adapter));
 					textStream.append(text);	
+					textStream.append(getTextTransferAppend(dragObject, adapter));
 					
 					if (adapter.canDrag(dragObject))
 					{

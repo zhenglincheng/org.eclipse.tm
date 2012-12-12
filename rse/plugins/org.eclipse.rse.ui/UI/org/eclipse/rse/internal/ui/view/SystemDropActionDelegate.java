@@ -13,7 +13,7 @@
  * Contributors:
  * Martin Oberhuber (Wind River) - [186773] split ISystemRegistryUI from ISystemRegistry
  * David McKnight   (IBM)        - [254588] SystemDropActionDelegate performs refreshLocal too early
- *********************************************************************************/
+ ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
 
@@ -159,7 +159,7 @@ public class SystemDropActionDelegate implements IDropActionDelegate
 			}
 			
 			
-			int subsystemDelim = str.indexOf(":", connectionDelim+1);//$NON-NLS-1$
+			int subsystemDelim = str.indexOf(":", connectionDelim + 1); //$NON-NLS-1$
 			if (subsystemDelim == -1) // not remote object, therefore likely to be a subsystem
 			{
 			    return registry.getSubSystem(str);

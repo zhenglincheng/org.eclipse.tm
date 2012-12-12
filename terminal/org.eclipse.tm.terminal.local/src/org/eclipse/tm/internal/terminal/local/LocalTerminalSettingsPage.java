@@ -49,7 +49,7 @@ import org.eclipse.ui.PlatformUI;
  * local program connections.
  *
  * @author Mirko Raner
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LocalTerminalSettingsPage
 implements ISettingsPage, ISelectionChangedListener, SelectionListener {

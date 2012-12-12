@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,15 +34,6 @@
  * David McKnight   (IBM) - [289891] [dstore] StringIndexOutOfBoundsException in getUserPreferencesDirectory when DSTORE_LOG_DIRECTORY is ""
  * David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
  * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
- * David McKnight   (IBM) - [340080] [dstore] empty string should not be allowed as a DataElement ID
- * David McKnight   (IBM) - [351993] [dstore] not able to connect to server if .eclipse folder not available
- * David McKnight   (IBM) - [366070] [dstore] fix for bug 351993 won't allow tracing if .dstoreTrace doesn't exist
- * David McKnight   (IBM) - [367096] [dstore] DataElement.isSpirit() may return true for newly created DStore objects
- * David McKnight   (IBM) - [370260] [dstore] log the RSE version in server traces
- * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
- * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
- * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
- * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -160,8 +151,6 @@ public final class DataStore
 	private RandomAccessFile _traceFile;
 	private boolean _tracingOn;
 
-	private boolean _queriedSpiritState = false; // for the client - so we don't keep sending down the same query
-
 	private boolean _spiritModeOn = false;
 	private boolean _spiritCommandReceived = false;
 	private File _memLoggingFileHandle;
@@ -188,15 +177,6 @@ public final class DataStore
 	private List _lastCreatedElements;
 	private Client _client;
 
-	/**
-	 * Indicates the RSE plugin version that corresponds with this DataStore.  This is only used
-	 * for tracing so that users can determine which version of the org.eclipse.dstore.core plugin
-	 * this came from. 
-	 * 
-	 *  This needs to be updated for each major release.
-	 */
-	private String _RSE_version = "3.2.4"; //$NON-NLS-1$
-	
 	/**
 	 * Creates a new <code>DataStore</code> instance
 	 *
@@ -2296,26 +2276,17 @@ public final class DataStore
 		return synchronizedCommand(cmd, _dummy);
 	}
 
-	/**
-	 * Client calls this to start the spiriting mechanism on the server.  The return value shouldn't be reliable here.  
-	 * Originally this was a synchronized command but that can slow connect time.  Since no one should use the return value here,
-	 * 
-	 * @return whether the server spirit state has been queried
-	 */
 	public boolean queryServerSpiritState()
 	{
-		if (!_queriedSpiritState){
-			DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
-			if (spirittype != null){		
-				DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
-			
-				if (cmd != null){
-					command(cmd, _dummy); // start 
-					_queriedSpiritState = true;
-				}
-			}
-		}
-		return _queriedSpiritState;
+		DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
+		if (spirittype == null) return false;
+		DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
+		if (cmd == null) return false;
+
+		DataElement status = synchronizedCommand(cmd, _dummy);
+		if ((status != null) && status.getName().equals(DataStoreResources.model_done))
+			return true;
+		else return false;
 	}
 
 	public DataElement queryHostJVM()
@@ -2654,32 +2625,7 @@ public final class DataStore
 		flush(_descriptorRoot);
 		flush(_dummy);
 		flush(_root);
-		flush(_externalRoot);
-		
-		// make sure these aren't null set since
-		// Miners need them on shutdown
-		// _logRoot = null;
-		// _minerRoot = null;
-		
-		_hostRoot = null;
-		_tempRoot = null;
-		_descriptorRoot = null;
-		_dummy = null;
-		_root = null;
-		_externalRoot = null;
-		_status = null;
-		_ticket = null;
 
-		// clear the maps
-		_classReqRepository.clear();
-		_cmdDescriptorMap.clear();
-		_hashMap.clear();
-		_lastCreatedElements.clear();
-		_localClassLoaders.clear();
-		_objDescriptorMap.clear();
-		_relDescriptorMap.clear();
-		
-		_remoteLoader = null;
 	}
 
 	/**
@@ -2873,7 +2819,7 @@ public final class DataStore
 					return results;
 				}
 
-				if (root.isDeleted() && !results.contains(root))
+				if (root.isDeleted())
 				{
 					results.add(root);
 				}
@@ -2892,6 +2838,7 @@ public final class DataStore
 							{
 								if (child.isDeleted() && !results.contains(child))
 								{
+
 									results.add(child);
 									if (!child.isReference())
 									{
@@ -3737,26 +3684,14 @@ public final class DataStore
 			if (SystemServiceManager.getInstance().getSystemService() == null){
 				String logDir = getUserPreferencesDirectory();
 				_traceFileHandle = new File(logDir, ".dstoreTrace"); //$NON-NLS-1$
-				if (!_traceFileHandle.exists()){
-					try { // try to create it
-						_traceFileHandle.createNewFile();
-					} catch (IOException e) {
-					}
+
+				try
+				{
+					_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
+					startTracing();
 				}
-				if (_traceFileHandle.canWrite()){
-					try
-					{
-						_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
-						startTracing();
-					}
-					catch (IOException e)
-					{
-						// turn tracing off if there's a problem
-						_tracingOn = false;
-					}
-				}
-				else {
-					_tracingOn = false;
+				catch (IOException e)
+				{
 				}
 			}
 		}
@@ -3790,27 +3725,14 @@ public final class DataStore
 			{
 				String logDir = getUserPreferencesDirectory();
 				_memLoggingFileHandle = new File(logDir, ".dstoreMemLogging"); //$NON-NLS-1$
-				// need this check, otherwise, we don't create this log file
-				if (!_memLoggingFileHandle.exists()){
-					try { // try to create it
-						_memLoggingFileHandle.createNewFile();
-					} catch (IOException e) {
-					}
+
+				try
+				{
+					_memLogFile = new RandomAccessFile(_memLoggingFileHandle, "rw"); //$NON-NLS-1$
+					startMemLogging();
 				}
-				if (_memLoggingFileHandle.canWrite()){
-					try
-					{
-						_memLogFile = new RandomAccessFile(_memLoggingFileHandle, "rw"); //$NON-NLS-1$
-						startMemLogging();
-					}
-					catch (IOException e)
-					{
-						// turn mem logging off if there's a problem
-						_memLoggingOn = false;
-					}
-				}
-				else {
-					_memLoggingOn = false;
+				catch (IOException e)
+				{
 				}
 			}
 			_deRemover = new DataElementRemover(this);
@@ -3999,7 +3921,6 @@ public final class DataStore
 		}
 
 		newObject.setUpdated(false);
-		newObject.setSpirit(false);
 		updateLastCreated(newObject);
 		return newObject;
 	}
@@ -4093,7 +4014,7 @@ public final class DataStore
 			containsKey = _hashMap.containsKey(id);
 		}
 		
-		if (!containsKey && id.length() > 0)
+		if (!containsKey)
 		{
 			return id;
 		}
@@ -4151,7 +4072,6 @@ public final class DataStore
 
 			trace("-----------------------------------------"); //$NON-NLS-1$
 			trace("Start Tracing at " + System.currentTimeMillis()); //$NON-NLS-1$
-			trace("DataStore version: "+ _RSE_version); //$NON-NLS-1$
 		}
 	}
 
@@ -4246,14 +4166,6 @@ public final class DataStore
 		// which causes havoc for iSeries caching when switching between offline / online
 		//if (isVirtual())
 		//	flush();
-		
-		if (!isVirtual()){ // only on server
-			if (getClient() != null){
-				getClient().getLogger().logInfo(this.getName(), "DataStore.finish() - flush()"); //$NON-NLS-1$
-			}
-			flush();
-		}
-		
 		if (_deRemover != null){
 			_deRemover.finish();
 		}
@@ -4452,13 +4364,12 @@ public final class DataStore
 	}
 
 	protected void assignCacheJar()
-	{		
+	{
 		String cacheDirectory = getCacheDirectory();
 		File cacheJar = new File(cacheDirectory + REMOTE_CLASS_CACHE_JARFILE_NAME + JARFILE_EXTENSION);
 		File nextCacheJar = new File(cacheDirectory + REMOTE_CLASS_CACHE_JARFILE_NAME + "_next" + JARFILE_EXTENSION); //$NON-NLS-1$
-		if (nextCacheJar.exists()) 
-			nextCacheJar.renameTo(cacheJar);
-		if (!cacheJar.exists() && cacheJar.canWrite())
+		if (nextCacheJar.exists()) nextCacheJar.renameTo(cacheJar);
+		if (!cacheJar.exists())
 		{
 			try
 			{
@@ -4466,8 +4377,6 @@ public final class DataStore
 				cacheOut.putNextEntry(new JarEntry("/")); //$NON-NLS-1$
 				cacheOut.closeEntry();
 				cacheOut.close();
-
-				_cacheJar = cacheJar;
 			}
 			catch (IOException e)
 			{
@@ -4476,9 +4385,11 @@ public final class DataStore
 				return;
 			}
 		}
-		else {
-			_cacheJar = null;
-		}
+
+		_cacheJar = cacheJar;
+		if (!_cacheJar.canWrite()){ // can't write this..don't bother with cache
+			_cacheJar = null;	
+		}	
 	}
 
 	protected String getCacheDirectory()
@@ -4612,20 +4523,13 @@ public final class DataStore
 			{
 				if (_tracingOn) {
 					_traceFileHandle = new File(logDir, ".dstoreTrace"); //$NON-NLS-1$
-					if (_traceFileHandle.canWrite()){
-						try
-						{
-							_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
-							startTracing();
-						}
-						catch (IOException e)
-						{
-							// turn tracing off if there's a problem
-							_tracingOn = false;
-						}
+					try
+					{
+						_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
+						startTracing();
 					}
-					else {
-						_tracingOn = false;
+					catch (IOException e)
+					{
 					}
 				}
 			}

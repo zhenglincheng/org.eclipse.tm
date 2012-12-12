@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2012 IBM Corporation and others.
+ * Copyright (c) 2006, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,8 +16,6 @@
  * Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  * David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
  * David McKnight  (IBM)  - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
- * David McKnight  (IBM)  - [364633] [dstore][multithread] process miner getting wrong uid
- * David McKnight  (IBM)  - [385214] [dstore][processes] user id query coming back blank
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -92,7 +90,7 @@ public class UniversalProcessMiner extends Miner
 		DataElement status = getCommandStatus(theCommand);
 		DataElement subject = getCommandArgument(theCommand, 0);
 		
-		UniversalServerUtilities.logInfo(getMinerName(), name + ":" + subject, _dataStore);
+		//UniversalServerUtilities.logInfo(getMinerName(), name + ":" + subject);
 				
 		if (subject == null) {
 
@@ -152,14 +150,12 @@ public class UniversalProcessMiner extends Miner
 	 * Get the username
 	 */
 	protected DataElement handleQueryUserName(DataElement subject, DataElement status) {
-		String userName = null;
 		if (_dataStore.getClient() != null){
-			userName = _dataStore.getClient().getProperty("client.username"); //$NON-NLS-1$		
+			subject.setAttribute(DE.A_VALUE, _dataStore.getClient().getProperty("user.name")); //$NON-NLS-1$			
 		}
-		if (userName == null){
-			userName = System.getProperty("user.name"); //$NON-NLS-1$			
+		else {
+			subject.setAttribute(DE.A_VALUE, System.getProperty("user.name")); //$NON-NLS-1$
 		}
-		subject.setAttribute(DE.A_VALUE, userName); 
 		
 		_dataStore.refresh(subject);
 

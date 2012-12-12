@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2012 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,9 +25,6 @@
  * David McKnight  (IBM)  - [243495] [api] New: Allow file name search in Remote Search to not be case sensitive
  * David McKnight  (IBM)  - [299568] Remote search only shows result in the symbolic linked file
  * David McKnight  (IBM]  - [330989] [dstore] OutOfMemoryError occurs when searching for a text in a large remote file
- * Noriaki Takatsu  (IBM) - [362025] [dstore] Search for text hung in encountering a device definition
- * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
- * Noriaki Takatsu  (IBM) - [380562] [multithread][dstore] File Search is not canceled by the client UI on disconnect
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -92,7 +89,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 	public UniversalSearchHandler(DataStore dataStore, UniversalFileSystemMiner miner, SystemSearchString searchString, boolean fsCaseSensitive, File theFile, DataElement status) {
 		super(dataStore);
 		
-		_memoryManager = new MemoryManager(dataStore);
+		_memoryManager = MemoryManager.getInstance(dataStore);
 		_miner = miner;
 		_searchString = searchString;
 		_fsCaseSensitive = fsCaseSensitive;
@@ -209,9 +206,6 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 		
 		if (!hasSearched(theFile)) {
 			
-			if (!theFile.isDirectory() && !theFile.isFile()) {
-				return;
-			}
 			if (!_searchOnlyUniqueFolders){
 				_alreadySearched.add(theFile.getAbsolutePath());
 			}
@@ -403,7 +397,7 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 					long MAX_READ = MAX_FILE / 10; // read no more than a tenth of max file at a time
 					int offset = 0;
 					
-					while (offset < fileLength && !matched && !_isCancelled){
+					while (offset < fileLength && !matched){
 						long readSize = MAX_READ;
 						if (offset +  MAX_READ > fileLength){
 							readSize = fileLength - offset;

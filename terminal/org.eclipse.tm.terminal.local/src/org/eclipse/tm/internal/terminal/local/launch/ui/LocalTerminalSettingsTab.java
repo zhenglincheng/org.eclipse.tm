@@ -38,7 +38,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * and the line separator string.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  **/
 public class LocalTerminalSettingsTab extends AbstractLaunchConfigurationTab
 implements SelectionListener {

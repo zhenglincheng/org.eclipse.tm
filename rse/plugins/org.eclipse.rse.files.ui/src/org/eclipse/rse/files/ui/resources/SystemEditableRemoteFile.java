@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,12 +41,6 @@
  * David McKnight   (IBM)        - [310215] SystemEditableRemoteFile.open does not behave as expected
  * David McKnight   (IBM)        - [324519] SystemEditableRemoteFile throws NPE when used in headless mode
  * David McKnight   (IBM)        - [334839] File Content Conflict is not handled properly
- * David McKnight   (IBM)        - [359704] SystemEditableRemoteFile does not release reference to editor
- * David McKnight   (IBM)        - [249031] Last used editor should be set to SystemEditableRemoteFile
- * Rick Sawyer      (IBM)        - [376535] RSE does not respect editor overrides
- * David McKnight   (IBM)        - [357111] [DSTORE]File with invalid characters can't be opened in editor
- * David McKnight   (IBM)        - [385420] double-click default editor problem
- * David McKnight   (IBM)        - [390609] Cached file opened twice in case of eclipse linked resource..
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -86,8 +80,6 @@ import org.eclipse.rse.internal.files.ui.ISystemFileConstants;
 import org.eclipse.rse.internal.files.ui.actions.SystemDownloadConflictAction;
 import org.eclipse.rse.internal.files.ui.resources.SystemFileNameHelper;
 import org.eclipse.rse.internal.files.ui.resources.SystemRemoteEditManager;
-import org.eclipse.rse.internal.subsystems.files.core.model.SystemFileTransferModeMapping;
-import org.eclipse.rse.internal.subsystems.files.core.model.SystemFileTransferModeRegistry;
 import org.eclipse.rse.services.clientserver.SystemEncodingUtil;
 import org.eclipse.rse.services.clientserver.messages.CommonMessages;
 import org.eclipse.rse.services.clientserver.messages.ICommonMessageIds;
@@ -96,7 +88,6 @@ import org.eclipse.rse.services.clientserver.messages.SystemMessage;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.services.files.RemoteFileIOException;
 import org.eclipse.rse.subsystems.files.core.SystemIFileProperties;
-import org.eclipse.rse.subsystems.files.core.model.ISystemFileTransferModeMapping;
 import org.eclipse.rse.subsystems.files.core.model.RemoteFileUtility;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFileSubSystem;
@@ -138,7 +129,6 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 	private IEditorPart editor;
 	private IFile localFile;
 	private IWorkbenchPage page;
-	private boolean _usingDefaultDescriptor = false;
 
 	/**
 	 * Internal class for downloading file
@@ -277,24 +267,20 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		this.root = SystemRemoteEditManager.getInstance().getRemoteEditProjectLocation().makeAbsolute().toOSString();
 		this.localPath = getDownloadPath();
 
-		IFile localResource = getLocalResource();
-		
-		// first look for editor corresponding to this particular file
-		IEditorDescriptor descriptor = null;
-		try {
-			descriptor = IDE.getEditorDescriptor(localResource);
-			
-			if (!localResource.exists()){
-				_usingDefaultDescriptor = true;
+		// dkm - use registered
+		String fileName = remoteFile.getName();
+
+		IEditorRegistry registry = getEditorRegistry();
+
+		if (registry != null){
+			IEditorDescriptor descriptor = registry.getDefaultEditor(fileName);
+			if (descriptor == null)
+			{
+				descriptor = getDefaultTextEditor();
 			}
-		} catch (PartInitException e) {	
-		}	
-		
-		if (descriptor == null){
-			descriptor = getDefaultTextEditor();
-		}
 			
-		this._editorDescriptor = descriptor;		
+			this._editorDescriptor = descriptor;
+		}
 	}
 
 	protected IEditorRegistry getEditorRegistry()
@@ -676,24 +662,9 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		}
 		catch (SystemMessageException e)
 		{
-			if (remoteFile.isText() && specializeFile(true)){ // turn the file into binary type to allow for binary transfer
-				// try again
-				try
-				{
-					subsystem.download(remoteFile, localPath, remoteFile.getEncoding(), monitor);
-				}
-				catch (SystemMessageException ex){
-					specializeFile(false); // turn it back to text mode
-					SystemMessageDialog.displayMessage(e); // throw original exception
-					return false;
-				}
-			}
-			else {
-				SystemMessageDialog.displayMessage(e);
-				return false;
-			}
+			SystemMessageDialog.displayMessage(e);
+			return false;
 		}
-
 		if (monitor.isCanceled())
 		{
 			return false;
@@ -722,68 +693,6 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 		return true;
 	}
 
-	private boolean specializeFile(boolean binary){
-		String fname = remoteFile.getName();
-		int dotIndex = fname.lastIndexOf('.');				
-		String name = null;
-		String extension = null;
-		if (dotIndex > 0){
-			name = fname.substring(0, dotIndex);
-			extension = fname.substring(dotIndex+1);
-		}
-		else {
-			name = fname;
-		}
-		
-		if (name == null){
-			return false;
-		}
-		
-		// make this file binary, and try again
-		SystemFileTransferModeRegistry reg = (SystemFileTransferModeRegistry)RemoteFileUtility.getSystemFileTransferModeRegistry();
-		SystemFileTransferModeMapping[] newMappings = null;
-		ISystemFileTransferModeMapping[] mappings = reg.getModeMappings();
-		
-		SystemFileTransferModeMapping mapping = null;
-		for (int m = 0; m < mappings.length && mapping == null; m++){
-			ISystemFileTransferModeMapping map = mappings[m];
-			if (name.equals(map.getName())){
-				String ext = map.getExtension();
-				if (extension != null && extension.equals(ext)){
-					mapping = (SystemFileTransferModeMapping)map;
-				}
-				else if (extension == ext){
-					mapping = (SystemFileTransferModeMapping)map;
-				}
-			}
-		}
-		if (mapping != null){
-			newMappings = new SystemFileTransferModeMapping[mappings.length];
-			for (int i = 0; i < mappings.length; i++) {
-				newMappings[i] = (SystemFileTransferModeMapping)mappings[i];
-			}
-		}		
-		else {
-			newMappings = new SystemFileTransferModeMapping[mappings.length + 1];				
-			int i = 0;
-			for (; i < mappings.length; i++) {
-				newMappings[i] = (SystemFileTransferModeMapping)mappings[i];
-			}
-	
-			newMappings[i] = mapping = new SystemFileTransferModeMapping(name, extension);
-		}
-		if (binary){
-			mapping.setAsBinary();
-		}
-		else {
-			mapping.setAsText();
-		}
-		
-		reg.setModeMappings(newMappings);
-		reg.saveAssociations();	
-		return true;
-	}
-	
 	/**
 	 * Saves the local file and uploads it to the host immediately, rather than, in response to a resource change
 	 * event.
@@ -1153,13 +1062,10 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 
 				if (editorInput instanceof IFileEditorInput)
 				{
-					IFile file = ((IFileEditorInput) editorInput).getFile();
-					IPath path = file.getLocation();
+					IPath path = ((IFileEditorInput) editorInput).getFile().getLocation();
 					if (path!=null && lFile.compareTo(new java.io.File(path.toOSString()))==0) {
-						if (!file.isLinked()){ // linked resources need to be treated differently						
-							//if (path.makeAbsolute().toOSString().equalsIgnoreCase(localPath))
-							return OPEN_IN_SAME_PERSPECTIVE;
-						}
+						//if (path.makeAbsolute().toOSString().equalsIgnoreCase(localPath))
+						return OPEN_IN_SAME_PERSPECTIVE;
 					}
 				}
 			}
@@ -1737,16 +1643,8 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 
 		// set editor as preferred editor for this file
 		String editorId = null;
-		if (_editorDescriptor != null){
-			if (_usingDefaultDescriptor){
-				_editorDescriptor = IDE.getEditorDescriptor(file);
-				editorId = _editorDescriptor.getId();
-				_usingDefaultDescriptor = false;
-			}	
-			else {
-				editorId = _editorDescriptor.getId();
-			}
-		}
+		if (_editorDescriptor != null)
+			editorId = _editorDescriptor.getId();
 
 		IDE.setDefaultEditor(file, editorId);
 
@@ -1861,16 +1759,19 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 	 */
 	public void partClosed(IWorkbenchPart part)
 	{
-		if (editor == part){
-			//delete();
-		       
-			SystemUniversalTempFileListener.getListener().unregisterEditedFile(this);
+		/*
+		        if (editor == part)
+		        {
+		            delete();
+		        }
+		*/
+		SystemUniversalTempFileListener.getListener().unregisterEditedFile(this);
 
-			IWorkbenchPage page = SystemBasePlugin.getActiveWorkbenchWindow().getActivePage();			
-			if (page != null){
-				page.removePartListener(this);
-				editor = null;
-			}
+		IWorkbenchPage page = SystemBasePlugin.getActiveWorkbenchWindow().getActivePage();
+
+		if (page != null)
+		{
+			page.removePartListener(this);
 		}
 	}
 
@@ -2118,7 +2019,7 @@ public class SystemEditableRemoteFile implements ISystemEditableRemoteObject, IP
 					}
 				}
 			}
-		}
+		 }
 	}
 
 

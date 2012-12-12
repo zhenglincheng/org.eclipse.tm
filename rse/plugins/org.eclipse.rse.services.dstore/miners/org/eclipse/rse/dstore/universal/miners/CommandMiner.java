@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2011 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,6 @@
  * David McKnight (IBM) - [286671] Dstore shell service interprets &lt; and &gt; sequences - cmd descriptor to identify ability
  * David McKnight   (IBM)     [312415] [dstore] shell service interprets &lt; and &gt; sequences - handle old client/new server case
  * David McKnight   (IBM)     [320624] [dstore] shell &lt; and &gt; sequence conversion not being applied to thread
- * Noriaki Takatsu  (IBM)  - [365765] [dstore][multithread]client environment cause harm to singe-process server
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -38,7 +37,6 @@ import org.eclipse.dstore.core.model.DE;
 import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStoreAttributes;
 import org.eclipse.dstore.core.model.DataStoreResources;
-import org.eclipse.dstore.core.server.SystemServiceManager;
 import org.eclipse.rse.internal.dstore.universal.miners.command.CommandMinerThread;
 import org.eclipse.rse.internal.dstore.universal.miners.command.QueryPathThread;
 import org.eclipse.rse.internal.dstore.universal.miners.command.patterns.Patterns;
@@ -209,10 +207,8 @@ public class CommandMiner extends Miner
 			DataElement encodingArg = getCommandArgument(theElement, 1);
 			if (encodingArg.getType().equals("shell.encoding")) //$NON-NLS-1$
 			{
-				if (SystemServiceManager.getInstance().getSystemService() == null) {
-					// fix for 191599
-					System.setProperty("dstore.stdin.encoding",encodingArg.getValue());  //$NON-NLS-1$
-				}
+				// fix for 191599
+				 System.setProperty("dstore.stdin.encoding",encodingArg.getValue()); //$NON-NLS-1$
 			}
 			launchCommand(subject, invocation, status);
 		}

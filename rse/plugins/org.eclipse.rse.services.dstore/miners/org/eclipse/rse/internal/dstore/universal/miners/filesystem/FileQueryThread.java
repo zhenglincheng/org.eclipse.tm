@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2012 IBM Corporation and others.
+ * Copyright (c) 2007, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,6 @@
  * Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  * David McKnight  (IBM)  - [251650] [dstore] Multiple copies of symbolic link file show in Table view
  * David McKnight  (IBM)  - [251729][dstore] problems querying symbolic link folder
- * David McKnight  (IBM)  - [358301] [DSTORE] Hang during debug source look up
- * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
  *******************************************************************************/
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
 
@@ -45,7 +43,6 @@ public class FileQueryThread extends QueryThread
 	private int _inclusion;
 	private boolean _showHidden;
 	private boolean _isWindows;
-	private FileDescriptors _fileDescriptors;
 
 	
 	public FileQueryThread(
@@ -53,8 +50,7 @@ public class FileQueryThread extends QueryThread
 			String queryType, String filter, boolean caseSensitive,
 			int inclusion, 
 			boolean showHidden, boolean isWindows,
-			DataElement status,
-			FileDescriptors fileDescriptors)
+			DataElement status)
 	{
 		super(subject, status);
 		_fileobj = fileobj;
@@ -64,7 +60,6 @@ public class FileQueryThread extends QueryThread
 		_inclusion = inclusion;
 		_showHidden = showHidden;
 		_isWindows = isWindows;
-		_fileDescriptors = fileDescriptors;
 	}
 
 	
@@ -240,7 +235,7 @@ public class FileQueryThread extends QueryThread
 							{
 								if (file.isDirectory())
 								{
-									deObj = ds.createObject(subject,_fileDescriptors._deUniversalFolderObject,fileName);
+									deObj = ds.createObject(subject,FileDescriptors._deUniversalFolderObject,fileName);
 								}
 								else
 								// file
@@ -250,13 +245,13 @@ public class FileQueryThread extends QueryThread
 										deObj = ds
 												.createObject(
 														subject,
-														_fileDescriptors._deUniversalArchiveFileObject,
+														FileDescriptors._deUniversalArchiveFileObject,
 														fileName);
 									} 
 									else 
 									{
 										deObj = ds.createObject(subject,
-												_fileDescriptors._deUniversalFileObject,
+												FileDescriptors._deUniversalFileObject,
 												fileName);
 									}
 								}
@@ -266,13 +261,13 @@ public class FileQueryThread extends QueryThread
 								if (ArchiveHandlerManager.getInstance().isArchive(file)) 
 								{
 									deObj = ds.createObject(subject,
-											_fileDescriptors._deUniversalArchiveFileObject,
+											FileDescriptors._deUniversalArchiveFileObject,
 											fileName);
 								} 
 								else 
 								{
 									deObj = ds.createObject(subject,
-											_fileDescriptors._deUniversalFolderObject,
+											FileDescriptors._deUniversalFolderObject,
 											fileName);
 								}
 							} 
@@ -281,14 +276,14 @@ public class FileQueryThread extends QueryThread
 								if (ArchiveHandlerManager.getInstance().isArchive(file)) 
 								{
 									deObj = ds.createObject(subject,
-											_fileDescriptors._deUniversalArchiveFileObject,
+											FileDescriptors._deUniversalArchiveFileObject,
 											fileName);
 								} 
 								else 
 								{
 									deObj = ds
 											.createObject(subject,
-													_fileDescriptors._deUniversalFileObject,
+													FileDescriptors._deUniversalFileObject,
 													fileName);
 								}
 							}
@@ -374,11 +369,7 @@ public class FileQueryThread extends QueryThread
 					}
 				}
 
-		} 
-		catch (OutOfMemoryError e){
-			System.exit(-1);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			UniversalServerUtilities.logError(UniversalFileSystemMiner.CLASSNAME,
 					"createDataElement failed with exception - isFile ", e, _dataStore); //$NON-NLS-1$

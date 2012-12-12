@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2005, 2011 IBM Corporation. All rights reserved.
+ * Copyright (c) 2005, 2008 IBM Corporation. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -12,7 +12,6 @@
  * 
  * Contributors:
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
- * David McKnight  (IBM)   [360847] [dstore] need to add tracing and fixes to enable remote class transfer
  ********************************************************************************/
 
 package org.eclipse.dstore.core.java;
@@ -159,9 +158,6 @@ public class ClassByteStreamHandler implements IClassByteStreamHandler
 		 */
 		public void run()
 		{
-			_dataStore.trace("receiving class bytes"); //$NON-NLS-1$
-			_dataStore.trace("\tsize="+_size); //$NON-NLS-1$
-			_dataStore.trace("\tbuffer="+_buffer); //$NON-NLS-1$
 			try
 			{
 				PipedInputStream ins = new PipedInputStream();
@@ -172,10 +168,7 @@ public class ClassByteStreamHandler implements IClassByteStreamHandler
 				outStream.close();				
 
 				IRemoteClassInstance instance = loadInstance(ins);
-				if (instance != null){
-					_dataStore.trace("running class instance "+instance); //$NON-NLS-1$
-					runInstance(instance);
-				}
+				runInstance(instance);
 				
 			}
 			catch (Exception e)
@@ -211,13 +204,7 @@ public class ClassByteStreamHandler implements IClassByteStreamHandler
 			else
 			{
 				// on server run and update client
-				_dataStore.trace("calling arrived on server"); //$NON-NLS-1$
-				try {
-					instance.arrivedOnServer();			
-				}
-				catch (Exception e){
-					_dataStore.trace(e);
-				}
+				instance.arrivedOnServer();			
 				_dataStore.updateRemoteClassInstance(instance, getIdentifier());
 			}
 		}

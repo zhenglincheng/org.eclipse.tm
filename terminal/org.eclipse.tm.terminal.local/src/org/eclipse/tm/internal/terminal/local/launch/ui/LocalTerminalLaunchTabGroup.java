@@ -32,7 +32,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
 * which can be publicly accessed from the <code>org.eclipse.debug.ui</code> plug-in.
 *
 * @author Mirko Raner
-* @version $Revision: 1.2 $
+* @version $Revision: 1.3 $
 **/
 public class LocalTerminalLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
 

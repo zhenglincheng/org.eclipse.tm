@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,19 +15,12 @@
  * David McKnight  (IBM)   [222168][dstore] Buffer in DataElement is not sent
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
- * David McKnight  (IBM)   [347412][dstore] Need an option to set TCP NODELAYACKS
- * David McKnight  (IBM)   [350315][dstore] regress change made for bug 305218
- * David McKnight    (IBM)  - [358301] [DSTORE] Hang during debug source look up
- * David McKnight  (IBM)   [360847] [dstore] need to add tracing and fixes to enable remote class transfer
- * David McKnight   (IBM)  - [367449] [dstore] allow custom encoding for data transport layer
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -69,18 +62,6 @@ public class Sender implements ISender
 		_xmlGenerator = new XMLgenerator(_dataStore);
 		try
 		{
-			String noDelayStr = System.getProperty("DSTORE_TCP_NO_DELAY"); //$NON-NLS-1$
-			if (noDelayStr != null && noDelayStr.length() > 0){
-				try {
-					boolean noDelay = Boolean.valueOf(noDelayStr).booleanValue();
-					_socket.setTcpNoDelay(noDelay); 
-					
-					noDelay = _socket.getTcpNoDelay();
-					_dataStore.trace("tcp no delay set to " + noDelay); //$NON-NLS-1$
-				}
-				catch (Exception e){					
-				}
-			}
 			int bufferSize = _socket.getSendBufferSize();
 			_xmlGenerator.setBufferSize(bufferSize);
 		}
@@ -91,11 +72,15 @@ public class Sender implements ISender
 		{
 			_outFile = new PrintStream(_socket.getOutputStream());
 			
-			String encoding = DE.ENCODING_UTF_8;	
-			String serverEncoding = System.getProperty("DSTORE_SERVER_ENCODING"); //$NON-NLS-1$
-			if (serverEncoding != null && serverEncoding.length() > 0){
-				encoding = serverEncoding;
+			String encoding = DE.ENCODING_UTF_8;
+			if (!_dataStore.isVirtual()){
+				encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
+				String theOS = System.getProperty("os.name"); //$NON-NLS-1$
+				if (theOS.startsWith("z")){ //$NON-NLS-1$
+					encoding = DE.ENCODING_UTF_8;
+				}
 			}
+			
 			
 			OutputStreamWriter writer = new OutputStreamWriter(_socket.getOutputStream(), encoding);
 			_outData = new BufferedWriter(writer);
@@ -203,21 +188,9 @@ public class Sender implements ISender
 		for (int i = 0; i < loaders.size(); i++)
 		{
 			ClassLoader loader = (ClassLoader) loaders.get(i);
-		
+			
 			classInStream = loader.getResourceAsStream(className);
 			classLocation = loader.getResource(className);
-			
-			if (classInStream == null && classLocation != null){
-				try {
-					String file = classLocation.getFile();
-					File f = new File(file);
-					if (f.exists()){
-						classInStream = new FileInputStream(f);
-					}
-				} catch (Exception e) {
-					_dataStore.trace(e);
-				}
-			}
 			if (classInStream != null && classLocation != null) break;
 		}
 		if (classLocation == null || classInStream == null) 
@@ -307,14 +280,10 @@ public class Sender implements ISender
 		{
 			synchronized (_outFile)
 			{
-				try {
-					_xmlGenerator.empty();
-					_xmlGenerator.generate(objectRoot, depth);
-					_xmlGenerator.flushData();
-				}
-				catch (OutOfMemoryError e){
-					System.exit(-1);
-				}
+
+				_xmlGenerator.empty();
+				_xmlGenerator.generate(objectRoot, depth);
+				_xmlGenerator.flushData();
 			}
 
 		}

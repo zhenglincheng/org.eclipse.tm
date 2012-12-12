@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,9 +18,6 @@
  * Xuan Chen   (IBM) - [160775] [api] rename (at least within a zip) blocks UI thread
  * David McKnight   (IBM)        - [224313] [api] Create RSE Events for MOVE and COPY holding both source and destination fields
  * David McKnight   (IBM)        - [296877] Allow user to choose the attributes for remote search result
- * David McKnight   (IBM)        - [357587] Custom sorter is changed to SystemTableViewSorter
- * David McKnight   (IBM)        - [363392] system table views shows open view actions when they shouldn't
- * David McKnight   (IBM)        - [367357]	system table-tree view not showing refresh action
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -220,21 +217,16 @@ public class SystemTableTreeView
 			    TreeColumn tcolumn = (TreeColumn)e.widget;
 				int column = table.indexOf(tcolumn);
 				SystemTableViewSorter oldSorter = (SystemTableViewSorter) getSorter();
-				if (oldSorter != null)
+				if (oldSorter != null && column == oldSorter.getColumnNumber())
 				{
-					if (column == oldSorter.getColumnNumber()){
-						oldSorter.setReversed(!oldSorter.isReversed());
-						if (tcolumn.getImage() == _upI)
-						{
-						    tcolumn.setImage(_downI);
-						}
-						else
-						{
-						    tcolumn.setImage(_upI);
-						}
+					oldSorter.setReversed(!oldSorter.isReversed());
+					if (tcolumn.getImage() == _upI)
+					{
+					    tcolumn.setImage(_downI);
 					}
-					else {
-						oldSorter.setColumnNumber(column);
+					else
+					{
+					    tcolumn.setImage(_upI);
 					}
 				} 
 				else
@@ -968,45 +960,48 @@ public class SystemTableTreeView
 				// --------------------------
 			case ISystemRemoteChangeEvents.SYSTEM_REMOTE_RESOURCE_DELETED :
 				{
-					Object dchild = remoteResource;
-
-					ISystemViewElementAdapter dadapt = getViewAdapter(dchild);
-					if (dadapt != null)
 					{
-						ISubSystem dSubSystem = dadapt.getSubSystem(dchild);
-						String dkey = dadapt.getAbsoluteName(dchild);
+						Object dchild = remoteResource;
 
-						if (provider != null)
+						ISystemViewElementAdapter dadapt = getViewAdapter(dchild);
+						if (dadapt != null)
 						{
-							Object[] children = provider.getChildren(_objectInput);
-							for (int i = 0; i < children.length; i++)
+							ISubSystem dSubSystem = dadapt.getSubSystem(dchild);
+							String dkey = dadapt.getAbsoluteName(dchild);
+
+							if (provider != null)
 							{
-								Object existingChild = children[i];
-								if (existingChild != null)
+								Object[] children = provider.getChildren(_objectInput);
+								for (int i = 0; i < children.length; i++)
 								{
-									ISystemViewElementAdapter eadapt = getViewAdapter(existingChild);
-									ISubSystem eSubSystem = eadapt.getSubSystem(existingChild);
-
-									if (dSubSystem == eSubSystem)
+									Object existingChild = children[i];
+									if (existingChild != null)
 									{
-										String ekey = eadapt.getAbsoluteName(existingChild);
-										if (ekey.equals(dkey))
-										{
-											if (!madeChange)
-											{
-												provider.flushCache();
-												madeChange = true;
+										ISystemViewElementAdapter eadapt = getViewAdapter(existingChild);
+										ISubSystem eSubSystem = eadapt.getSubSystem(existingChild);
 
-												// do a full refresh
-												refresh();
+										if (dSubSystem == eSubSystem)
+										{
+											String ekey = eadapt.getAbsoluteName(existingChild);
+											if (ekey.equals(dkey))
+											{
+												if (!madeChange)
+												{
+													provider.flushCache();
+													madeChange = true;
+
+													// do a full refresh
+													refresh();
+												}
 											}
 										}
-									}
 
+									}
 								}
 							}
 						}
 					}
+
 				}
 				break;
 
@@ -1359,16 +1354,6 @@ public class SystemTableTreeView
 			scanSelections();
 		return _selectionShowRenameAction;
 	}
-	
-	/**
-	 * Decides whether to even show the refresh menu item.
-	 * Assumes scanSelections() has already been called
-	 */
-	protected boolean showRefresh() {
-		if (!_selectionFlagsUpdated)
-			scanSelections();
-		return _selectionShowRefreshAction;
-	}
 	/**
 	 * Required method from ISystemRenameTarget
 	 * Decides whether to enable the rename menu item. 
@@ -1588,10 +1573,7 @@ public class SystemTableTreeView
 			SystemView.createStandardGroups(menu);
 
 			// ADD COMMON ACTIONS...
-			if (showRefresh()) {
-				menu.appendToGroup(ISystemContextMenuConstants.GROUP_BUILD, getRefreshAction());
-			}
-			
+
 			// COMMON RENAME ACTION...
 			if (canRename())
 			{
@@ -1608,9 +1590,6 @@ public class SystemTableTreeView
 			{
 				Object element = elements.next();
 				ISystemViewElementAdapter adapter = getViewAdapter(element);
-				if (adapter == null){
-					System.out.println("no adapter for "+element);
-				}
 				adapters.put(adapter, element); // want only unique adapters
 			}
 			Enumeration uniqueAdapters = adapters.keys();
@@ -1676,14 +1655,13 @@ public class SystemTableTreeView
 				SystemShowInTableAction showInTableAction = getShowInTableAction();
 				openToPerspectiveAction.setSelection(selection);
 				showInTableAction.setSelection(selection);
+				//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
+				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
+				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
 
-				
-				if (_selectionShowOpenViewActions){		
-					//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
-					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
-					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
-				}
 			}
+
+
 		}
 	}
 	

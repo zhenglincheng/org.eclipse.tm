@@ -26,7 +26,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * Those launch configurations can be used to start a new session in the Terminal View.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LocalTerminalLaunchListProvider implements IStructuredContentProvider {
 

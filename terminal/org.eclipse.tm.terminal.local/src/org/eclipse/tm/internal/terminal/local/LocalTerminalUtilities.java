@@ -28,7 +28,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * methods.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LocalTerminalUtilities {
 

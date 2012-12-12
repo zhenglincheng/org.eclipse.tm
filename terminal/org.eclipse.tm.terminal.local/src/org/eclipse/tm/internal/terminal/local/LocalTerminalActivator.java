@@ -20,7 +20,7 @@ import org.osgi.framework.BundleContext;
  * Connector plug-in.
  *
  * @author Mirko Raner
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LocalTerminalActivator extends AbstractUIPlugin {
 

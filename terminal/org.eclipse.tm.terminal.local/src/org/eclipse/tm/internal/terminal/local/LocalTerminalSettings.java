@@ -20,7 +20,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * {@link ILocalTerminalSettings} interface.
  *
  * @author Mirko Raner
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  */
 public class LocalTerminalSettings implements ILocalTerminalSettings {
 

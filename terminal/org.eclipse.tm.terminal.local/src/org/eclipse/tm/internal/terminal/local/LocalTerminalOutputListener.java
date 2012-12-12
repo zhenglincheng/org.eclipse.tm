@@ -25,7 +25,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * separator conversions as specified by the {@link ILocalTerminalSettings}.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
 public class LocalTerminalOutputListener implements IStreamListener {
 

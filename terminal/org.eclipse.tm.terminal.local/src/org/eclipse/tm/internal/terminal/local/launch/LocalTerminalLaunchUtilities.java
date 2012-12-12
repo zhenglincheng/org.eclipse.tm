@@ -45,7 +45,7 @@ import org.eclipse.tm.internal.terminal.provisional.api.Logger;
  * because the original class is not part of the public API of its plug-in.
  *
  * @author Mirko Raner and others
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LocalTerminalLaunchUtilities {
 

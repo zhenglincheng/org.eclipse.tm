@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,6 @@
  * David McKnight   (IBM)        - [252708] Saving Profile Job happens when not changing Property Values on Connections
  * David McKnight   (IBM)        - [272882] [api] Handle exceptions in IService.initService()
  * David McKnight     (IBM)   [302724] problems with environment variable substitution
- * David McKnight   (IBM)        - [349491] possible NPE on shutdown due to event firing
  *******************************************************************************/
 
 package org.eclipse.rse.subsystems.shells.core.subsystems;
@@ -709,10 +708,8 @@ public abstract class RemoteCmdSubSystem extends SubSystem implements IRemoteCmd
 
 		public void run()
 		{
-			if (RSECorePlugin.isTheSystemRegistryActive()){
-				ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-				registry.fireEvent(new SystemResourceChangeEvent(_ss, ISystemResourceChangeEvents.EVENT_REFRESH, _ss));
-			}
+			ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
+			registry.fireEvent(new SystemResourceChangeEvent(_ss, ISystemResourceChangeEvents.EVENT_REFRESH, _ss));
 		}
 	}
 

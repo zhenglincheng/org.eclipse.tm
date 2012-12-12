@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,9 +29,6 @@
  * Martin Oberhuber (Wind River) - [226574][api] Add ISubSystemConfiguration#supportsEncoding()
  * David McKnight (IBM) 		 - [225747] [dstore] Trying to connect to an "Offline" system throws an NPE
  * David McKnight   (IBM)        - [272882] [api] Handle exceptions in IService.initService()
- * David McKnight   (IBM)        - [368454] provide thread safety for cachedRemoteFiles hashmap
- * David McKnight   (IBM)        - [362440] File opened using remote system connection (SSH - Sftp) at some point save action was not saving it to the file system.
- * David Mcknight   (IBM)        - [374681] Incorrect number of children on the properties page of a directory
  *******************************************************************************/
 
 package org.eclipse.rse.subsystems.files.core.subsystems;
@@ -125,22 +122,7 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 
 	protected ArrayList _searchHistory;
 
- 	/**
- 	 *  All created IRemoteFiles are mapped in a cache for quick retrieval.
- 	 *  This is a HashMap so any access to it needs to be synchronized otherwise
- 	 *  thread-safety could be compromised.
- 	 * The _cachedRemoteFiles map is used to store queried IRemoteFiles 
- 	 * for quick retrieval.  This is a HashMap so any access to it needs 
- 	 * to be synchronized; otherwise thread-safety could be compromised.
- 	 * 
- 	 * The _cachedRemoteFiles HashMap should be synchronized on like this:
- 	 * <code>
- 	 *		synchronized (_cachedRemoteFiles){
- 	 * 			// call to _cachedRemoteFiles
- 	 *  		...
- 	 *		}
- 	 * </code>
- 	 */
+	// all created IRemoteFiles mapped in cache to quick retrieval
 	protected HashMap _cachedRemoteFiles = new HashMap();
 
 	/**
@@ -151,9 +133,6 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 	{
 		super(host, connectorService);
 		_searchHistory = new ArrayList();
-		
-		// load UI plugin for adapters so that temp file listener is ready for any edits before connect
-		Platform.getAdapterManager().loadAdapter(new RemoteFileEmpty(), "org.eclipse.rse.ui.view.ISystemViewElementAdapter"); //$NON-NLS-1$
 	}
 	/**
 	 * @return true if this subsystem's properties should take precedence
@@ -1097,10 +1076,8 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 		// if not, the key must be for a file
 		if (key.lastIndexOf(IHostSearchResult.SEARCH_RESULT_DELIMITER) < 0) {
 
-			IRemoteFile remoteFile = getCachedRemoteFile(key); // first check for cached file
-			if (remoteFile == null){ // not cached, do query
-				remoteFile = getRemoteFileObject(key, monitor);
-			}
+		    IRemoteFile remoteFile = getRemoteFileObject(key, monitor);
+
 		    if (remoteFile != null) {
 		        return remoteFile;
 		    }
@@ -1277,6 +1254,8 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 	public void initializeSubSystem(IProgressMonitor monitor) throws SystemMessageException
 	{
 		super.initializeSubSystem(monitor);
+		// load UI plugin for adapters right after successful connect
+		Platform.getAdapterManager().loadAdapter(new RemoteFileEmpty(), "org.eclipse.rse.ui.view.ISystemViewElementAdapter"); //$NON-NLS-1$
 		getConnectorService().addCommunicationsListener(this);
 	}
 
@@ -1292,43 +1271,35 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 	 */
 	public void cacheRemoteFile(IRemoteFile file, String path)
 	{
-		boolean containsKey = false;
-		synchronized (_cachedRemoteFiles){
-			containsKey = _cachedRemoteFiles.containsKey(path);
-		}
-		if (containsKey){
-			IRemoteFile oldFile = null;
-			synchronized (_cachedRemoteFiles){
-				oldFile = (IRemoteFile)_cachedRemoteFiles.remove(path);
-			}
-			if (oldFile == file){
+
+		if (_cachedRemoteFiles.containsKey(path))
+		{
+			IRemoteFile oldFile = (IRemoteFile)_cachedRemoteFiles.remove(path);
+			if (oldFile == file)
+			{
 				// already cached - recache
-				synchronized (_cachedRemoteFiles){
-					_cachedRemoteFiles.put(path, file);
-				}
+				_cachedRemoteFiles.put(path, file);
 				return;
 			}
-	
+
 			// replace file under parent
 			if (oldFile instanceof RemoteFile) {
 				RemoteFile roldFile = (RemoteFile)oldFile;
-				if (roldFile._parentFile != null){ // prevent parent query from bug #196664
+				if (roldFile._parentFile != null) // prevent parent query from bug #196664
+				{
 					roldFile._parentFile.replaceContent(oldFile, file);
 				}
 			}
 			else if (oldFile != null && oldFile.getParentRemoteFile() != null) {
 				oldFile.getParentRemoteFile().replaceContent(oldFile, file);
 			}
-	
+
 			// preserve persistent information from old file to new
-			if (oldFile != null){
+			if (oldFile != null)
 				oldFile.copyContentsTo(file);
-			}
+
 		}
-		
-		synchronized (_cachedRemoteFiles){
-			_cachedRemoteFiles.put(path, file);
-		}
+		_cachedRemoteFiles.put(path, file);
 	}
 
 	/**
@@ -1350,19 +1321,18 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 	 */
 	public IRemoteFile getCachedRemoteFile(String path)
 	{
-		synchronized (_cachedRemoteFiles){
-			if (_cachedRemoteFiles.size() > 0)
-			{
-		     path = path.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-		     if (path.endsWith("\\") || (path.endsWith("/") && path.length() > 1)) //$NON-NLS-1$ //$NON-NLS-2$
-		     {
-		         path = path.substring(0, path.length() - 1);
-		     }
-			  if (_cachedRemoteFiles.containsKey(path))
-			  {
-				  {return (IRemoteFile)_cachedRemoteFiles.get(path);}
-			  }
-			}
+		if (_cachedRemoteFiles.size() > 0)
+		{
+	     path = path.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+	     if (path.endsWith("\\") || (path.endsWith("/") && path.length() > 1)) //$NON-NLS-1$ //$NON-NLS-2$
+	     {
+	         path = path.substring(0, path.length() - 1);
+	     }
+		  if (_cachedRemoteFiles.containsKey(path))
+		  {
+		      {return (IRemoteFile)_cachedRemoteFiles.get(path);}
+		  }
+
 		}
 		return null;
 	}
@@ -1386,10 +1356,7 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 			//If getContents() is implemented correctly, no matches should be removed
 			String prefix = file.getAbsolutePath() + file.getSeparator();
 			//Clone the hashMap in order to avoid ConcurrentModificationException in the iterator
-			HashMap tmpMap = null;
-			synchronized (_cachedRemoteFiles){
-				tmpMap = (HashMap)_cachedRemoteFiles.clone();
-			}
+			HashMap tmpMap = (HashMap)_cachedRemoteFiles.clone();
 			Iterator it = tmpMap.keySet().iterator();
 			while (it.hasNext()) {
 				String remotePath = (String)it.next();
@@ -1400,15 +1367,13 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 				}
 			}
 
-			removeCachedRemoteFile(file.getAbsolutePath());			
+			_cachedRemoteFiles.remove(file.getAbsolutePath());
 		}
 	}
 
 	protected void removeCachedRemoteFile(String path)
 	{
-		synchronized (_cachedRemoteFiles){
-			_cachedRemoteFiles.remove(path);
-		}
+		_cachedRemoteFiles.remove(path);
 	}
 
 
@@ -1417,9 +1382,7 @@ public abstract class RemoteFileSubSystem extends SubSystem implements IRemoteFi
 		switch (e.getState())
 		{
 			case CommunicationsEvent.AFTER_DISCONNECT :
-				synchronized (_cachedRemoteFiles){
-					_cachedRemoteFiles.clear();
-				}
+				_cachedRemoteFiles.clear();
 				// DKM - taking this out because it causes an exception when the event occurs in Modal Context
 				//ISystemRegistry sr = RSECorePlugin.getTheSystemRegistry();
 				//sr.connectedStatusChange(this, false, true, true);

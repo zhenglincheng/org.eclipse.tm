@@ -45,7 +45,7 @@ import org.eclipse.ui.PlatformUI;
  * {@link ProcessFactory}, which allows the process to run with a pseudo-terminal ({@link PTY}).
  *
  * @author Mirko Raner and others
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LocalTerminalLaunchDelegate extends LaunchConfigurationDelegate {
 

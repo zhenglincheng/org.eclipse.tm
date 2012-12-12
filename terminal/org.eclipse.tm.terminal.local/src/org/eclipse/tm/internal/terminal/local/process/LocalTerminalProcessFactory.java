@@ -21,7 +21,7 @@ import org.eclipse.debug.core.model.IProcess;
  * {@link LocalTerminalProcess} objects.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
 public class LocalTerminalProcessFactory implements IProcessFactory {
 

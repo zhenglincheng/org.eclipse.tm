@@ -23,7 +23,7 @@ import org.eclipse.tm.internal.terminal.local.launch.LocalTerminalLaunchUtilitie
  * and the configuration type's regular icon as the image label.
  *
  * @author Mirko Raner
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
 public class LocalTerminalLaunchLabelProvider extends BaseLabelProvider implements ILabelProvider {
 
