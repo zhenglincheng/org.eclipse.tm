@@ -26,6 +26,9 @@
  * Martin Oberhuber (Wind River) - [240745] Pressing Ctrl+F1 in the Terminal should bring up context help
  * Michael Scharf (Wind River) - [240098] The cursor should not blink when the terminal is disconnected
  * Anton Leherbauer (Wind River) - [335021] Middle mouse button copy/paste does not work with the terminal
+ * Max Stepanov (Appcelerator) - [339768] Fix ANSI code for PgUp / PgDn
+ * Pawel Piech (Wind River) - [333613] "Job found still running" after shutdown
+ * Martin Oberhuber (Wind River) - [348700] Terminal unusable after disconnect
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
@@ -345,27 +348,29 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	public void disconnectTerminal() {
 		Logger.log("entered."); //$NON-NLS-1$
 
-		if (getState()==TerminalState.CLOSED) {
-			return;
+		//Disconnect the remote side first
+		if (getState()!=TerminalState.CLOSED) {
+			if(getTerminalConnector()!=null) {
+				getTerminalConnector().disconnect();
+			}
 		}
-		if(getTerminalConnector()!=null) {
-			getTerminalConnector().disconnect();
-		}
-  		//Ensure that a new Job can be started; then clean up old Job.
- 		//TODO not sure whether the fInputStream needs to be cleaned too,
- 		//or whether the Job could actually cancel in case the fInputStream is closed.
- 		Job job;
- 		synchronized(this) {
- 			job = fJob;
- 			fJob = null;
- 		}
- 		if (job!=null) {
- 			job.cancel();
- 			//There's not really a need to interrupt, since the job will
- 			//check its cancel status after 500 msec latest anyways...
- 			//Thread t = job.getThread();
- 			//if(t!=null) t.interrupt();
- 		}
+		
+        //Ensure that a new Job can be started; then clean up old Job.
+        Job job;
+        synchronized(this) {
+            job = fJob;
+            fJob = null;
+        }
+        if (job!=null) {
+            job.cancel();
+            // Join job to avoid leaving job running after workbench shutdown (333613).
+            // Interrupt to be fast enough; cannot close fInputStream since it is re-used (bug 348700).
+            Thread t = job.getThread();
+            if(t!=null) t.interrupt();
+            try {
+                job.join();
+            } catch (InterruptedException e) {}
+        }
 	}
 
 	// TODO
@@ -811,11 +816,11 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 					break;
 
 				case 0x1000005: // PgUp key.
-					sendString("\u001b[I"); //$NON-NLS-1$
+					sendString("\u001b[5~"); //$NON-NLS-1$
 					break;
 
 				case 0x1000006: // PgDn key.
-					sendString("\u001b[G"); //$NON-NLS-1$
+					sendString("\u001b[6~"); //$NON-NLS-1$
 					break;
 
 				case 0x1000007: // Home key.

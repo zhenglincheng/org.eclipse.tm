@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,6 +63,10 @@
  * David McKnight   (IBM)        - [284420] nullprogressmonitor is needed
  * David McKnight     (IBM)      - [298440] jar files in a directory can't be pasted to another system properly
  * David McKnight   (IBM)        - [308770] [dstore] Remote Search using old server fails with NPE
+ * David McKnight    (IBM)       - [365780] [dstore] codepage conversion should only occur for different encodings
+ * David McKnight   (IBM)        - [390037] [dstore] Duplicated items in the System view
+ * David McKnight   (IBM)        - [391164] [dstore] don't clear cached elements when they're not spirited or deleted
+ * David McKnight   (IBM)        - [392012] [dstore] make server safer for delete operations
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.dstore.files;
@@ -838,29 +842,32 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 
 			if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_SUCCESS_TYPE))
 			{
-				if (!isBinary){ // do standard conversion if this is text!
+				if (!isBinary && fileLength > 0){ // do standard conversion if this is text!
 					String localEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
 
-					IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(encoding, this);
+					if (!localEncoding.equals(encoding)) {// only do conversion if the encodings are different and the length is non-zero
 
-					try {
-						codePageConverter.convertFileFromRemoteEncoding(remotePath, localFile, encoding, localEncoding, this);
-					}
-					catch (RuntimeException e){
-						Throwable ex = e.getCause();
-						StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
-						msgTxtBuffer.append('\n');
-						msgTxtBuffer.append('\n');
-						msgTxtBuffer.append(remotePath);
-						msgTxtBuffer.append('\n');						
-						msgTxtBuffer.append(encoding);
-						msgTxtBuffer.append(" -> ");
-						msgTxtBuffer.append(localEncoding);
-						
-						SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-								IDStoreMessageIds.FILEMSG_IO_ERROR,
-								IStatus.ERROR, msgTxtBuffer.toString(), ex);
-						throw new SystemMessageException(msg);
+						IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(encoding, this);
+	
+						try {
+							codePageConverter.convertFileFromRemoteEncoding(remotePath, localFile, encoding, localEncoding, this);
+						}
+						catch (RuntimeException e){
+							Throwable ex = e.getCause();
+							StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
+							msgTxtBuffer.append('\n');
+							msgTxtBuffer.append('\n');
+							msgTxtBuffer.append(remotePath);
+							msgTxtBuffer.append('\n');						
+							msgTxtBuffer.append(encoding);
+							msgTxtBuffer.append(" -> ");
+							msgTxtBuffer.append(localEncoding);
+							
+							SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+									IDStoreMessageIds.FILEMSG_IO_ERROR,
+									IStatus.ERROR, msgTxtBuffer.toString(), ex);
+							throw new SystemMessageException(msg);
+						}
 					}
 				}
 			}
@@ -1089,28 +1096,30 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 					if (resultChild.getType().equals(IUniversalDataStoreConstants.DOWNLOAD_RESULT_SUCCESS_TYPE))
 					{
 						// do standard conversion if this is text!
-						if (!isBinaries[j]){ // do standard conversion if this is text!
+						if (!isBinaries[j] && fileLength > 0){ // do standard conversion if this is text! or if the file is empty
 							String localEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
-							IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(hostEncodings[j], this);
-
-							try {
-								codePageConverter.convertFileFromRemoteEncoding(remoteElement.getName(), localFile, hostEncodings[j], localEncoding, this);
-							}
-							catch (RuntimeException e){
-								Throwable ex = e.getCause();
-								StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
-								msgTxtBuffer.append('\n');
-								msgTxtBuffer.append('\n');
-								msgTxtBuffer.append(remoteFiles[j]);
-								msgTxtBuffer.append('\n');						
-								msgTxtBuffer.append(hostEncodings[j]);
-								msgTxtBuffer.append(" -> ");
-								msgTxtBuffer.append(localEncoding);
-								
-								SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
-										IDStoreMessageIds.FILEMSG_IO_ERROR,
-										IStatus.ERROR, msgTxtBuffer.toString(), ex);
-								throw new SystemMessageException(msg);
+							if (!localEncoding.equals(hostEncodings[j])){
+								IFileServiceCodePageConverter codePageConverter = CodePageConverterManager.getCodePageConverter(hostEncodings[j], this);
+	
+								try {
+									codePageConverter.convertFileFromRemoteEncoding(remoteElement.getName(), localFile, hostEncodings[j], localEncoding, this);
+								}
+								catch (RuntimeException e){
+									Throwable ex = e.getCause();
+									StringBuffer msgTxtBuffer = new StringBuffer(RSEServicesMessages.FILEMSG_OPERATION_FAILED);
+									msgTxtBuffer.append('\n');
+									msgTxtBuffer.append('\n');
+									msgTxtBuffer.append(remoteFiles[j]);
+									msgTxtBuffer.append('\n');						
+									msgTxtBuffer.append(hostEncodings[j]);
+									msgTxtBuffer.append(" -> ");
+									msgTxtBuffer.append(localEncoding);
+									
+									SystemMessage msg = new SimpleSystemMessage(Activator.PLUGIN_ID,
+											IDStoreMessageIds.FILEMSG_IO_ERROR,
+											IStatus.ERROR, msgTxtBuffer.toString(), ex);
+									throw new SystemMessageException(msg);
+								}
 							}
 						}
 					}
@@ -1202,7 +1211,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		DataElement de = null;
 		if (name.equals(".") && name.equals(remoteParent)) //$NON-NLS-1$
 		{
-			de = getElementFor(name);
+			de = getElementFor(name, true);
 		}
 		else
 		{
@@ -1212,7 +1221,7 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			    buf.append(sep);
 			}
 			buf.append(name);
-			de = getElementFor(buf.toString());
+			de = getElementFor(buf.toString(), true);
 		}
 		return de;
 	}
@@ -1515,7 +1524,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 	public void delete(String remoteParent, String fileName, IProgressMonitor monitor) throws SystemMessageException
 	{
 		String remotePath = remoteParent + getSeparator(remoteParent) + fileName;
-		DataElement de = getElementFor(remotePath);
+		
+		// always get a fresh element for deletions (spiriting could cause issues on server-side)
+		DataElement universaltemp = getMinerElement();
+		String normalizedPath = PathUtility.normalizeUnknown(remotePath);
+		DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+
 		// if we don't have a proper element, we won't have a command descriptor
 		if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 			// need to fetch
@@ -1560,11 +1574,16 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			return;
 		}
 
+		DataElement universaltemp = getMinerElement();
 		ArrayList dataElements = new ArrayList(remoteParents.length);
 		for (int i = 0; i < remoteParents.length; i++)
 		{
 			String remotePath = remoteParents[i] + getSeparator(remoteParents[i]) + fileNames[i];
-			DataElement de = getElementFor(remotePath);
+			
+			// always get a fresh element for deletions (spiriting could cause issues on server-side)
+			String normalizedPath = PathUtility.normalizeUnknown(remotePath);
+			DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+			
 			// if we don't have a proper element, we won't have a command descriptor
 			if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 				// need to fetch
@@ -1624,7 +1643,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
  			 newPath = remoteParent + getSeparator(remoteParent) + newName;
  		}
 
- 		DataElement de = getElementFor(oldPath);
+ 		// always get a fresh element for renames (spiriting could cause issues on server-side)
+		DataElement universaltemp = getMinerElement();
+		String normalizedPath = PathUtility.normalizeUnknown(oldPath);
+		DataElement de = universaltemp.getDataStore().createObject(universaltemp, IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR, normalizedPath, normalizedPath, "", false); //$NON-NLS-1$
+
+ 		
 		// if we don't have a proper element, we won't have a command descriptor
 		if (de.getType().equals(IUniversalDataStoreConstants.UNIVERSAL_FILTER_DESCRIPTOR)){
 			// need to fetch
@@ -2086,8 +2110,12 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		}
 		return results;
 	}
+	
+	protected DataElement getElementFor(String path){
+		return getElementFor(path, false);
+	}
 
-	protected DataElement getElementFor(String path)
+	protected DataElement getElementFor(String path, boolean forceReuse)
 	{
 		if (!isInitialized())
 		{
@@ -2105,7 +2133,8 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 		DataElement element = (DataElement)_fileElementMap.get(normalizedPath);
 		if (element != null)
 		{
-			if (element.isDeleted()){
+			if (forceReuse || element.isDeleted() 
+					|| element.isSpirit()){ // when using spirit, don't use element cache 
 				_fileElementMap.remove(normalizedPath);
 				element = null;
 			}
@@ -2398,6 +2427,9 @@ public class DStoreFileService extends AbstractDStoreService implements IFileSer
 			*/
 
 			DataElement remoteFile = file.getDataElement();
+			if (remoteFile.isSpirit()){
+				remoteFile = getElementFor(rfile.getAbsolutePath());
+			}
 
 			DataElement status = dsStatusCommand(remoteFile, IUniversalDataStoreConstants.C_QUERY_FILE_PERMISSIONS, monitor);
 			if (status != null) {

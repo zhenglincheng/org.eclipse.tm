@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,8 @@
  * David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
  * Noriaki Takatsu (IBM)  - [226237] [dstore] Move the place where the ServerLogger instance is made
  * David McKnight  (IBM)  - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
+ * David McKnight  (IBM)  - [358301] [DSTORE] Hang during debug source look up
+ * David McKnight  (IBM)  - [385211] [dstore] include java information under sys info element
  *******************************************************************************/
 
 package org.eclipse.rse.dstore.universal.miners;
@@ -103,6 +105,20 @@ public class EnvironmentMiner extends Miner
 		_dataStore.createObject(systemInfo, "system.property", "os.name", System.getProperty("os.name")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		_dataStore.createObject(systemInfo, "system.property", "os.version", System.getProperty("os.version")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		
+		// java properties
+		_dataStore.createObject(systemInfo, "system.property", "java.version", System.getProperty("java.version")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vendor", System.getProperty("java.vendor")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vendor.url", System.getProperty("java.vendor.url")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.home", System.getProperty("java.home")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.specification.version", System.getProperty("java.vm.specification.version")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.specification.vendor", System.getProperty("java.vm.specification.vendor")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.specification.name" , System.getProperty("java.vm.specification.name")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.version", System.getProperty("java.vm.version")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.vendor", System.getProperty("java.vm.vendor"));//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.vm.name", System.getProperty("java.vm.name"));//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.class.path", System.getProperty("java.class.path"));//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		_dataStore.createObject(systemInfo, "system.property", "java.library.path", System.getProperty("java.library.path"));	//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	
+
     	getSystemNode();
     	_dataStore.refresh(_minerData);
 		getSystemEnvironment();	
@@ -237,6 +253,9 @@ public class EnvironmentMiner extends Miner
 		_dataStore.refresh(_system);
 		
 	    }
+	catch (OutOfMemoryError err){
+		System.exit(-1);
+	}
 	catch (IOException e) 
 	    {
 		System.err.println("Error getting System Environment Variables\n" + e.getMessage()); //$NON-NLS-1$

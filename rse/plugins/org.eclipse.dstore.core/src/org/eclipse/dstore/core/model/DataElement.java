@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,12 @@
  * 
  * Contributors:
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
+ * David McKnight    (IBM)  - [373507] [dstore][multithread] reduce heap memory on disconnect for server
+ * David McKnight   (IBM) - [380158] [dstore] DataStore.command() fails when multiple commands issue simultaneously
+ * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
+ * David McKnight   (IBM) - [389286] [dstore] element delete should not clear _attributes since elements get recycled
+ * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
+ * David McKnight   (IBM) - [391065] [dstore][regression] DataElement with "" type treated as deleted (when it's not)
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -85,10 +91,15 @@ public final class DataElement implements IDataElement
 		DataElementRemover.addToCreatedCount();
 	}
 	
+	/* Apparently having this method causes the GC to delay
+	 * cleanup for DataElements.  For a product this delayed cleanup
+	 * can potentially result in an OOM so, at the expense of the
+	 * memory logging function, we need to take this out.
 	protected void finalize()
 	{
 		DataElementRemover.addToGCedCount();
 	}
+	*/
 
 	/**
 	 * Initializes a <code>DataElement</code> to be reference to some other <code>DataElement</code>.  
@@ -324,18 +335,18 @@ public final class DataElement implements IDataElement
 	/**
 	 * Indicates whether the <code>DataElement</code> is deleted or not.
 	 *
-	 * @return whehther the element is deleted or not
+	 * @return whether the element is deleted or not
 	 */
 	public boolean isDeleted()
 	{
-		if (_attributes == null)
+		if (_attributes == null ||  _attributes[0] == null)
 		{
 			return true;
 		}
 
 		String valueAttribute = getAttribute(DE.A_VALUE);
 
-		if (valueAttribute != null && valueAttribute.equals(DataStoreResources.DELETED))
+		if (valueAttribute != null && valueAttribute.equals(DataStoreResources.DELETED) && !isDescriptor())
 		{
 			return true;
 		}
@@ -582,20 +593,19 @@ public final class DataElement implements IDataElement
 	 */
 	public DataElement get(int index)
 	{
-		if (_nestedData == null)
-		{
+		if (_nestedData == null){
 			return null;
 		}
 		else
 		{
-			if (getNestedSize() > index)
-			{
-				Object obj = _nestedData.get(index);
-				return (DataElement) obj;
-			}
-			else
-			{
-				return null;
+			synchronized(_nestedData){ // bug 380158, sync needed to properly do concurrent commands
+				if (_nestedData.size() > index){
+					Object obj = _nestedData.get(index);
+					return (DataElement) obj;
+				}
+				else {
+					return null;
+				}
 			}
 		}
 	}
@@ -876,7 +886,16 @@ public final class DataElement implements IDataElement
 	 */
 	public void setSpirit(boolean flag)
 	{
-		_isSpirit = flag;
+		_isSpirit = flag;		
+		String refType = getAttribute(DE.A_REF_TYPE);
+		if (refType != null){
+			if (_isSpirit && !refType.equals(DataStoreResources.SPIRIT)) {
+				setAttribute(DE.A_REF_TYPE, DataStoreResources.SPIRIT);
+			}
+			else if (refType.equals(DataStoreResources.SPIRIT)){ // if it was a spirit, change it back
+				setAttribute(DE.A_REF_TYPE, DataStoreResources.VALUE);
+			}
+		}
 	}
 
 	/**
@@ -1558,7 +1577,6 @@ public final class DataElement implements IDataElement
 		_isUpdated = false;
 		_descriptor = typeDescriptor;
 
-		
 		String depthStr = getAttribute(DE.A_DEPTH);
 		if (depthStr != null && depthStr.length() > 0)
 		{
@@ -1597,14 +1615,16 @@ public final class DataElement implements IDataElement
 		}
 
 		String type = getAttribute(DE.A_TYPE);
-		if (type.equals(DE.T_OBJECT_DESCRIPTOR)
-			|| type.equals(DE.T_COMMAND_DESCRIPTOR)
-			|| type.equals(DE.T_RELATION_DESCRIPTOR)
-			|| type.equals(DE.T_ABSTRACT_OBJECT_DESCRIPTOR)
-			|| type.equals(DE.T_ABSTRACT_COMMAND_DESCRIPTOR)
-			|| type.equals(DE.T_ABSTRACT_RELATION_DESCRIPTOR))
-		{
-			_isDescriptor = true;
+		if (type != null){
+			if (type.equals(DE.T_OBJECT_DESCRIPTOR)
+				|| type.equals(DE.T_COMMAND_DESCRIPTOR)
+				|| type.equals(DE.T_RELATION_DESCRIPTOR)
+				|| type.equals(DE.T_ABSTRACT_OBJECT_DESCRIPTOR)
+				|| type.equals(DE.T_ABSTRACT_COMMAND_DESCRIPTOR)
+				|| type.equals(DE.T_ABSTRACT_RELATION_DESCRIPTOR))
+			{
+				_isDescriptor = true;
+			}
 		}
 
 		if (_nestedData != null)
@@ -1621,13 +1641,9 @@ public final class DataElement implements IDataElement
 		{
 			for (int i = 0; i < _attributes.length; i++)
 			{
-				String att = _attributes[i];
-				if (att != null)
-				{
-					att = null;
-				}
+				_attributes[i] = ""; //$NON-NLS-1$
 			}
-
+			// do not delete _attributes, since we recycle elements
 		}
 
 		if (_nestedData != null)
@@ -1653,10 +1669,10 @@ public final class DataElement implements IDataElement
 		{
 			// set delete attribute
 			
-			setAttribute(DE.A_SOURCE, null);
+			setAttribute(DE.A_SOURCE, ""); //$NON-NLS-1$
 			setAttribute(DE.A_VALUE, DataStoreResources.DELETED);
-			setAttribute(DE.A_TYPE, null);
-			setAttribute(DE.A_NAME, null);
+			setAttribute(DE.A_TYPE, ""); //$NON-NLS-1$
+			setAttribute(DE.A_NAME, ""); //$NON-NLS-1$
 			
 			_isUpdated = false;
 			_isExpanded = true;

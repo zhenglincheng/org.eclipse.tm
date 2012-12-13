@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2012 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -25,6 +25,11 @@
  * David McKnight   (IBM)        - [260346] RSE view for jobs does not remember resized columns
  * Martin Oberhuber (Wind River) - [289533] NPE on "Show in Table"
  * Noriaki Takatsu  (IBM)        - [288894] CANCEL has to be pressed 3 times in Userid/Password prompt window in Remote System Details view
+ * David McKnight   (IBM)        - [340912] inconsistencies with columns in RSE table viewers
+ * David McKnight   (IBM)        - [329170] Show in table does not work after showing empty folder in table
+ * David McKnight   (IBM)        - [357587] Custom sorter is changed to SystemTableViewSorter
+ * David McKnight   (IBM)        - [363392] system table views shows open view actions when they shouldn't
+ * David McKnight   (IBM)        - [388947] column sort icon issue with Remote Systems Details view
  ********************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -220,16 +225,22 @@ public class SystemTableView
 			    TableColumn tcolumn = (TableColumn)e.widget;
 				int column = table.indexOf(tcolumn);
 				SystemTableViewSorter oldSorter = (SystemTableViewSorter) getSorter();
-				if (oldSorter != null && column == oldSorter.getColumnNumber())
+				if (oldSorter != null)
 				{
-					oldSorter.setReversed(!oldSorter.isReversed());
-					if (tcolumn.getImage() == _upI)
-					{
-					    tcolumn.setImage(_downI);
+					if (column == oldSorter.getColumnNumber()){
+						oldSorter.setReversed(!oldSorter.isReversed());
+						if (tcolumn.getImage() == _upI)
+						{
+							tcolumn.setImage(_downI);
+						}
+						else
+						{
+							tcolumn.setImage(_upI);
+						}
 					}
-					else
-					{
-					    tcolumn.setImage(_upI);
+					else {
+						oldSorter.setColumnNumber(column);
+						tcolumn.setImage(_downI);  
 					}
 				}
 				else
@@ -380,7 +391,7 @@ public class SystemTableView
 
 	/**
 	 * @since 3.0 Moved SystemTableViewProvider from internal to API
-	 * @return
+	 * @return to table view provider
 	 */
 	protected SystemTableViewProvider getProvider()
 	{
@@ -439,6 +450,9 @@ public class SystemTableView
 	{
 		if (newObject instanceof IAdaptable)
 		{
+			boolean wasShowColumns = _showColumns;
+			_showColumns = true; // bug 329170 - always reset to ensure columns are available
+
 			getTable().setVisible(true);
 
 			// columns may change so we want to keep track of the current ones
@@ -460,7 +474,7 @@ public class SystemTableView
 			// reset the filter
 			//setViewFilters(null);
 
-			if (_showColumns != false) {
+			if (_showColumns || wasShowColumns){
 				super.inputChanged(newObject, oldObject);
 			}
 
@@ -872,10 +886,20 @@ public class SystemTableView
 		Table table = getTable();
 		if (table != null && !table.isDisposed())
 		{
+			int[] colOrder = table.getColumnOrder();
 			TableColumn[] columns = table.getColumns();
-			for (int i = 0; i < columns.length && i < widths.length; i++)
+			for (int i = 0; i < columns.length; i++)
 			{
-				columns[i].setWidth(widths[i]);
+				TableColumn column = columns[i];
+				int position = colOrder[i];
+				if (position < widths.length){
+					column.setWidth(widths[position]);
+				}
+				else {					
+					if (column.getWidth() == 0){ // don't hide this column						
+						column.setWidth(100);
+					}
+				}
 			}
 		}
 	}
@@ -1983,10 +2007,11 @@ public class SystemTableView
 				SystemShowInTableAction showInTableAction = getShowInTableAction();
 				openToPerspectiveAction.setSelection(selection);
 				showInTableAction.setSelection(selection);
-				//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
-				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
-				menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
-
+				if (_selectionShowOpenViewActions){		
+					//menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToAction.getSubMenu());
+					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, openToPerspectiveAction);
+					menu.appendToGroup(ISystemContextMenuConstants.GROUP_OPEN, showInTableAction);
+				}
 			}
 
 

@@ -23,6 +23,7 @@
     </copy>
     <copy todir="${working}/jars">
 	    <fileset dir="${buildDirectory}/rse/plugins/org.eclipse.dstore.core" includes="dstore_core.jar"/>
+	    <fileset dir="${buildDirectory}/rse/plugins/org.eclipse.dstore.extra" includes="dstore_extra_server.jar"/>
 	    <fileset dir="${buildDirectory}/rse/plugins/org.eclipse.rse.services" includes="clientserver.jar"/>
 	    <fileset dir="${buildDirectory}/rse/plugins/org.eclipse.rse.services.dstore" includes="dstore_miners.jar"/>
     </copy>

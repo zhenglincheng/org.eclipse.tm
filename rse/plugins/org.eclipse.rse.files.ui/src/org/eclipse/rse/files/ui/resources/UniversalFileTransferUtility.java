@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,6 +61,9 @@
  * David McKnight   (IBM)        - [299140] Local Readonly file can't be copied/pasted twice
  * David McKnight     (IBM)      - [298440] jar files in a directory can't be pasted to another system properly
  * David McKnight     (IBM)      - [311218] Content conflict dialog pops up when it should not
+ * David McKnight     (IBM)      - [376410] cross-system copy/paste operation doesn't transfer remote encodings for binary files
+ * David McKnight     (IBM)      - [386486] when the original timestamp of a file is 0 don't set it after an upload
+ * David McKnight   (IBM)        - [389838] Fast folder transfer does not account for code page
  *******************************************************************************/
 
 package org.eclipse.rse.files.ui.resources;
@@ -127,6 +130,7 @@ import org.eclipse.rse.subsystems.files.core.servicesubsystem.FileServiceSubSyst
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFileSubSystem;
 import org.eclipse.rse.subsystems.files.core.subsystems.IVirtualRemoteFile;
+import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFile;
 import org.eclipse.rse.subsystems.files.core.subsystems.RemoteFileSubSystem;
 import org.eclipse.rse.subsystems.files.core.util.ValidatorFileUniqueName;
 import org.eclipse.rse.ui.RSEUIPlugin;
@@ -179,7 +183,8 @@ public class UniversalFileTransferUtility {
 	 */
 	private static boolean doSuperTransfer(IRemoteFileSubSystem subsystem)
 	{
-		boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER) &&
+		//boolean doSuperTransferProperty = RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.DOSUPERTRANSFER) &&
+		boolean doSuperTransferProperty = false; // disabling due to potential corruption
 		subsystem.getParentRemoteFileSubSystemConfiguration().supportsArchiveManagement();
 		return doSuperTransferProperty;
 	}
@@ -1745,22 +1750,28 @@ public class UniversalFileTransferUtility {
 
 						// for bug 236723, getting remote encoding for target instead of default for target fs
 						String remoteEncoding = targetFolder.getEncoding();
-						String systemEncoding = targetFS.getRemoteEncoding();
-
+						
 						targetFS.upload(srcFileLocation, srcCharSet, newPath, remoteEncoding,monitor);
 						newFilePathList.add(newPath);
+						
+						IRemoteFile newFile = targetFS.getRemoteFileObject(newPath, monitor);
+						if (newFile.isBinary() && newFile instanceof RemoteFile){ // after a binary upload, we need to mark the encoding of the remote file
+							((RemoteFile)newFile).setEncoding(srcCharSet);
+						}		
 
 						// should check preference first
 						if (RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.PRESERVETIMESTAMPS))
 						{
 							SystemIFileProperties properties = new SystemIFileProperties(srcFileOrFolder);
-							try {
-								IRemoteFile newFile = targetFS.getRemoteFileObject(newPath, monitor);
-								targetFS.setLastModified(newFile, properties.getRemoteFileTimeStamp(), monitor);
-							}
-							catch (SystemUnsupportedOperationException e){
-								// service doesn't support setLastModified
-								SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+							long ts = properties.getRemoteFileTimeStamp();
+							if (ts != 0){ // don't set 0 timestamp
+								try {
+									targetFS.setLastModified(newFile, properties.getRemoteFileTimeStamp(), monitor);						
+								}
+								catch (SystemUnsupportedOperationException e){
+									// service doesn't support setLastModified
+									SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+								}
 							}
 						}
 					}
@@ -1945,13 +1956,9 @@ public class UniversalFileTransferUtility {
 			try
 			{
 
-				String srcCharSet = null;
+				String srcCharSet = RemoteFileUtility.getSourceEncoding((IFile)srcFileOrFolder);
 
 				boolean isText = RemoteFileUtility.getSystemFileTransferModeRegistry().isText(newPath);
-				if (isText)
-				{
-					srcCharSet = RemoteFileUtility.getSourceEncoding((IFile)srcFileOrFolder);
-				}
 				IPath location = srcFileOrFolder.getLocation();
 				IRemoteFile copiedFile = null;
 				if (location == null) // remote EFS file?
@@ -2001,8 +2008,11 @@ public class UniversalFileTransferUtility {
 
 				copiedFile = targetFS.getRemoteFileObject(targetFolder, name, monitor);
 
+				if (copiedFile.isBinary() && copiedFile instanceof RemoteFile){ // after a binary upload, we need to mark the encoding of the remote file
+					((RemoteFile)copiedFile).setEncoding(srcCharSet);
+				}	
+				
 				// should check preference first
-
 				if (RSEUIPlugin.getDefault().getPreferenceStore().getBoolean(ISystemFilePreferencesConstants.PRESERVETIMESTAMPS))
 				{
 					SystemIFileProperties properties = new SystemIFileProperties(srcFileOrFolder);
@@ -2013,12 +2023,14 @@ public class UniversalFileTransferUtility {
 					if (timestamp == 0)
 						timestamp = srcFileOrFolder.getLocalTimeStamp();
 
-					try {
-						targetFS.setLastModified(copiedFile, timestamp, monitor);
-					}
-					catch (SystemUnsupportedOperationException e){
-						// service doesn't support setLastModified
-						SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+					if (timestamp != 0){ // don't set 0 timestamps
+						try {
+							targetFS.setLastModified(copiedFile, timestamp, monitor);
+						}
+						catch (SystemUnsupportedOperationException e){
+							// service doesn't support setLastModified
+							SystemBasePlugin.logError("Unable to set last modified", e); //$NON-NLS-1$
+						}
 					}
 	  		    }
 
@@ -2256,7 +2268,10 @@ public class UniversalFileTransferUtility {
 		{
 			SystemIFileProperties properties = new SystemIFileProperties(source);
 			try {
-				target.getParentRemoteFileSubSystem().setLastModified(target, properties.getRemoteFileTimeStamp(), monitor);
+				long ts = properties.getRemoteFileTimeStamp();
+				if (ts != 0){ // don't set 0 timestamps
+					target.getParentRemoteFileSubSystem().setLastModified(target, ts, monitor);
+				}
 			}
 			catch (SystemUnsupportedOperationException e){
 				// service doesn't support setLastModified

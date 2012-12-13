@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation. All rights reserved.
+ * Copyright (c) 2002, 2012 IBM Corporation. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -21,6 +21,10 @@
  * David McKnight  (IBM)  - [269908] [dstore] rsecomm.log file management
  * David McKnight  (IBM)  - [284787] [dstore] ability to disable RSECOMM_LOGFILE_MAX option
  * David McKnight  (IBM)  - [305272] [dstore][multithread] log close in ServerLogger
+ * Noriaki Takatsu (IBM)  - [341578] [dstore] ServerLogger is looped when IOError happens
+ * David McKnight   (IBM) - [351993] [dstore] not able to connect to server if .eclipse folder not available
+ * David McKnight  (IBM)  - [366220] Log_To_File no longer default value for log_location in rsecomm.properties
+ * David McKnight  (IBM)  - [391774] [dstore] NPE if user-log directory cannot be created
  ********************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -86,7 +90,7 @@ public class ServerLogger implements IServerLogger
 			}
 		} catch (Exception e) {
 			// Just use logging defaults: log_level = 0, log to file
-			//e.printStackTrace();
+			//e.printStackTrace();		
 		}
 	}
 
@@ -97,10 +101,30 @@ public class ServerLogger implements IServerLogger
 			if (logToFile) {
 				try {
 			  		File _logFile = getLogFile("rsecomm"); //$NON-NLS-1$
-	  				_logFileStream = new PrintWriter(new FileOutputStream(_logFile));
-
-				} catch (IOException e) {
-					System.out.println("Error opening log file " + logPathName + "rsecomm.log");		 //$NON-NLS-1$ //$NON-NLS-2$
+			  		if (_logFile != null){
+			  			if (!_logFile.exists()){
+			  				_logFile.createNewFile();
+			  			}
+			  			if (_logFile != null && _logFile.canWrite()){
+			  				_logFileStream = new PrintWriter(new FileOutputStream(_logFile));
+			  			}
+			  			else {
+			  				log_level = 0;
+			  				logToFile = false;
+			  				_logFileStream = new PrintWriter(System.out);
+			  			}
+			  		}
+			  		else { // no log file, default to stdout
+			  			System.out.println("No log file access " + logPathName + "rsecomm.log");		 //$NON-NLS-1$ //$NON-NLS-2$
+				 		log_level = 0;
+				 		logToFile = false;
+				 		_logFileStream = new PrintWriter(System.out);	
+			  		}	
+			  	} catch (IOException e) {
+			  		System.out.println("Error opening log file " + logPathName + "rsecomm.log");		 //$NON-NLS-1$ //$NON-NLS-2$
+			 		log_level = 0;
+			 		logToFile = false;
+			 		_logFileStream = new PrintWriter(System.out);			  			  		
 				}
 			}
 		}
@@ -142,7 +166,9 @@ public class ServerLogger implements IServerLogger
 					logFile.createNewFile();
 					found = true;
 				}
-				catch (IOException e){}
+				catch (IOException e){
+					return null;
+				}
 			}
 			else {
 				// if the file exists, check it's size

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2010 IBM Corporation and others.
+ * Copyright (c) 2003, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,9 @@
  *  David McKnight   (IBM)     [312415] [dstore] shell service interprets &lt; and &gt; sequences - handle old client/new server case
  *  David McKnight   (IBM)     [318372] [dstore][shells] "export" shell command invalid for certain shells
  *  David McKnight   (IBM)     [323262] [dstore] zos shell does not display [ ]  brackets properly
+ *  David McKnight   (IBM)     [339741] [dstore][shells] consecutive prompt line is ignored
+ *  Noriaki Takatsu  (IBM)     [369767] [multithread][dstore] Invalid Default directory in shell Launch
+ *  David McKnight   (IBM)     [372968] [dstore][shell] provide support for csh and tcsh shells
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -186,12 +189,12 @@ public class CommandMinerThread extends MinerThread
 			String userHome = null;			
 			Client client = _dataStore.getClient();
 			
-			if (client != null && !theOS.equals("z/OS")){ //$NON-NLS-1$
-				String clientActualUserId = client.getProperty("user.name");//$NON-NLS-1$
+			if (client != null){ //$NON-NLS-1$
+				String clientActualUserId = client.getProperty("client.username");//$NON-NLS-1$
 				String clientUserId = client.getUserid();
 				
 				userHome = client.getProperty("user.home");//$NON-NLS-1$							
-				if (clientUserId != null && !clientActualUserId.equals(clientUserId)){
+				if (!theOS.equals("z/OS") && clientUserId != null && !clientActualUserId.equals(clientUserId)){
 					suCommand = "su " + clientUserId + " -c "; //$NON-NLS-1$ //$NON-NLS-2$					
 				}					
 			}
@@ -268,7 +271,7 @@ public class CommandMinerThread extends MinerThread
 						{
 							isSHonZ = true;
 						}
-						else if (theShell.endsWith("/csh") || theShell.endsWith("/bsh")){  //$NON-NLS-1$//$NON-NLS-2$
+						else if (theShell.endsWith("/csh") || theShell.endsWith("/tcsh")){  //$NON-NLS-1$//$NON-NLS-2$
 							_isCsh = true;			
 						}
 					}
@@ -551,13 +554,18 @@ public class CommandMinerThread extends MinerThread
 			if (didLogin || _isTTY)
 			{
 				// unsupported prompting
-				boolean unsupportedPrompt = theShell.endsWith("csh") || theShell.endsWith("bsh") ||   //$NON-NLS-1$//$NON-NLS-2$
+				boolean unsupportedPrompt = theShell.endsWith("bsh") ||   //$NON-NLS-1$
 											theShell.endsWith("tsh") || theShell.endsWith("rksh");  //$NON-NLS-1$//$NON-NLS-2$
 				
 				
 				String initCmd = ""; //$NON-NLS-1$
 				if (_isTTY && !unsupportedPrompt){
-					initCmd = "export PS1='$PWD>';" ; //$NON-NLS-1$ 
+					if (_isCsh){
+						initCmd = "set prompt=\"$PWD>\""; //$NON-NLS-1$ 
+					}
+					else {
+						initCmd = "export PS1='$PWD>';" ; //$NON-NLS-1$ 
+					}
 				}
 				 if (didLogin && !userHome.equals(_cwdStr)){
 					 initCmd += "cd " + _cwdStr; //$NON-NLS-1$
@@ -677,7 +685,7 @@ public class CommandMinerThread extends MinerThread
 			}
 			input.getBytes();
 			if (_isCsh && origInput.startsWith("export ")){ //$NON-NLS-1$
-				input = origInput.replaceAll("export ", "set ");  //$NON-NLS-1$//$NON-NLS-2$
+				input = origInput.replaceAll("export ", "setenv ").replaceAll("=", " ");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
 			try
 			{
@@ -1304,7 +1312,7 @@ public class CommandMinerThread extends MinerThread
 		if (size > 0)
 		{
 			DataElement lastObject = _status.get(size - 1);
-			if (!lastObject.getType().equals("prompt")) //$NON-NLS-1$
+			if (!lastObject.getType().equals("prompt") || !lastObject.getName().equals(line)) //$NON-NLS-1$
 			{
 			    line = line.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$
 			    fileName = fileName.replaceAll("//", "/"); //$NON-NLS-1$ //$NON-NLS-2$

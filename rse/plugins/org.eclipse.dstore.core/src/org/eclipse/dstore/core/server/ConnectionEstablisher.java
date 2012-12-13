@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,10 @@
  * David McKnight   (IBM) - [257321] [dstore] "Error binding socket" should include port of the failed socket
  * Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
  * Noriaki Takatsu  (IBM) - [289678][api][breaking] ServerSocket creation in multiple IP addresses
+ * David McKnight   (IBM) - [368072] [dstore][ssl] no exception logged upon bind error
+ * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
+ * David McKnight    (IBM) - [388472] [dstore] need alternative option for getting at server hostname
+ * David McKnight   (IBM)  - [390681] [dstore] need to merge differences between HEAD stream and 3.2 in ConnectionEstablisher.finished()
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -73,7 +77,7 @@ public class ConnectionEstablisher
 
 
 	private ServerSocket _serverSocket;
-	private static boolean _continue;
+	private boolean _continue;
 
 	private ArrayList _receivers;
 
@@ -211,14 +215,36 @@ public class ConnectionEstablisher
 	 */
 	public void finished(ServerReceiver receiver)
 	{
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher.finished()"); //$NON-NLS-1$
+		}
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing sender"); //$NON-NLS-1$
+		}
 		_updateHandler.removeSenderWith(receiver.socket());
+		
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing receiver"); //$NON-NLS-1$
+		}
 		_receivers.remove(receiver);
+		
+		if (_dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - removing preference listener"); //$NON-NLS-1$
+		}	
 		_dataStore.removeDataStorePreferenceListener(receiver);
 		//if (_receivers.size() == 0)
 		{
 			_continue = false;
-			_commandHandler.finish();
+			_commandHandler.finish();			
+			
+			if (_dataStore.getClient() != null) {
+				_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - finishing update handler"); //$NON-NLS-1$
+			}
 			_updateHandler.finish();
+			
+			if (_dataStore.getClient() != null) {
+				_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher - finishing DataStore"); //$NON-NLS-1$
+			}
 			_dataStore.finish();
 			System.out.println(ServerReturnCodes.RC_FINISHED);
 
@@ -350,13 +376,31 @@ public class ConnectionEstablisher
 						{
 							serverSocket = sslContext.getServerSocketFactory().createServerSocket(i, backlog, bindAddr);
 						}
+						catch (BindException e)
+						{
+							_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
+							System.err.println(_msg);
+							_dataStore.trace(_msg);
+						}
 						catch (Exception e)
 						{
 						}
 					}
 					else
 					{
-						serverSocket = new ServerSocket(i, backlog, bindAddr);
+						try
+						{
+							serverSocket = new ServerSocket(i, backlog, bindAddr);
+						}						
+						catch (BindException e)
+						{
+							_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
+							System.err.println(_msg);
+							_dataStore.trace(_msg);
+						}
+						catch (Exception e)
+						{
+						}
 					}
 				}
 				catch (Exception e)
@@ -388,6 +432,7 @@ public class ConnectionEstablisher
 				catch (BindException e){
 					_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 					System.err.println(_msg);
+					_dataStore.trace(_msg);
 				}
 				catch (Exception e)
 				{
@@ -403,6 +448,7 @@ public class ConnectionEstablisher
 				catch (BindException e){
 					_msg = ServerReturnCodes.RC_BIND_ERROR  + " on port " + port + ": " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 					System.err.println(_msg);
+					_dataStore.trace(_msg);
 				}
 				catch (Exception e)
 				{
@@ -494,14 +540,7 @@ public class ConnectionEstablisher
 				System.err.println(ServerReturnCodes.RC_SUCCESS);
 				System.err.println(_serverSocket.getLocalPort());
 				_msg = ServerReturnCodes.RC_SUCCESS;
-				try
-				{
-					System.err.println("Server running on: " + InetAddress.getLocalHost().getHostName()); //$NON-NLS-1$
-				}
-				catch (UnknownHostException e)
-				{
-					// keep running
-				}
+				System.err.println("Server running on: " + ServerAttributes.getHostName()); //$NON-NLS-1$
 			}
 		}
 		catch (UnknownHostException e)

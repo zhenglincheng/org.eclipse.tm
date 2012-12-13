@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2008 IBM Corporation and others.
+ * Copyright (c) 2002, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,9 @@
  * Contributors:
  * David McKnight   (IBM)   [202822] should not be synchronizing on clean method
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
+ * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
+ * David McKnight   (IBM) - [389286] [dstore] element delete should not clear _attributes since elements get recycled
+ * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -88,13 +91,16 @@ public abstract class UpdateHandler extends Handler
 
 					cleanChildren(child); // clean the children
 
+
 					if (child.isSpirit())
 					{
-						// officially delete this now
-						child.delete();
+						// officially delete this now 
+						// will only happen on server since, on client, 
+						// the above call to isDeleted() returns false for spirited
+						child.delete();						
 					}
-					child.clear();
 
+					child.clear();
 					if (parent != null)
 					{
 						synchronized (parent)
@@ -122,18 +128,19 @@ public abstract class UpdateHandler extends Handler
 		List nestedData = parent.getNestedData();
 		if (nestedData != null)
 		{
-		for (int i = 0; i < nestedData.size(); i++){
-			DataElement child = (DataElement)nestedData.get(i);
-			cleanChildren(child);
-
-			if (child.isSpirit())
-			{
-				// officially delete this now
-				child.delete();
+			synchronized (nestedData){
+				for (int i = nestedData.size() - 1; i >= 0; i--){
+					DataElement child = (DataElement)nestedData.get(i);
+					cleanChildren(child);
+				
+					if (!child.isSpirit()){
+						// officially delete this now
+						child.delete();
+					}
+					child.clear();
+					parent.removeNestedData(child);
+				}
 			}
-			child.clear();
-			parent.removeNestedData(child);
-		}
 		}
 	}
 
@@ -167,13 +174,16 @@ public abstract class UpdateHandler extends Handler
 	{
 		synchronized (_dataObjects)
 		{
+			if (object != null){
+				String type = object.getType();
+				boolean isStatus = DataStoreResources.model_status.equals(type);
 			if (immediate)
 			{
 				_dataObjects.add(0, object);
 				// none of this immediate stuff - just put it at the beginning
 				//handle();
 			}
-			else
+			else 
 			{
 				if (!_dataObjects.contains(object))
 				{
@@ -184,7 +194,7 @@ public abstract class UpdateHandler extends Handler
 
 					if (_dataStore != null && object != null && !object.isDeleted())
 					{
-						if (object.getType().equals(DataStoreResources.model_status))
+						if (isStatus)
 						{
 							if (object.getName().equals(DataStoreResources.model_done))
 							{
@@ -195,10 +205,15 @@ public abstract class UpdateHandler extends Handler
 								// object does not come back to client (as "done") before the results of a query
 								_dataObjects.remove(object);
 								_dataObjects.add(object);
+								
 							}
 						}
 					}
 				}
+			}
+			if (_dataStore != null && !_dataStore.isVirtual() && isStatus){
+				_dataStore.disconnectObjects(object); // spirit the command
+			}
 			}
 		}
 		notifyInput();

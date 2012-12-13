@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008 IBM Corporation and others.
+ * Copyright (c) 2008, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,8 @@
  * Contributors:
  *   Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  *   Noriaki Takatsu (IBM)  - [228335] [dstore][multithread] start() in SecuredThread class
+ *   David McKnight  (IBM)  - [358301] [DSTORE] Hang during debug source look up
+ *   David McKnight   (IBM) - [373459] [dstore][multithread] duplicate finish() calls during idle timeout
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -122,6 +124,9 @@ public class SecuredThread extends Thread
 	 */
 	public void run()
 	{
+		if (_dataStore != null && _dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "SecuredThread.run()..."); //$NON-NLS-1$
+		}
 		try
 		{
 			ISystemService systemService = SystemServiceManager.getInstance().getSystemService();
@@ -129,12 +134,18 @@ public class SecuredThread extends Thread
 				systemService.setThreadSecurity(_dataStore.getClient());
 			}
 		}
+		catch (OutOfMemoryError err){
+			System.exit(-1);
+		}
 		catch (Throwable e)
 		{
 			e.printStackTrace(new PrintWriter(System.err));
 		}
 
 		super.run();
+		if (_dataStore != null && _dataStore.getClient() != null) {
+			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "... end of SecuredThread.run()"); //$NON-NLS-1$
+		}
 	}
 
 	 /**
@@ -169,5 +180,14 @@ public class SecuredThread extends Thread
 	  }
 	 }
 	 */
+	
+	public void start(){
+		try {
+			super.start();
+		}
+		catch (OutOfMemoryError e){
+			System.exit(-1);
+		}
+	}
 }
 
