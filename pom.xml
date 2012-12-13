@@ -204,7 +204,7 @@
 	<module>rse/plugins/org.eclipse.rse.ui.capabilities</module>
 	-->
 	<module>rse/plugins/org.eclipse.rse.useractions</module>
-	
+    <module>releng/org.eclipse.tm.repo</module>
 	<module>rse/tests/org.eclipse.rse.tests</module>
 	<module>rse/tests/org.eclipse.rse.tests-feature</module>
 	<module>rse/tests/org.eclipse.rse.tests.framework</module>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.eclipse.rse_3.2.3.qualifier.jar" id="org.eclipse.rse" version="3.2.3.qualifier">
+      <category name="tm_32_main"/>
+   </feature>
+   <feature url="features/org.eclipse.rse.sdk_3.2.3.qualifier.jar" id="org.eclipse.rse.sdk" version="3.2.3.qualifier">
+      <category name="tm_32_main"/>
+   </feature>
+   <feature url="features/org.eclipse.rse.useractions_1.1.200.qualifier.jar" id="org.eclipse.rse.useractions" version="1.1.200.qualifier">
+      <category name="tm_32_main"/>
+   </feature>
+   <feature url="features/org.eclipse.rse.examples_3.1.100.qualifier.jar" id="org.eclipse.rse.examples" version="3.1.100.qualifier">
+      <category name="tm_32_optional"/>
+   </feature>
+   <feature url="features/org.eclipse.rse.tests_3.2.0.qualifier.jar" id="org.eclipse.rse.tests" version="3.2.0.qualifier">
+      <category name="tm_32_optional"/>
+   </feature> 
+   <feature url="features/org.eclipse.tm.terminal.local.sdk_0.1.2.qualifier.jar" id="org.eclipse.tm.terminal.local.sdk" version="0.1.2.qualifier">
+      <category name="tm_32_optional"/>
+   </feature>
+   <feature url="features/org.eclipse.tm.terminal.sdk_3.1.3.qualifier.jar" id="org.eclipse.tm.terminal.sdk" version="3.1.3.qualifier">
+      <category name="tm_32_main"/>
+   </feature>
+   <category-def name="tm_32_main" label="TM and RSE 3.2.3 Main Features">
+      <description>
+         TM and RSE Main Features
+      </description>
+   </category-def>
+   <category-def name="tm_32_optional" label="TM and RSE 3.2.3 Optional Add-Ons">
+      <description>
+         Examples, Tests and Incubation Plug-ins.
+      </description>
+   </category-def>
+</site>
