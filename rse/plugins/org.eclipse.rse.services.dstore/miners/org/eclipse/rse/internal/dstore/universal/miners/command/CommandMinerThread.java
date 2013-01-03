@@ -36,6 +36,7 @@
  *  Noriaki Takatsu  (IBM)     [369767] [multithread][dstore] Invalid Default directory in shell Launch
  *  David McKnight   (IBM)     [372968] [dstore][shell] provide support for csh and tcsh shells
  *  David McKnight   (IBM)     [395306] [dstore] Regression for CommandMinerThread authority
+ *  David McKnight   (IBM)     [395465] [dstore][shells] customer hit an NPE on shell cleanup
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -1064,7 +1065,7 @@ public class CommandMinerThread extends MinerThread
 	        {
 	        	
 	        }
-	        if (_stdOutputHandler.isAlive() &&  _theProcess != null)
+	        if (_stdOutputHandler != null && _stdOutputHandler.isAlive() &&  _theProcess != null)
 	        {
 	        	_theProcess.destroy();
 	        }
@@ -1111,11 +1112,14 @@ public class CommandMinerThread extends MinerThread
 				_theProcess = null;
 			}
 			
-
-			_stdOutputHandler.finish();
-			_stdErrorHandler.finish();
-			_stdInput.close();
-			_stdError.close();
+			if (_stdOutputHandler != null)
+				_stdOutputHandler.finish();
+			if (_stdErrorHandler != null)
+				_stdErrorHandler.finish();
+			if (_stdInput != null)
+				_stdInput.close();
+			if (_stdError != null)
+				_stdError.close();
 			
 			_status.setAttribute(DE.A_NAME, "done"); //$NON-NLS-1$
 			_dataStore.refresh(_status);
