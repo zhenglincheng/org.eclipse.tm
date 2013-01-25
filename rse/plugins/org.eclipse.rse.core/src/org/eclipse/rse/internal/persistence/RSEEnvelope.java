@@ -1,5 +1,5 @@
 /*********************************************************************************
- * Copyright (c) 2008, 2011 IBM Corporation. All rights reserved.
+ * Copyright (c) 2008 IBM Corporation. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is 
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -9,7 +9,6 @@
  * David Dykstal (IBM) - [189274] provide import and export operations for profiles
  * David Dykstal (IBM) - [216858] Need the ability to Import/Export RSE connections for sharing
  * David Dykstal (IBM) - [233876] Filters lost after restart
- * David Dykstal (IBM) - [238156] Export/Import Connection doesn't create default filters for the specified connection
  *********************************************************************************/
 
 package org.eclipse.rse.internal.persistence;
@@ -40,7 +39,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.rse.core.IRSECoreStatusCodes;
 import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.rse.core.filters.ISystemFilterPool;
@@ -62,7 +60,7 @@ import org.eclipse.rse.persistence.dom.RSEDOM;
 import org.eclipse.rse.persistence.dom.RSEDOMNode;
 
 /**
- * An envelope holds a version of a DOM that can be used for import and export of host, filter pool, and property set
+ * An envelope holds a version of a DOM that can be used for import and export of host, filterpool, and propertyset
  * information. The envelope is capable of adding its contents to a profile (an import) and can also be used for generating a 
  * stream of its contents that can be used later for restore (an export).
  */
@@ -87,8 +85,8 @@ public class RSEEnvelope {
 	 * This operation is performed in the thread of the caller.
 	 * If asynchronous operation is desired place this invocation inside a job.
 	 * @param in the input stream which is read into the envelope.
-	 * @param monitor a monitor used for tracking progress and cancellation.
-	 * If the monitor is canceled this envelope will be empty.
+	 * @param monitor a monitor used for tracking progress and cancelation.
+	 * If the monitor is cancelled this envelope will be empty.
 	 * @throws CoreException if a problem occur reading the stream.
 	 */
 	public void get(InputStream in, IProgressMonitor monitor) throws CoreException {
@@ -106,7 +104,7 @@ public class RSEEnvelope {
 						status = INVALID_FORMAT;
 					}
 				} else {
-					// invalid format due to bad persistence provider specified
+					// invalid format due to bad persistence provider specfied
 					status = INVALID_FORMAT;
 				}
 			} else {
@@ -129,7 +127,7 @@ public class RSEEnvelope {
 	 * If asynchronous operation is desired place this invocation inside a job.
 	 * @param out the output stream into which the contents of this envelope will be written
 	 * @param provider the persistence provider used to write the contents of this envelope
-	 * @param monitor a monitor used for tracking progress and cancellation. If the monitor is canceled the 
+	 * @param monitor a monitor used for tracking progress and cancelation. If the monitor is cancelled the 
 	 * receiving location is deleted.
 	 * @throws CoreException containing a status describing the error, in particular this may be causes by 
 	 * an IOException while preparing the contents or if the provider does not support export.
@@ -233,9 +231,7 @@ public class RSEEnvelope {
 		List hostNodes = new ArrayList(10);
 		List filterPoolNodes = new ArrayList(10);
 		List propertySetNodes = new ArrayList(10);
-		Map hostMap = new HashMap(10); // associates an original host name with a final host name
-		Map filterPoolMap = new HashMap(10); // associates an original filter pool name with a final filter pool name
-		String originalProfileName = getOriginalProfileName();
+		Map hostMap = new HashMap(10); // associates an original host name with a HostRecord
 		if (dom != null) {
 			RSEDOMNode[] children = dom.getChildren();
 			for (int i = 0; i < children.length; i++) {
@@ -251,297 +247,86 @@ public class RSEEnvelope {
 					throw new IllegalArgumentException("invalid dom node type"); //$NON-NLS-1$
 				}
 			}
-			// create host rename map
+			// create the hosts
 			for (Iterator z = hostNodes.iterator(); z.hasNext();) {
 				RSEDOMNode hostNode = (RSEDOMNode) z.next();
 				String originalName = hostNode.getName();
-				String finalName = getFinalHostName(profile, originalName);
-				hostMap.put(originalName, finalName);
+				IHost host = mergeHost(profile, hostNode);
+				hostMap.put(originalName, host);
 			}
-			// create filter pool rename map
+			// create the filter pools
 			for (Iterator z = filterPoolNodes.iterator(); z.hasNext();) {
 				RSEDOMNode filterPoolNode = (RSEDOMNode) z.next();
-				String originalName = filterPoolNode.getName();
-				String subsystemConfigurationId = filterPoolNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_ID).getValue();
-				String finalName = getFinalFilterPoolName(profile, originalName, subsystemConfigurationId, hostMap);
-				filterPoolMap.put(originalName, finalName);
-			}
-			// merge the hosts
-			for (Iterator z = hostNodes.iterator(); z.hasNext();) {
-				RSEDOMNode hostNode = (RSEDOMNode) z.next();
-				mergeHost(profile, hostNode, hostMap, filterPoolMap, originalProfileName);
-			}
-			// merge the filter pools
-			for (Iterator z = filterPoolNodes.iterator(); z.hasNext();) {
-				RSEDOMNode filterPoolNode = (RSEDOMNode) z.next();
-				mergeFilterPool(profile, filterPoolNode, filterPoolMap);
+				String filterPoolName = filterPoolNode.getName();
+				String configurationId = filterPoolNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_ID).getValue();
+				HostOwnedFilterPoolPattern pattern = new HostOwnedFilterPoolPattern(configurationId);
+				String hostName = pattern.extract(filterPoolName);
+				if (hostName != null) {
+					IHost host = (IHost) hostMap.get(hostName);
+					if (host != null) {
+						mergeHostFilterPool(profile, host, filterPoolNode);
+					} else {
+						mergeFilterPool(profile, filterPoolNode);
+					}
+				} else {
+					mergeFilterPool(profile, filterPoolNode);
+				}
 			}
 			// TODO create the property sets
 		}
 	}
 	
-	/**
-	 * Derive a host name from the original host node. Tries the original name and then a sequence of
-	 * names derived from the original name. The first non-conflicting name is chosen.
-	 * @param profile the profile in which to look for conflicting names
-	 * @param originalName the original host name
-	 * @return a name derived from the original name that does not yet exist in the profile
-	 */
-	private String getFinalHostName(ISystemProfile profile, String originalName) {
-		int n = 0;
+	private IHost mergeHost(ISystemProfile profile, RSEDOMNode hostNode) {
+		IHost host = null;
 		ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-		String finalName = originalName;
-		while (registry.getHost(profile, finalName) != null) {
-			n++;
-			finalName = originalName + "-" + n; //$NON-NLS-1$
-		}
-		return finalName;
-	}
-	
-	/**
-	 * Derive a new filter pool name given the original name and its subsystem configuration id.
-	 * Connection private (host owned) filter pool names are of the form: CN-[host-name]-[configuration-id].
-	 * Subsystem default filter pool names are of the form: [profile-name]:[configuration-id].
-	 * User defined filter pool names are exactly what the user specifies.
-	 * The resulting filter pool name must not already exist in the profile.
-	 * @param profile the profile in which to look for conflicting filter pool names
-	 * @param originalName the original filter pool profile name
-	 * @param subsystemConfigurationId the subsystem configuration id of this profile
-	 * @param hostMap the map of renamed host nodes. Needed to rename connection private filter pools.
-	 * @return a filter pool name derived from the original name that does not yet exist in the profile.
-	 */
-	private String getFinalFilterPoolName(ISystemProfile profile, String originalName, String subsystemConfigurationId, Map hostMap) {
-		String finalName = null;
-		HostOwnedFilterPoolPattern pattern = new HostOwnedFilterPoolPattern(subsystemConfigurationId);
-		String originalHostName = pattern.extract(originalName);
-		if (originalHostName != null) {
-			// connection private filter pools are renamed according to their host
-			String finalHostName = (String) hostMap.get(originalHostName);
-			if (finalHostName != null) {
-				finalName = pattern.make(finalHostName);
-			}
-		}
-		if (finalName == null) {
-			// all other filter pools are renamed if necessary so as to not collide with existing ones
+		String baseHostName = hostNode.getName();
+		String hostName = baseHostName;
+		if (registry.getHost(profile, hostName) != null) {
 			int n = 0;
-			finalName = originalName;
-			ISystemFilterPool filterPool = getFilterPool(profile, finalName, subsystemConfigurationId);
-			while (filterPool != null) {
+			while (registry.getHost(profile, hostName) != null) {
 				n++;
-				finalName = originalName + "-" + n; //$NON-NLS-1$
-				filterPool = getFilterPool(profile, finalName, subsystemConfigurationId);
+				hostName = baseHostName + "-" + n; //$NON-NLS-1$
 			}
+			hostNode.setName(hostName);
 		}
-		return finalName;
-	}
-	
-	/**
-	 * Creates a host and its contained subsystems and filter pool references.
-	 * @param profile the profile in which to create the new host.
-	 * @param hostNode the host node from which to base the host definition 
-	 * @param hostMap the rename map for host nodes
-	 * @param filterPoolMap the rename map for filter pools, used when fixing filter pool references
-	 * @param originalProfileName the original profile name, used when fixing filter pool references
-	 * @return a host object created in the profile from the hostNode
-	 */
-	private IHost mergeHost(ISystemProfile profile, RSEDOMNode hostNode, Map hostMap, Map filterPoolMap, String originalProfileName) {
-		String originalHostName = hostNode.getName();
-		String finalHostName = (String) hostMap.get(originalHostName);
-		hostNode.setName(finalHostName);
-		fixSubsystems(hostNode, profile, filterPoolMap, originalProfileName);
 		RSEDOMImporter importer = RSEDOMImporter.getInstance();
-		IHost host = importer.restoreHost(profile, hostNode);
+		host = importer.restoreHost(profile, hostNode);
 		return host;
 	}
 	
-	/**
-	 * Examines the subsystems in this host node.
-	 * Removes those that have no equivalent subsystem configuration installed in this workbench.
-	 * Logs this condition.
-	 * Examines the filter pool references for each found subsystem and updates them if necessary.
-	 * @param hostNode The host node containing the subsystem references
-	 * @param profile The profile into which the host is being imported
-	 * @param filterPoolMap The map that accounts for filter pool renames. Used to fix up filter pool references.
-	 * @param originalProfileName the name of the profile that this host was created in. Used to fix up filter pool references.
-	 * @see #fixFilterPoolReferences(RSEDOMNode, ISystemProfile, Map)
-	 */
-	private void fixSubsystems(RSEDOMNode hostNode, ISystemProfile profile, Map filterPoolMap, String originalProfileName) {
-		ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-		RSEDOMNode connectorServiceNodes[] = hostNode.getChildren(IRSEDOMConstants.TYPE_CONNECTOR_SERVICE);
-		for (int i = 0; i < connectorServiceNodes.length; i++) {
-			RSEDOMNode connectorServiceNode = connectorServiceNodes[i];
-			RSEDOMNode subsystemNodes[] = connectorServiceNode.getChildren(IRSEDOMConstants.TYPE_SUBSYSTEM);
-			for (int j = 0; j < subsystemNodes.length; j++) {
-				RSEDOMNode subsystemNode = subsystemNodes[j];
-				String subsystemConfigurationId = getSubsystemConfigurationId(subsystemNode);
-				String subsystemName = subsystemNode.getName();
-				ISubSystemConfiguration subsystemConfiguration = registry.getSubSystemConfiguration(subsystemConfigurationId);
-				if (subsystemConfiguration == null) {
-					// remove this subsystemNode from this connector service
-					connectorServiceNode.removeChild(subsystemNode);
-					// log that this subsystem cannot be restored
-					String template = "The subsystem {0} cannot be imported. The subsystem configuration with identifier {1} is not installed."; //$NON-NLS-1$
-					String message = NLS.bind(template, subsystemName, subsystemConfigurationId);
-					IStatus status = new Status(IStatus.INFO, RSECorePlugin.PLUGIN_ID, message);
-					RSECorePlugin.getDefault().getLog().log(status);
-				} else {
-					subsystemConfiguration.getFilterPoolManager(profile, true);
-					fixFilterPoolReferences(subsystemNode, profile, filterPoolMap, originalProfileName);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Examines the filter pool references in this subsystem node. If any are found that are in the originating
-	 * profile these are updated to the profile into which we are importing.
-	 * @param hostNode The host node containing the filter pool references
-	 * @param profile The profile into which the host is being imported
-	 * @param filterPoolMap The map that accounts for filter pool renames. Used to fix up filter pool references.
-	 */
-	private void fixFilterPoolReferences(RSEDOMNode subsystemNode, ISystemProfile profile, Map filterPoolMap, String originalProfileName) {
-		String subsystemConfigurationId = getSubsystemConfigurationId(subsystemNode);
-		RSEDOMNode filterPoolReferenceNodes[] = subsystemNode.getChildren(IRSEDOMConstants.TYPE_FILTER_POOL_REFERENCE);
-		if (originalProfileName != null) {
-			String newProfileName = profile.getName();
-			for (int i = 0; i < filterPoolReferenceNodes.length; i++) {
-				RSEDOMNode filterPoolReferenceNode = filterPoolReferenceNodes[i];
-				String parts[] = parseFilterPoolReferenceName(filterPoolReferenceNode);
-				if (parts.length == 2) {
-					String originalFilterPoolName = parts[1];
-					String finalFilterPoolName = null;
-					if (isDefaultSubsystemFilterPoolName(originalFilterPoolName, originalProfileName, subsystemConfigurationId)) {
-						finalFilterPoolName = makeDefaultSubsystemFilterPoolName(newProfileName, subsystemConfigurationId);
-					} else {
-						finalFilterPoolName = (String) filterPoolMap.get(originalFilterPoolName);
-						if (finalFilterPoolName == null) {
-							finalFilterPoolName = originalFilterPoolName;
-						}
-					}
-					String qualifiedFilterPoolName = makeFilterPoolReferenceName(newProfileName, finalFilterPoolName);
-					filterPoolReferenceNode.setName(qualifiedFilterPoolName);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Examines the dom and, by heuristic, attempts to determine the original profile name.
-	 * This name can be used to re-parent any filter pool references as they are merged with 
-	 * the new profile.
-	 * @return a non-null profile name.
-	 */
-	private String getOriginalProfileName() {
-		String originalProfileName = getOriginalProfileName(dom);
-		if (originalProfileName == null) {
-			originalProfileName = "DOM"; //$NON-NLS-1$
-		}
-		return originalProfileName;
-	}
-	
-	/**
-	 * This is a heuristic.
-	 * Traverse the node and its children looking for filter pool references.
-	 * If a connection private filter pool reference is found then assume its qualifying profile name is the original profile.
-	 * @param node the node to begin the tree traversal.
-	 * @return the first profile name found that meets the criteria or null.
-	 */
-	private String getOriginalProfileName(RSEDOMNode node) {
-		String result = null;
-		if (isFilterPoolReference(node)) {
-			if (isConnectionPrivateFilterPoolReference(node)) {
-				String names[] = parseFilterPoolReferenceName(node);
-				result = names[0];
-			}
-		}
-		if (result == null) {
-			RSEDOMNode children[] = node.getChildren();
-			for (int i = 0; i < children.length; i++) {
-				RSEDOMNode child = children[i];
-				result = getOriginalProfileName(child);
-				if (result != null) break;
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Extracts and returns the subsystem configuration id from a subsystem node in a host definition
-	 * @param subsystemNode a subsystem node
-	 * @return the subsystem configuration id of that subsystem node
-	 */
-	private String getSubsystemConfigurationId(RSEDOMNode subsystemNode) {
-		String subsystemConfigurationId = subsystemNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_TYPE).getValue();
-		return subsystemConfigurationId;
-	}
-	
-	/**
-	 * Tests if a node is a filter pool reference node.
-	 * @param node a DOM node
-	 * @return true if and only if the node is a filter pool reference.
-	 */
-	private boolean isFilterPoolReference(RSEDOMNode node) {
-		boolean result = node.getType().equals(IRSEDOMConstants.TYPE_FILTER_POOL_REFERENCE);
-		return result;
-	}
-	
-	/**
-	 * Tests if a filter pool name matches the pattern for a default subsystem filter pool name
-	 * @param filterPoolName the name to test
-	 * @param profileName the profile the name should be a part of
-	 * @param subsystemConfigurationId the subsystem configuration id of the subsystem we are testing
-	 * @return true if the filter pool name matches the pattern of a default subsystem filter pool name
-	 */
-	private boolean isDefaultSubsystemFilterPoolName(String filterPoolName, String profileName, String subsystemConfigurationId) {
-		String defaultSubsystemFilterPoolName = makeDefaultSubsystemFilterPoolName(profileName, subsystemConfigurationId);
-		boolean result = filterPoolName.equals(defaultSubsystemFilterPoolName);
-		return result;
-	}
-	
-	private boolean isConnectionPrivateFilterPoolReference(RSEDOMNode filterPoolReferenceNode) {
-		String parts[] = parseFilterPoolReferenceName(filterPoolReferenceNode);
-		boolean result = false;
-		if (parts.length == 2) {
-			String filterPoolName = parts[1];
-			result = filterPoolName.startsWith("CN-"); //$NON-NLS-1$
-		}
-		return result;
-	}
-	
-	private String[] parseFilterPoolReferenceName(RSEDOMNode filterPoolReferenceNode) {
-		String name = filterPoolReferenceNode.getName();
-		String result[] = name.split("___"); //$NON-NLS-1$
-		return result;
-	}
-	
-	private String makeFilterPoolReferenceName(String profileName, String filterPoolName) {
-		String result = profileName + "___" + filterPoolName; //$NON-NLS-1$
-		return result;
-	}
-	
-	private String makeDefaultSubsystemFilterPoolName(String profileName, String subsystemConfigurationId) {
-		String defaultSubsystemFilterPoolName = profileName + ":" + subsystemConfigurationId; //$NON-NLS-1$
-		return defaultSubsystemFilterPoolName;
-	}
-	
-	private ISystemFilterPool mergeFilterPool(ISystemProfile profile, RSEDOMNode filterPoolNode, Map filterPoolMap) {
-		String originalName = filterPoolNode.getName();
-		String subsystemConfigurationId = filterPoolNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_ID).getValue();
-		String finalName = (String) filterPoolMap.get(originalName);
-		filterPoolNode.setName(finalName);
+	private void mergeHostFilterPool(ISystemProfile profile, IHost host, RSEDOMNode filterPoolNode) {
+		String configurationId = filterPoolNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_ID).getValue();
+		HostOwnedFilterPoolPattern pattern = new HostOwnedFilterPoolPattern(configurationId);
+		String hostName = host.getAliasName();
+		String filterPoolName = pattern.make(hostName);
+		filterPoolNode.setName(filterPoolName);
 		RSEDOMImporter importer = RSEDOMImporter.getInstance();
 		ISystemFilterPool filterPool = importer.restoreFilterPool(profile, filterPoolNode);
-		HostOwnedFilterPoolPattern pattern = new HostOwnedFilterPoolPattern(subsystemConfigurationId);
-		String hostName = pattern.extract(finalName);
-		if (hostName != null) {
-			filterPool.setOwningParentName(hostName);
+		filterPool.setOwningParentName(hostName);
+	}
+		
+	private ISystemFilterPool mergeFilterPool(ISystemProfile profile, RSEDOMNode filterPoolNode) {
+		ISystemFilterPool filterPool = getMatchingFilterPool(profile, filterPoolNode);
+		if (filterPool != null) {
+			String filterPoolName = filterPoolNode.getName();
+			int n = 0;
+			while (filterPool != null) {
+				n++;
+				filterPoolName = filterPoolName + "-" + n; //$NON-NLS-1$
+				filterPoolNode.setName(filterPoolName);
+				filterPool = getMatchingFilterPool(profile, filterPoolNode);
+			}
 		}
+		RSEDOMImporter importer = RSEDOMImporter.getInstance();
+		filterPool = importer.restoreFilterPool(profile, filterPoolNode);
 		return filterPool;
 	}
 	
-	private ISystemFilterPool getFilterPool(ISystemProfile profile, String filterPoolName, String subsystemConfigurationId) {
+	private ISystemFilterPool getMatchingFilterPool(ISystemProfile profile, RSEDOMNode filterPoolNode) {
 		ISystemRegistry registry = RSECorePlugin.getTheSystemRegistry();
-		ISubSystemConfiguration subsystemConfiguration = registry.getSubSystemConfiguration(subsystemConfigurationId);
+		String filterPoolName = filterPoolNode.getName();
+		String configurationId = filterPoolNode.getAttribute(IRSEDOMConstants.ATTRIBUTE_ID).getValue();
+		ISubSystemConfiguration subsystemConfiguration = registry.getSubSystemConfiguration(configurationId);
 		ISystemFilterPoolManager manager = subsystemConfiguration.getFilterPoolManager(profile);
 		ISystemFilterPool filterPool = manager.getSystemFilterPool(filterPoolName);
 		return filterPool;

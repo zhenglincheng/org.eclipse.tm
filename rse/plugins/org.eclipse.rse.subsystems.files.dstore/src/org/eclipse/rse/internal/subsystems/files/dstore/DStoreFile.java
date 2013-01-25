@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2010 IBM Corporation and others.
+ * Copyright (c) 2006, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,6 @@
  * Martin Oberhuber (Wind River) - [168870] refactor org.eclipse.rse.core package of the UI plugin
  * Martin Oberhuber (Wind River) - [234726] Update IRemoteFile Javadocs
  * David McKnight   (IBM)        - [246897] Wrong canonical path for a symbolic link
- * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
  *******************************************************************************/
 
 package org.eclipse.rse.internal.subsystems.files.dstore;
@@ -182,12 +181,6 @@ public class DStoreFile extends AbstractRemoteFile
 		_dstoreHostFile = hostFile;
 	}
 
-	public void setHostFile(IHostFile hostFile) {
-		super.setHostFile(hostFile);
-		_dstoreHostFile = (DStoreHostFile)hostFile;
-	}
-
-	
 	public boolean isVirtual()
 	{
 		DataElement element = _dstoreHostFile.getDataElement();

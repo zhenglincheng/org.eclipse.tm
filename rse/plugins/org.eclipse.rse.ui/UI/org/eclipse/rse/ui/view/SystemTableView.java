@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@
  * Martin Oberhuber (Wind River) - [227516] [regression] Fix ArrayIndexOutOfBoundsException in TableView
  * David McKnight   (IBM)        - [187058] Incorrect Right Click Menu in Remote System Details View with no selection
  * David McKnight   (IBM)        - [260346] RSE view for jobs does not remember resized columns
- * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
  *******************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -34,6 +33,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.resources.WorkspaceJob;
@@ -958,13 +958,6 @@ public class SystemTableView
 						if (w != null)
 						{
 							updateItem(w, child);
-						}
-						ISelection selection = getSelection();
-						if (selection instanceof IStructuredSelection){
-							Object first = ((IStructuredSelection)selection).getFirstElement();
-							if (first.equals(child)){
-								updatePropertySheet(true);
-							}
 						}
 					}
 					catch (Exception e)
@@ -2119,34 +2112,5 @@ public class SystemTableView
 		  _messageLine.clearMessage();
 	}
 
-	private void updatePropertySheet(boolean force) {
-		ISelection selection = getSelection();
-		if (selection == null) return;
-
-		// only fire this event if the view actually has focus
-		if (force || getControl().isFocusControl())
-		{
-			IStructuredSelection parentSelection = null;
-			// create events in order to update the property sheet
-			if (selection instanceof IStructuredSelection){
-				Object first = ((IStructuredSelection)selection).getFirstElement();
-				ISystemViewElementAdapter adapter = getViewAdapter(first);
-				
-				Object parent = adapter.getParent(first);
-				if (parent != null){
-					parentSelection = new StructuredSelection(parent);
-				}
-			}
-			
-			SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
-			SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-
-			// first change the selection, then change it back (otherwise the property sheet ignores the event)
-			fireSelectionChanged(dummyEvent);
-			
-			// fire the event
-			fireSelectionChanged(event);
-		}
-	}
 
 }

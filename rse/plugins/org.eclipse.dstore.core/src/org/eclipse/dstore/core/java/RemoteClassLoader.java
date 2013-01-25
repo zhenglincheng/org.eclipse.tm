@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2006, 2011 IBM Corporation. All rights reserved.
+ * Copyright (c) 2006, 2008 IBM Corporation. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -13,7 +13,6 @@
  * Contributors:
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight   (IBM) - [244388] [dstore] Connection hangs when a miner not installed
- * David McKnight   (IBM) - [367264] [dstore] Trace should be written when load miner is failed.
  ********************************************************************************/
 
 package org.eclipse.dstore.core.java;
@@ -131,11 +130,7 @@ public class RemoteClassLoader extends ClassLoader
 	public boolean useCaching()
 	{
 		boolean useCaching = false;
-		
-		// hard coding this to false for now since remote loading can cause problems
-		// and isn't intentionally used by anyone
-		String pref = "false"; //$NON-NLS-1$
-		//String pref = _dataStore.getPreference(CACHING_PREFERENCE);
+		String pref = _dataStore.getPreference(CACHING_PREFERENCE);
 		if (pref != null && pref.equals("true")) //$NON-NLS-1$
 		{
 			useCaching = true;
@@ -190,7 +185,7 @@ public class RemoteClassLoader extends ClassLoader
 				}
 				catch (Exception e)
 				{
-					_dataStore.trace(e);
+					e.printStackTrace();
 				}
 			}
 		}
@@ -207,10 +202,7 @@ public class RemoteClassLoader extends ClassLoader
 		}
 		catch (Exception e)
 		{
-			if (!_useCaching){
-				// no remote loading in this case
-				throw new ClassNotFoundException(className);
-			}
+			e.printStackTrace();
 		}
 
 		// DKM
@@ -255,13 +247,13 @@ public class RemoteClassLoader extends ClassLoader
 		}
 		else if (!request.isLoaded())
 		{
-			_dataStore.trace("request is not loaded"); //$NON-NLS-1$
+			System.out.println("request is not loaded");
 			// the class has been requested before, but it has not yet been received
 		//	System.out.println(className + " already requested but not loaded. Waiting for request to load.");
 
-			_dataStore.trace("waiting for response...");//$NON-NLS-1$
+			System.out.println("waiting for response...");
 			request.waitForResponse(); // just wait until the class is received
-			_dataStore.trace("...finished waiting for response");//$NON-NLS-1$
+			System.out.println("...finished waiting for response");
 			
 			// after the class is received, get it from the repository and return it
 			// or if the class failed to be received, throw an exception

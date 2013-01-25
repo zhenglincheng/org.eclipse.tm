@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.eclipse.rse.useractions_1.1.2.qualifier.jar" id="org.eclipse.rse.useractions" version="1.1.2.qualifier">
+      <category name="tm_30_main"/>
+   </feature>
+   <feature url="features/org.eclipse.rse.sdk_3.0.4.qualifier.jar" id="org.eclipse.rse.sdk" version="3.0.4.qualifier">
+      <category name="tm_30_main"/>
+   </feature>
+   <feature url="features/org.eclipse.rse_3.0.4.qualifier.jar" id="org.eclipse.rse" version="3.0.4.qualifier">
+      <category name="tm_30_main"/>
+   </feature>
+   <feature url="features/org.eclipse.tm.terminal.sdk_2.0.0.qualifier.jar" id="org.eclipse.tm.terminal.sdk" version="2.0.0.qualifier">
+      <category name="tm_30_main"/>
+   </feature>
+   <category-def name="tm_30_main" label="tm_30_main"/>
+</site>

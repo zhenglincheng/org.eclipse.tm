@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,8 +23,6 @@
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * Noriaki Takatsu  (IBM) - [242968] [multithread] serverSocket must be closed when an exception happens in Accept
  * Noriaki Takatsu  (IBM) - [283656] [dstore][multithread] Serviceability issue
- * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
- * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -73,7 +71,7 @@ public class ConnectionEstablisher
 
 
 	private ServerSocket _serverSocket;
-	private boolean _continue;
+	private static boolean _continue;
 
 	private ArrayList _receivers;
 
@@ -192,9 +190,6 @@ public class ConnectionEstablisher
 	 */
 	public void finished(ServerReceiver receiver)
 	{
-		if (_dataStore.getClient() != null) {
-			_dataStore.getClient().getLogger().logInfo(this.getClass().toString(), "ConnectionEstablisher.finished()"); //$NON-NLS-1$
-		}
 		_updateHandler.removeSenderWith(receiver.socket());
 		_receivers.remove(receiver);
 		_dataStore.removeDataStorePreferenceListener(receiver);

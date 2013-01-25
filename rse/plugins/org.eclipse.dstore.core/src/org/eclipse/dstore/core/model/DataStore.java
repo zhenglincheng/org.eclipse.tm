@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,10 +32,6 @@
  * David McKnight   (IBM) - [285301] [dstore] 100% CPU if user does not  have write access to $HOME
  * David McKnight   (IBM) - [289891] [dstore] StringIndexOutOfBoundsException in getUserPreferencesDirectory when DSTORE_LOG_DIRECTORY is ""
  * David McKnight   (IBM) - [294933] [dstore] RSE goes into loop
- * David McKnight   (IBM) - [336257] [dstore] leading file.searator in DSTORE_LOG_DIRECTORY not handled
- * David McKnight   (IBM) - [373507] [dstore][multithread] reduce heap memory on disconnect for server
- * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
- * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -154,7 +150,6 @@ public final class DataStore
 	private RandomAccessFile _traceFile;
 	private boolean _tracingOn;
 
-	private boolean _queriedSpiritState = false; // for the client - so we don't keep sending down the same query
 	private boolean _spiritModeOn = false;
 	private boolean _spiritCommandReceived = false;
 	private File _memLoggingFileHandle;
@@ -2283,25 +2278,17 @@ public final class DataStore
 		return synchronizedCommand(cmd, _dummy);
 	}
 
-	/**
-	+	 * Client calls this to start the spiriting mechanism on the server.  The return value shouldn't be reliable here.  
-	+	 * Originally this was a synchronized command but that can slow connect time.  Since no one should use the return value here,
-	+	 * 
-	+	 * @return whether the server spirit state has been queried
-	+	 */
-	 public boolean queryServerSpiritState()
-	 {
-		if (!_queriedSpiritState){
-			DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
-			if (spirittype != null){		
-				DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
-				if (cmd != null){
-					command(cmd, _dummy); // start 
-					_queriedSpiritState = true;
-				}
-			}
-		}
-		return _queriedSpiritState;
+	public boolean queryServerSpiritState()
+	{
+		DataElement spirittype = findObjectDescriptor(IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
+		if (spirittype == null) return false;
+		DataElement cmd = localDescriptorQuery(spirittype, IDataStoreConstants.C_START_SPIRIT, 2);
+		if (cmd == null) return false;
+
+		DataElement status = synchronizedCommand(cmd, _dummy);
+		if ((status != null) && status.getName().equals(DataStoreResources.model_done))
+			return true;
+		else return false;
 	}
 
 	public DataElement queryHostJVM()
@@ -2640,32 +2627,7 @@ public final class DataStore
 		flush(_descriptorRoot);
 		flush(_dummy);
 		flush(_root);
-		flush(_externalRoot);
-		
-		// make sure these aren't null set since
-		// Miners need them on shutdown
-		// _logRoot = null;
-		// _minerRoot = null;
-		
-		_hostRoot = null;
-		_tempRoot = null;
-		_descriptorRoot = null;
-		_dummy = null;
-		_root = null;
-		_externalRoot = null;
-		_status = null;
-		_ticket = null;
 
-		// clear the maps
-		_classReqRepository.clear();
-		_cmdDescriptorMap.clear();
-		_hashMap.clear();
-		_lastCreatedElements.clear();
-		_localClassLoaders.clear();
-		_objDescriptorMap.clear();
-		_relDescriptorMap.clear();
-		
-		_remoteLoader = null;
 	}
 
 	/**
@@ -2859,7 +2821,7 @@ public final class DataStore
 					return results;
 				}
 
-				if (root.isDeleted() && !results.contains(root))
+				if (root.isDeleted())
 				{
 					results.add(root);
 				}
@@ -2878,6 +2840,7 @@ public final class DataStore
 							{
 								if (child.isDeleted() && !results.contains(child))
 								{
+
 									results.add(child);
 									if (!child.isReference())
 									{
@@ -3647,16 +3610,10 @@ public final class DataStore
   				logDirectory = ".eclipse" + File.separator + "RSE" + File.separator;  //$NON-NLS-1$//$NON-NLS-2$
   			}
   			  			
-  			
+  			// append a '/' if not there
   			if (logDirectory.length() > 0){
-  				// append a '/' if not there
-  				if (logDirectory.charAt( logDirectory.length() -1 ) != File.separatorChar ) {
+  				if (logDirectory.charAt(logDirectory.length() -1 ) != File.separatorChar ) {
   					logDirectory = logDirectory + File.separator;
-  				}
-  				
-  				// remove the '/' if first char
-  				if (logDirectory.charAt(0) == File.separatorChar){
-  					logDirectory = logDirectory.substring(1);
   				}
   			}
   			
@@ -3962,7 +3919,6 @@ public final class DataStore
 		}
 
 		newObject.setUpdated(false);
-		newObject.setSpirit(false); // safe trivial fix that was in 3.2.x so a recycled element isn't marked spirited
 		updateLastCreated(newObject);
 		return newObject;
 	}
@@ -4211,19 +4167,9 @@ public final class DataStore
 		// which causes havoc for iSeries caching when switching between offline / online
 		//if (isVirtual())
 		//	flush();
-		
-		if (!isVirtual()){ // only on server
-			if (getClient() != null){
-				getClient().getLogger().logInfo(this.getName(), "DataStore.finish() - flush()"); //$NON-NLS-1$
-			}
-			flush();
-		}
-		
-		if (_deRemover != null){
+		if (_deRemover != null)
 			_deRemover.finish();
-		}	
-		
-		
+
 		if (_tracingOn)
 		{
 			try

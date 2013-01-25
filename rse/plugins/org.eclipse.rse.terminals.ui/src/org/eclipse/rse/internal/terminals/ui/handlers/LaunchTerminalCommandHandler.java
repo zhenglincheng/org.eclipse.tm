@@ -16,7 +16,6 @@
  * David McKnight   (IBM)        - [216252] [api][nls] Resource Strings specific to subsystems should be moved from rse.ui into files.ui / shells.ui / processes.ui where possible
  * Yu-Fen Kuo       (MontaVista) - Adapted from SystemCommandAction
  * Anna Dushistova  (MontaVista) - [227535] Adapted from  LaunchTerminalAction to remove dependency from files.core
- * Anna Dushistova  (MontaVista) - [244637] [rseterminal] Launch Terminal with selected directory doesn't work
  ********************************************************************************/
 package org.eclipse.rse.internal.terminals.ui.handlers;
 
@@ -40,6 +39,7 @@ import org.eclipse.rse.services.clientserver.archiveutils.ArchiveHandlerManager;
 import org.eclipse.rse.subsystems.terminals.core.ITerminalServiceSubSystem;
 import org.eclipse.rse.subsystems.terminals.core.elements.TerminalElement;
 import org.eclipse.rse.ui.SystemBasePlugin;
+import org.eclipse.rse.ui.view.ISystemPropertyConstants;
 import org.eclipse.rse.ui.view.ISystemViewElementAdapter;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -100,11 +100,6 @@ public class LaunchTerminalCommandHandler extends AbstractHandler {
 	private void init(IStructuredSelection selection) {
 		Iterator e = selection.iterator();
 		Object selectedObject = e.next();
-		
-		selected = null;
-		subSystem = null;
-		selectedFilterRef = null;
-		
 		if (selectedObject != null) {
 			if (selectedObject instanceof ISystemFilterReference) {
 				selectedFilterRef = (ISystemFilterReference) selectedObject;
@@ -150,12 +145,9 @@ public class LaunchTerminalCommandHandler extends AbstractHandler {
 			return null;
 		String path = getWorkingDirectory(selected);
 
-		String cdCmd; 
+		String cdCmd = "cd " + PathUtility.enQuoteUnix(path); //$NON-NLS-1$
 		if (getTerminalSubSystem().getHost().getSystemType().isWindows()) {
 			cdCmd = "cd /d \"" + path + '\"'; //$NON-NLS-1$
-		} else
-		{
-			cdCmd = "cd " + PathUtility.enQuoteUnix(path); //$NON-NLS-1$
 		}
 		return cdCmd + "\r"; //$NON-NLS-1$
 	}
@@ -164,7 +156,8 @@ public class LaunchTerminalCommandHandler extends AbstractHandler {
 		ISystemViewElementAdapter adapter = (ISystemViewElementAdapter) ((IAdaptable) element)
 				.getAdapter(ISystemViewElementAdapter.class);
 		if (adapter != null) {
-			String path = (String) adapter.getAbsoluteName(element);
+			String path = (String) adapter
+					.getPropertyValue(ISystemPropertyConstants.P_FILE_CANONICAL_PATH);
 			// folder -- real or virtual
 			if (ArchiveHandlerManager.isVirtual(path)) {
 				path = path

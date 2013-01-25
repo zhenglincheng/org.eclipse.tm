@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,6 @@
  * David McKnight     (IBM)   [224906] [dstore] changes for getting properties and doing exit due to single-process capability
  * David McKnight  (IBM)   [305218][dstore] problem reading double-byte characters through data socket layer
  * David McKnight  (IBM)   [307541][dstore] fix for Bug 305218 breaks RDz connections
- * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -517,7 +516,7 @@ public class XMLparser
 		String matchTag = null;
 
 		boolean done = false;
-		while (!done && (_dataStore != null && _dataStore.isConnected()))
+		while (!done)
 		{
 			String xmlTag = readLine(reader, socket);
 			

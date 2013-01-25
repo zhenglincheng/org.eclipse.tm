@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,9 +68,6 @@
  * David McKnight   (IBM)        - [251625] Widget disposed exception when renaming/pasting a folder
  * David McKnight   (IBM)        - [257721] Doubleclick doing special handling and expanding
  * David McKnight   (IBM)        - [283793] [dstore] Expansion indicator(+) does not reset after no connect
- * David McKnight   (IBM)        - [308783] Value in Properties view remains "Pending..."
- * David McKnight   (IBM)        - [350395] NPE in SystemView.updatePropertySheet()
- * David McKnight   (IBM)        - [381884] SystemView.systemResourceChange event handling to should run on UI thread when triggered via UI thread
  *******************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -1781,12 +1778,8 @@ public class SystemView extends SafeTreeViewer
 		if (!getControl().isDisposed()) {
 			ResourceChangedJob job = new ResourceChangedJob(event, this);
 			job.setPriority(Job.INTERACTIVE);
-			if (Display.getCurrent() != null) {
-				job.runInUIThread(null);
-			} else {
-				// job.setUser(true);
-				job.schedule();
-			}
+			//job.setUser(true);
+			job.schedule();
 			/*
 			Display display = Display.getCurrent();
 			try {
@@ -3227,13 +3220,7 @@ public class SystemView extends SafeTreeViewer
 		}
 
 		// STEP 4: update the property sheet in case we changed properties of first selected item
-		ISelection selection = getSelection();
-		if (selection instanceof IStructuredSelection){
-			Object sel = ((IStructuredSelection)selection).getFirstElement();
-			if (remoteObject.equals(sel)){
-				updatePropertySheet(true);
-			}
-		}
+		updatePropertySheet();
 		return;
 	}
 
@@ -5876,47 +5863,22 @@ public class SystemView extends SafeTreeViewer
 		item.setExpanded(true);
 	}
 
-	
-	public void updatePropertySheet(){
-		updatePropertySheet(false);
-	}
-	
 	/**
 	 * Called when a property is updated and we need to inform the Property Sheet viewer.
 	 * There is no formal mechanism for this so we simulate a selection changed event as
 	 *  this is the only event the property sheet listens for.
 	 */
-	private void updatePropertySheet(boolean force) {
+	public void updatePropertySheet() {
 		ISelection selection = getSelection();
 		if (selection == null) return;
 
 		// only fire this event if the view actually has focus
-		if (force || getControl().isFocusControl())
+		if (getControl().isFocusControl())
 		{
-			IStructuredSelection parentSelection = null;
-			// create events in order to update the property sheet
-			if (selection instanceof IStructuredSelection){
-				Object first = ((IStructuredSelection)selection).getFirstElement();
-				if (first != null){
-					ISystemViewElementAdapter adapter = getViewAdapter(first);
-					if (adapter != null){
-						Object parent = adapter.getParent(first);
-						if (parent != null){
-							parentSelection = new StructuredSelection(parent);
-						}
-					}
-				}
-			}
-			if (parentSelection != null){
-				SelectionChangedEvent dummyEvent = new SelectionChangedEvent(this, parentSelection);
-				SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-
-				// first change the selection, then change it back (otherwise the property sheet ignores the event)
-				fireSelectionChanged(dummyEvent);
-			
-				// fire the event
-				fireSelectionChanged(event);
-			}
+			// create an event
+			SelectionChangedEvent event = new SelectionChangedEvent(this, getSelection());
+			// fire the event
+			fireSelectionChanged(event);
 		}
 	}
 

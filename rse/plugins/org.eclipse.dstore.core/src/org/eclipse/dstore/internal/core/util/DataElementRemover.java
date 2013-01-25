@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,9 +16,6 @@
  *  David McKnight  (IBM)  - [255390] checking for memory
  *  David McKnight  (IBM)  - [261644] [dstore] remote search improvements
  *  David McKnight  (IBM)  - [294933] [dstore] RSE goes into loop
- *  David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
- *  David McKnight   (IBM)  - [373507] [dstore][multithread] reduce heap memory on disconnect for server
- *  David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -38,7 +35,7 @@ public class DataElementRemover extends Handler
 	private static int numRemoved = 0;
 	private static int numDisconnected = 0;
 	private static int numCreated = 0;
-	//private static int numGCed = 0;
+	private static int numGCed = 0;
 	
 	// The following determine how DataElements are chosen to be removed once they
 	// are in the queue for removal. 	
@@ -55,11 +52,14 @@ public class DataElementRemover extends Handler
 	public DataElementRemover(DataStore dataStore)
 	{
 		super();
-		_memoryManager = new MemoryManager(dataStore);
+		_memoryManager = MemoryManager.getInstance(dataStore);
 		_dataStore = dataStore;
 		_queue = new LinkedList();
 		getTimes();
 		setWaitTime(_intervalTime);
+		DataElement spiritnode = _dataStore.createObjectDescriptor(_dataStore.getDescriptorRoot(), IDataStoreConstants.DATASTORE_SPIRIT_DESCRIPTOR);
+		_dataStore.createCommandDescriptor(spiritnode, "StartSpirit", "DataElementRemover", IDataStoreConstants.C_START_SPIRIT); //$NON-NLS-1$ //$NON-NLS-2$
+		_dataStore.refresh(_dataStore.getDescriptorRoot());
 	}
 	
 	protected void getTimes()
@@ -98,7 +98,7 @@ public class DataElementRemover extends Handler
 	
 	public static void addToGCedCount()
 	{
-		//numGCed++;
+		numGCed++;
 	}
 
 	
@@ -150,9 +150,7 @@ public class DataElementRemover extends Handler
 				_dataStore.memLog("Elements created so far: " + numCreated); //$NON-NLS-1$
 				_dataStore.memLog("Elements disconnected so far: " + numDisconnected); //$NON-NLS-1$
 				_dataStore.memLog("Spirit elements cleaned so far: " + numRemoved); //$NON-NLS-1$
-				
-				// no longer a helpful stat since we no longer use finalize
-				//_dataStore.memLog("DataElements GCed so far: " + numGCed); //$NON-NLS-1$
+				_dataStore.memLog("DataElements GCed so far: " + numGCed); //$NON-NLS-1$
 				return;
 			}
 			_dataStore.memLog("Total heap size before disconnection: " + Runtime.getRuntime().totalMemory()); //$NON-NLS-1$
@@ -190,9 +188,7 @@ public class DataElementRemover extends Handler
 			_dataStore.memLog("Elements created so far: " + numCreated); //$NON-NLS-1$
 			_dataStore.memLog("Elements disconnected so far: " + numDisconnected); //$NON-NLS-1$
 			_dataStore.memLog("Spirit elements cleaned so far: " + numRemoved); //$NON-NLS-1$
-			
-			// no longer a helpful stat since we no longer use finalize
-			//_dataStore.memLog("DataElements GCed so far: " + numGCed); //$NON-NLS-1$
+			_dataStore.memLog("DataElements GCed so far: " + numGCed); //$NON-NLS-1$
 			System.gc();
 		}
 	}

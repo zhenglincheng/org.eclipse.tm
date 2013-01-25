@@ -21,14 +21,10 @@
  * Ruslan Sychev (Xored Software) - [217675] NPE or SWTException when closing Terminal View while connection establishing
  * Michael Scharf (Wing River) - [196447] The optional terminal input line should be resizeable
  * Martin Oberhuber (Wind River) - [168197] Replace JFace MessagDialog by SWT MessageBox
- * Martin Oberhuber (Wind River) - [204796] Terminal should allow setting the encoding to use
- * Michael Scharf (Wind River) - [237398] Terminal get Invalid Thread Access when the title is set
- * Martin Oberhuber (Wind River) - [240745] Pressing Ctrl+F1 in the Terminal should bring up context help
  *******************************************************************************/
 package org.eclipse.tm.internal.terminal.emulator;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
@@ -110,9 +106,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
     private ITerminalConnector		  fConnector;
     private final ITerminalConnector[]      fConnectors;
     PipedInputStream fInputStream;
-	private static final String defaultEncoding = new java.io.InputStreamReader(new java.io.ByteArrayInputStream(new byte[0])).getEncoding();
-	private String fEncoding = defaultEncoding;
-	private InputStreamReader fInputStreamReader;
 
 	private ICommandInputField fCommandInputField;
 
@@ -131,37 +124,9 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 		fTerminalModel=TerminalTextDataFactory.makeTerminalTextData();
 		fTerminalModel.setMaxHeight(1000);
 		fInputStream=new PipedInputStream(8*1024);
-		fTerminalText = new VT100Emulator(fTerminalModel, this, null);
-		try {
-			// Use Default Encoding as start, until setEncoding() is called
-			setEncoding(null);
-		} catch (UnsupportedEncodingException e) {
-			// Should never happen
-			e.printStackTrace();
-			// Fall back to local Platform Default Encoding
-			fEncoding = defaultEncoding;
-			fInputStreamReader = new InputStreamReader(fInputStream);
-			fTerminalText.setInputStreamReader(fInputStreamReader);
-		}
+		fTerminalText=new VT100Emulator(fTerminalModel,this,fInputStream);
 
 		setupTerminal(wndParent);
-	}
-
-	public void setEncoding(String encoding) throws UnsupportedEncodingException {
-		if (encoding == null) {
-			// TODO better use a standard remote-to-local encoding?
-			encoding = "ISO-8859-1"; //$NON-NLS-1$
-			// TODO or better use the local default encoding?
-			// encoding = defaultEncoding;
-		}
-		fInputStreamReader = new InputStreamReader(fInputStream, encoding);
-		// remember encoding if above didn't throw an exception
-		fEncoding = encoding;
-		fTerminalText.setInputStreamReader(fInputStreamReader);
-	}
-
-	public String getEncoding() {
-		return fEncoding;
 	}
 
 	public ITerminalConnector[] getConnectors() {
@@ -201,13 +166,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 			return false;
 		if (strText == null)
 			return false;
-		if (!fEncoding.equals(defaultEncoding)) {
-			sendString(strText);
-		} else {
-			// TODO I do not understand why pasteString would do this here...
-			for (int i = 0; i < strText.length(); i++) {
-				sendChar(strText.charAt(i), false);
-			}
+		for (int i = 0; i < strText.length(); i++) {
+			sendChar(strText.charAt(i), false);
 		}
 		return true;
 	}
@@ -441,9 +401,8 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 			// platform's default character encoding.
 			//
 			// TODO: Find a way to force this to use the ISO Latin-1 encoding.
-			// TODO: handle Encoding Errors in a better way
 
-			getOutputStream().write(string.getBytes(fEncoding));
+			getOutputStream().write(string.getBytes());
 			getOutputStream().flush();
 		} catch (SocketException socketException) {
 			displayTextInTerminal(socketException.getMessage());
@@ -551,9 +510,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	public Control getControl() {
 		return fCtlText;
 	}
-	public Control getRootControl() {
-		return fWndParent;
-	}
 	protected void setupControls(Composite parent) {
 		// The Terminal view now aims to be an ANSI-conforming terminal emulator, so it
 		// can't have a horizontal scroll bar (but a vertical one is ok).  Also, do
@@ -623,7 +579,7 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 	}
 	private void writeToTerminal(String text) {
 		try {
-			getRemoteToTerminalOutputStream().write(text.getBytes(fEncoding));
+			getRemoteToTerminalOutputStream().write(text.getBytes("ISO-8859-1")); //$NON-NLS-1$
 		} catch (UnsupportedEncodingException e) {
 			// should never happen!
 			e.printStackTrace();
@@ -748,8 +704,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 				}
 
 				// Ignore all other keyboard input when not connected.
-				// Allow other key handlers (such as Ctrl+F1) do their work
-				event.doit = true;
 				return;
 			}
 
@@ -804,11 +758,6 @@ public class VT100TerminalControl implements ITerminalControlForText, ITerminalC
 					break;
 
 				case 0x100000a: // F1 key.
-					if ( (event.stateMask & SWT.CTRL)!=0 ) {
-						//Allow Ctrl+F1 to act locally as well as on the remote, because it is
-						//typically non-intrusive
-						event.doit=true;
-					}
 					sendString("\u001b[M"); //$NON-NLS-1$
 					break;
 

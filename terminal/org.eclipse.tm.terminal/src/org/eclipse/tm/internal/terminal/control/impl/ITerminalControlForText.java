@@ -29,6 +29,8 @@ public interface ITerminalControlForText {
 	
 	ITerminalConnector getTerminalConnector();
 
+	void disconnectTerminal();
+
 	OutputStream getOutputStream();
 	
 }
