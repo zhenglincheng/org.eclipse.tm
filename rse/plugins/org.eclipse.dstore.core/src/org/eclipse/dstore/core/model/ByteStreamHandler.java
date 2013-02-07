@@ -19,7 +19,7 @@
  *  David McKnight     (IBM)   [385630] [dstore] backup files created during upload should be removed when upload successful
  *  David McKnight     (IBM)   [400251] [dstore] backup files cause problem when parent folder is read-only
  *******************************************************************************/
-
+ 
 package org.eclipse.dstore.core.model;
 
 import java.io.File;
