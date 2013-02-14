@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,6 +73,7 @@
  * Rick Sawyer      (IBM)        - [376535] RSE does not respect editor overrides
  * David McKnight   (IBM)        - [389838] Fast folder transfer does not account for code page
  * David Mcknight   (IBM)        - [374681] Incorrect number of children on the properties page of a directory
+ * Samuel Wu        (IBM)        - [398988] [ftp] FTP Only support to zVM
  *******************************************************************************/
 
 package org.eclipse.rse.internal.files.ui.view;
@@ -2094,6 +2095,8 @@ public class SystemViewRemoteFileAdapter
 			{
 				//targetFolder.markStale(true);
 				targetFolder = targetFS.getRemoteFileObject(targetFolder.getAbsolutePath(), monitor);
+				if (targetFolder == null)
+					targetFolder = (IRemoteFile)target;
 			}
 			catch (Exception e)
 			{
@@ -2534,6 +2537,8 @@ public class SystemViewRemoteFileAdapter
 			{
 				//targetFolder.markStale(true);
 				targetFolder = targetFS.getRemoteFileObject(targetFolder.getAbsolutePath(), monitor);
+				if (targetFolder == null)
+					targetFolder = (IRemoteFile)target;
 			}
 			catch (Exception e)
 			{
