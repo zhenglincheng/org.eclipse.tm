@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2011 IBM Corporation and others.
+ * Copyright (c) 2006, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -49,6 +49,7 @@
  * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
  * David McKnight   (IBM)        - [331247] Local file paste failed on Vista and Windows 7
  * David McKnight   (IBM)        - [337612] Failed to copy the content of a tar file
+ * Samuel Wu		(IBM)		 - [395981] Local file encoding is not handled properly 
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -414,7 +415,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 				parentDir.mkdirs();
 			}
 			// encoding conversion required if it a text file but not an xml file
-			String systemEncoding = SystemEncodingUtil.getInstance().getEnvironmentEncoding();
+			String systemEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
 			boolean isEncodingConversionRequired = !isBinary && !systemEncoding.equals(hostEncoding); // should not convert if both encodings are the same
 
 			inputStream = new FileInputStream(file);
@@ -430,7 +431,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 
 			if (isEncodingConversionRequired)
 			{
-				outputWriter = new OutputStreamWriter(outputStream, hostEncoding);
+				outputWriter = new OutputStreamWriter(outputStream, systemEncoding);
 				bufWriter = new BufferedWriter(outputWriter);
 			}
 			else
@@ -505,7 +506,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 				} else if (file.exists()) {
 					destinationFile.setLastModified(file.lastModified());
 
-					String systemEncoding = SystemEncodingUtil.getInstance().getEnvironmentEncoding();
+					String systemEncoding = SystemEncodingUtil.getInstance().getLocalDefaultEncoding();
 					boolean sizeCheck = !isBinary && systemEncoding.equals(hostEncoding);
 
 					if (sizeCheck && (destinationFile.length() != file.length())) {
