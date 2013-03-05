@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2010 IBM Corporation and others.
+ * Copyright (c) 2003, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,6 +30,7 @@
  *  David McKnight   (IBM)     [302996] [dstore] null checks and performance issue with shell output
  *  David McKnight     (IBM)   [308246] [dstore] fix for Bug 287305 breaks on z/OS due to "su" usage
  *  David McKnight   (IBM)     [323262] [dstore] zos shell does not display [ ]  brackets properly
+ *  David McKnight   (IBM)     [395465] [dstore][shells] customer hit an NPE on shell cleanup
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -1026,7 +1027,7 @@ public class CommandMinerThread extends MinerThread
 	        {
 	        	
 	        }
-	        if (_stdOutputHandler.isAlive() &&  _theProcess != null)
+	        if (_stdOutputHandler != null && _stdOutputHandler.isAlive() &&  _theProcess != null)
 	        {
 	        	_theProcess.destroy();
 	        }
@@ -1073,11 +1074,15 @@ public class CommandMinerThread extends MinerThread
 				_theProcess = null;
 			}
 			
-
-			_stdOutputHandler.finish();
-			_stdErrorHandler.finish();
-			_stdInput.close();
-			_stdError.close();
+			if (_stdOutputHandler != null)
+				_stdOutputHandler.finish();
+			if (_stdErrorHandler != null)
+				_stdErrorHandler.finish();
+			
+			if (_stdInput != null)
+				_stdInput.close();
+			if (_stdError != null)
+				_stdError.close();
 			
 			_status.setAttribute(DE.A_NAME, "done"); //$NON-NLS-1$
 			_dataStore.refresh(_status);
