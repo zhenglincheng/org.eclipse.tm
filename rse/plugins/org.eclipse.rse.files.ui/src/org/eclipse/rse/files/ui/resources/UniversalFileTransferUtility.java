@@ -143,7 +143,7 @@ import org.eclipse.rse.ui.view.ISystemEditableRemoteObject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-/**
+/** 
  * Utility class for doing file transfers on universal systems.
  *
  * @noextend This class is not intended to be subclassed by clients.
