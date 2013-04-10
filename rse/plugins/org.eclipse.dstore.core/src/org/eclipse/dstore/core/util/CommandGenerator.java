@@ -15,6 +15,7 @@
  * David McKnight   (IBM) - [225507][api][breaking] RSE dstore API leaks non-API types
  * David McKnight   (IBM) - [226561] [apidoc] Add API markup to RSE Javadocs where extend / implement is allowed
  * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
+ * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
  *******************************************************************************/
 
 package org.eclipse.dstore.core.util;
@@ -151,7 +152,7 @@ public class CommandGenerator
 
             commandObject.setAttribute(DE.A_VALUE, commandDescriptor.getName());
 
-            if (dataObject.isUpdated() && !dataObject.isSpirit())
+            if (refArg && dataObject.isUpdated() && !dataObject.isSpirit())
             {
                 _dataStore.createReference(commandObject, dataObject,DataStoreResources.model_contents);
             }
@@ -174,7 +175,7 @@ public class CommandGenerator
                     DataElement arg = (DataElement) arguments.get(i);
                     if (arg != null)
                     {
-                        if (!arg.isUpdated() || arg.isSpirit())
+                        if (!arg.isUpdated() || arg.isSpirit() || !refArg)
                         {
                             commandObject.addNestedData(arg, false);
                         }
@@ -213,7 +214,7 @@ public class CommandGenerator
         {
             commandObject.setAttribute(DE.A_VALUE, commandDescriptor.getName());
 			clearDeleted(dataObject);
-            if ((refArg || dataObject.isUpdated()) && !dataObject.isSpirit())
+            if (refArg && dataObject.isUpdated() && !dataObject.isSpirit())
             {
                 _dataStore.createReference(commandObject, dataObject,DataStoreResources.model_contents);
             }
@@ -229,7 +230,7 @@ public class CommandGenerator
                 commandObject.addNestedData(dataObject, false);
             }
 
-            if (!arg.isUpdated() || arg.isSpirit())
+            if (!arg.isUpdated() || arg.isSpirit() || !refArg)
             {
                 commandObject.addNestedData(arg, false);
             }
@@ -265,7 +266,7 @@ public class CommandGenerator
             commandObject.setAttribute(DE.A_VALUE, commandDescriptor.getName());
 
 			clearDeleted(dataObject);
-            if ((refArg || dataObject.isUpdated()) && !dataObject.isSpirit())
+            if ((refArg && dataObject.isUpdated()) && !dataObject.isSpirit())
             {
                 _dataStore.createReference(commandObject, dataObject,DataStoreResources.model_arguments);
             }

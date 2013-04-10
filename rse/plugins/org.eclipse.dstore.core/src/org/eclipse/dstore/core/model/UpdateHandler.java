@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@
  * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  * David McKnight   (IBM) - [389286] [dstore] element delete should not clear _attributes since elements get recycled
  * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
+ * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -77,6 +78,7 @@ public abstract class UpdateHandler extends Handler
 
 	protected void clean(DataElement object, int depth)
 	{
+		boolean isServer = !_dataStore.isVirtual();
 		if ((depth > 0) && (object != null) && object.getNestedSize() > 0)
 		{
 			List deletedList = _dataStore.findDeleted(object);
@@ -92,15 +94,16 @@ public abstract class UpdateHandler extends Handler
 					cleanChildren(child); // clean the children
 
 
-					if (child.isSpirit())
+					if (child.isSpirit() && isServer)
 					{
 						// officially delete this now 
 						// will only happen on server since, on client, 
 						// the above call to isDeleted() returns false for spirited
 						child.delete();						
 					}
-
-					child.clear();
+					if (isServer){
+						child.clear();
+					}
 					if (parent != null)
 					{
 						synchronized (parent)

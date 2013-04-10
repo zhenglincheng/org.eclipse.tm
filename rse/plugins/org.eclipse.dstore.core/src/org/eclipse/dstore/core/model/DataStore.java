@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,7 @@
  * David McKnight   (IBM) - [385097] [dstore] DataStore spirit mechanism is not enabled
  * David McKnight   (IBM) - [385793] [dstore] DataStore spirit mechanism and other memory improvements needed
  * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
+ * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -2549,7 +2550,7 @@ public final class DataStore
 	{
 		if (_commandHandler != null)
 		{
-			return _commandHandler.command(commandDescriptor, arguments, dataObject, true, immediate);
+			return _commandHandler.command(commandDescriptor, arguments, dataObject, false, immediate);
 		}
 		return null;
 	}
@@ -2580,7 +2581,7 @@ public final class DataStore
 	{
 		if (_commandHandler != null)
 		{
-			return _commandHandler.command(commandDescriptor, arg, dataObject, true, immediate);
+			return _commandHandler.command(commandDescriptor, arg, dataObject, false, immediate);
 		}
 		return null;
 	}

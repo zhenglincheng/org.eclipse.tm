@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@
  * David McKnight   (IBM)  - [367449] [dstore] allow custom encoding for data transport layer
  * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  * David McKnight   (IBM)   - [391966][dstore][performance] unnecessary call slows down large queries
+ * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -587,48 +588,7 @@ public class XMLparser
 								}
 							}
 						}
-						
-						if (parent != null && parent.getNestedSize() > 0 && _dataStore.isVirtual())
-						{
-							List toDelete = new ArrayList();
-							List nested = parent.getNestedData();
-							synchronized (nested)
-							{
-								for (int s= 0; s < nested.size(); s++)
-								{
-									DataElement element = (DataElement)nested.get(s);
-									if (element.isSpirit())
-									{
-										boolean addedToDelete = false;
-										String name = element.getName();
-										String value = element.getValue();
-										
-										// delete this element if there's another one with the same name and value
-										for (int n = 0; n < parent.getNestedSize() && !addedToDelete; n++)
-										{
-											if (n != s)
-											{
-												DataElement compare = parent.get(n);
-												String cname = compare.getName();
-												String cvalue = compare.getValue();
-												if (!compare.isSpirit() &&  cname.equals(name) && cvalue.equals(value))										
-												{
-													toDelete.add(element);
-													addedToDelete = true;
-												}
-											}
-										}
-									}
-								}					
-								
-								// delete elements
-								for (int d = 0; d < toDelete.size(); d++)
-								{
-									DataElement delement = (DataElement)toDelete.get(d);
-									_dataStore.deleteObject(parent,delement);
-								}
-							}
-						}
+											
 	
 						_tagStack.pop();
 						if (_tagStack.empty())
@@ -966,9 +926,9 @@ public class XMLparser
 									result.setParent(null);
 								}
 							}
-							if (result.isDeleted())
-								//_dataStore.deleteObject(result.getParent(), result);
+							if (!isSpirit && result.isDeleted()){
 								result.delete();
+							}
 						}
 						else
 						{
@@ -992,7 +952,7 @@ public class XMLparser
 				}
 			}
 
-			if (result != null && result.isDeleted())
+			if (result != null && !result.isSpirit() && result.isDeleted())
 			{
 				_dataStore.deleteObject(parent, result);
 			}
