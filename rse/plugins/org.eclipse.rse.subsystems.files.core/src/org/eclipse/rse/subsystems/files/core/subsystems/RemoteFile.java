@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2010 IBM Corporation and others.
+ * Copyright (c) 2002, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@
  * David McKnight   (IBM)        - [277911] cached results of remote file query need to be sorted
  * David McKnight   (IBM)        - [289387] Remote Search does not return line nodes in result tree
  * David McKnight (IBM)  - [283033] remoteFileTypes extension point should include "xml" type
+ * David McKnight   (IBM)        - [409785] When copying a file from a network location (e.g. \\myserver\xxx\abc.cpp) to a mapped local location in RSE, workbench hangs on this filecopy
  *******************************************************************************/
 
 package org.eclipse.rse.subsystems.files.core.subsystems;
@@ -1166,6 +1167,9 @@ public abstract class RemoteFile implements IRemoteFile,  IAdaptable, Comparable
 		{
 			return separator;
 		}
+		else if (path.equals("\\")){ //$NON-NLS-1$
+			return null; // for mapped network folder, there may not be a drive
+		}
 		else if (lastSep > 0)
 		{
 			return path.substring(0, lastSep);
@@ -1197,7 +1201,7 @@ public abstract class RemoteFile implements IRemoteFile,  IAdaptable, Comparable
 
 				// manually extra parents
 				String parentPath = getParentPathFor(path);
-				while (parentPath != null && encoding == null)
+				while (parentPath != null && encoding == null) //$NON-NLS-1$
 				{
 					encoding = RemoteFileEncodingManager.getInstance().getEncoding(hostName, parentPath);
 					parentPath = getParentPathFor(parentPath);
