@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2012 IBM Corporation and others.
+ * Copyright (c) 2006, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@
  * Xuan Chen (IBM) - [160775] [api] rename (at least within a zip) blocks UI thread
  * Noriaki Takatsu (IBM)  - [220126] [dstore][api][breaking] Single process server for multiple clients
  * David McKnight  (IBM)  - [369941][dstore] cancelable threads not removed fast enough from Hashmap, resulting in OOM
+ * David McKnight   (IBM) - [414016] [dstore] new server audit log requirements
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -141,7 +142,8 @@ public class UniversalDownloadHandler extends SecuredThread implements ICancella
 				_dataStore.trace("download:" + remotePath + "," + elementType); //$NON-NLS-1$ //$NON-NLS-2$
 
 				File file = new File(remotePath);
-
+		        String[] auditData = new String[] {"READ", file.getAbsolutePath(), null, null}; //$NON-NLS-1$
+		     	UniversalServerUtilities.logAudit(auditData, _dataStore);
 
 				if (elementType.equals(IUniversalDataStoreConstants.UNIVERSAL_VIRTUAL_FILE_DESCRIPTOR))
 				{

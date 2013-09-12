@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2012 IBM Corporation and others.
+ * Copyright (c) 2003, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@
  *  David McKnight   (IBM)     [372968] [dstore][shell] provide support for csh and tcsh shells
  *  David McKnight   (IBM)     [395306] [dstore] Regression for CommandMinerThread authority
  *  David McKnight   (IBM)     [395465] [dstore][shells] customer hit an NPE on shell cleanup
+ *  David McKnight   (IBM)     [414016] [dstore] new server audit log requirements
  *******************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.command;
@@ -62,6 +63,7 @@ import org.eclipse.dstore.core.model.DataElement;
 import org.eclipse.dstore.core.model.DataStoreAttributes;
 import org.eclipse.rse.dstore.universal.miners.CommandMiner;
 import org.eclipse.rse.dstore.universal.miners.IUniversalDataStoreConstants;
+import org.eclipse.rse.dstore.universal.miners.UniversalServerUtilities;
 import org.eclipse.rse.internal.dstore.universal.miners.command.patterns.ParsedOutput;
 import org.eclipse.rse.internal.dstore.universal.miners.command.patterns.Patterns;
 
@@ -347,6 +349,9 @@ public class CommandMinerThread extends MinerThread
 						if (suCommand!=null)
 							_invocation = suCommand + _invocation;
 
+				        String[] auditData = new String[] {"SHELL", _invocation, null, null}; //$NON-NLS-1$
+				     	UniversalServerUtilities.logAudit(auditData, _dataStore);
+						
 						_theProcess = Runtime.getRuntime().exec(_invocation, env, theDirectory);
 					}
 				}
@@ -397,7 +402,10 @@ public class CommandMinerThread extends MinerThread
 								argsList.add("-L"); //$NON-NLS-1$
 								didLogin = true;
 							}
-														
+								
+							String[] auditData = new String[] {"SHELL", _invocation, null, null}; //$NON-NLS-1$
+    						UniversalServerUtilities.logAudit(auditData, _dataStore);							
+
 						    String args[] = (String[])argsList.toArray(new String[argsList.size()]);
 					    						    
 							try {
@@ -413,6 +421,9 @@ public class CommandMinerThread extends MinerThread
 							if (!isBashonZ && !isSHonZ && suCommand != null){ 
 								_invocation = suCommand + _invocation;								
 							}
+							
+					        String[] auditData = new String[] {"SHELL", _invocation, null, null}; //$NON-NLS-1$
+					     	UniversalServerUtilities.logAudit(auditData, _dataStore);
 							
 							if (customShellInvocation != null && customShellInvocation.length() > 0){
 								// all handled in the custom shell invocation
@@ -455,6 +466,9 @@ public class CommandMinerThread extends MinerThread
 						}
 						argsList.add("-c"); //$NON-NLS-1$
 						argsList.add(_invocation);
+												
+				        String[] auditData = new String[] {"SHELL", _invocation, null, null}; //$NON-NLS-1$
+				     	UniversalServerUtilities.logAudit(auditData, _dataStore);						
 						
 						String args[] = (String[])argsList.toArray(new String[argsList.size()]);	
 						_theProcess = Runtime.getRuntime().exec(args, env, theDirectory);				
@@ -686,6 +700,10 @@ public class CommandMinerThread extends MinerThread
 				input = convertSpecialCharacters(input);
 			}
 			input.getBytes();
+			
+	        String[] auditData = new String[] {"SHELL-INPUT", input, null, null}; //$NON-NLS-1$
+	     	UniversalServerUtilities.logAudit(auditData, _dataStore);
+			
 			if (_isCsh && origInput.startsWith("export ")){ //$NON-NLS-1$
 				input = origInput.replaceAll("export ", "setenv ").replaceAll("=", " ");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}

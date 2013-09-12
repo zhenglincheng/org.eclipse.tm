@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2012 IBM Corporation and others.
+ * Copyright (c) 2006, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,7 @@
  * Noriaki Takatsu  (IBM) - [362025] [dstore] Search for text hung in encountering a device definition
  * David McKnight   (IBM) - [371401] [dstore][multithread] avoid use of static variables - causes memory leak after disconnect
  * Noriaki Takatsu  (IBM) - [380562] [multithread][dstore] File Search is not canceled by the client UI on disconnect
+ * David McKnight   (IBM) - [414016] [dstore] new server audit log requirements
  ********************************************************************************/
 
 package org.eclipse.rse.internal.dstore.universal.miners.filesystem;
@@ -385,6 +386,9 @@ public class UniversalSearchHandler extends SecuredThread implements ICancellabl
 		if (_isFileSearch) {
 			return true;
 		}
+
+        String[] auditData = new String[] {"READ", theFile.getAbsolutePath(), null, null}; //$NON-NLS-1$
+     	UniversalServerUtilities.logAudit(auditData, _dataStore);
 
 		FileInputStream inputStream = null;
 
