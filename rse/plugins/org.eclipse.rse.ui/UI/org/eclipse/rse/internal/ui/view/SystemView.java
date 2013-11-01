@@ -89,6 +89,7 @@
  * David McKnight   (IBM)        - [404396] delete doesn't always properly unmap tree items in SystemView
  * David McKnight   (IBM)        - [411398] SystemView event handling for icon changes needs to handle multi-source
  * Yang Yang        (IBM)        - [420578] Refresh action on connection level after a file deletion results in a problem occurred pop-up
+ * David McKnight   (IBM)        - [420837] EVENT_ICON_CHANGE should not be handled with a refresh()
  ********************************************************************************/
 
 package org.eclipse.rse.internal.ui.view;
@@ -2232,7 +2233,7 @@ public class SystemView extends SafeTreeViewer
 					Object src1 = srcs[0];
 					Widget w = findItem(src1);
 					if (w == null){ // can't find item in tree - so fall back to refresh
-						refresh(parent);						
+						// refresh(parent); // - don't refresh since this can cause an infinit cycle of refreshes!								
 					}
 					else {
 						for (int s = 0; s < srcs.length; s++){
