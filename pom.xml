@@ -91,7 +91,7 @@
         <platform-version>[4.3,)</platform-version>
         <sdk-version>4.3</sdk-version>
         <cdt-site>http://download.eclipse.org/tools/cdt/releases/kepler</cdt-site>
-        <cdt-test-site>http://download.eclipse.org/tools/cdt/releases/kepler/</cdt-test-site>
+        <cdt-test-site>http://download.eclipse.org/tools/cdt/updates/indigo/</cdt-test-site>
       </properties>
       <repositories>
         <repository>
