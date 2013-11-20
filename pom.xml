@@ -14,11 +14,6 @@
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
-  <parent>
-    <groupId>org.eclipse</groupId>
-    <artifactId>eclipse-parent</artifactId>
-    <version>3</version>
-  </parent>
   <groupId>org.eclipse.tm</groupId>
   <artifactId>tm-parent</artifactId>
   <version>3.2.3-SNAPSHOT</version>
@@ -53,18 +48,8 @@
   </properties>
   <pluginRepositories>
     <pluginRepository>
-      <id>maven.eclipse.org</id>
-      <url>http://maven.eclipse.org/nexus/content/repositories/public</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-    <pluginRepository>
       <id>sonatype</id>
-      <url>https://repository.sonatype.org/content/repositories/public</url>
+      <url>https://oss.sonatype.org/content/repositories/public</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -87,10 +72,6 @@
       <id>rxtx-${rxtx-version}</id>
       <url>${rxtx-site}</url>
       <layout>p2</layout>
-    </repository>
-    <repository>
-      <id>maven.eclipse.org</id>
-      <url>http://maven.eclipse.org/nexus/content/groups/public/</url>
     </repository>
   </repositories>
   <profiles>
