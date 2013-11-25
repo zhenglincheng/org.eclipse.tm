@@ -49,7 +49,8 @@
  * David McKnight   (IBM)        - [279829] [local] Save conflict dialog keeps popping up on mounted drive
  * David McKnight   (IBM)        - [331247] Local file paste failed on Vista and Windows 7
  * David McKnight   (IBM)        - [337612] Failed to copy the content of a tar file
- * Samuel Wu		(IBM)		 - [395981] Local file encoding is not handled properly 
+ * Samuel Wu		(IBM)		 - [395981] Local file encoding is not handled properly
+ * David McKnight   (IBM)        - [422508] Unable to map A:\ and B:\ as selectable drives in RSE View
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -121,6 +122,8 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 {
 	private static final String[] ALLDRIVES =
 	{
+		"A:\\", //$NON-NLS-1$
+		"B:\\", //$NON-NLS-1$
 		"C:\\", //$NON-NLS-1$
 		"D:\\", //$NON-NLS-1$
 		"E:\\", //$NON-NLS-1$
