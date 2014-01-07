@@ -131,7 +131,7 @@
         </property>
       </activation>
       <properties>
-        <eclipse-site>http://download.eclipse.org/releases/staging</eclipse-site>
+        <eclipse-site>http://download.eclipse.org/releases/juno</eclipse-site>
         <platform-version>[4.2,)</platform-version>
         <sdk-version>4.2</sdk-version>
         <cdt-site>http://download.eclipse.org/tools/cdt/releases/juno</cdt-site>
