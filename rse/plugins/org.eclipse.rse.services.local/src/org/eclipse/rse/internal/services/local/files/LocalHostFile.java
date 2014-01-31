@@ -53,6 +53,7 @@ public class LocalHostFile implements IHostFile, IHostFilePermissionsContainer
 	{
 		_file = file;
 		_isFile = new Boolean(isFile);
+		_isRoot = isRoot;
 		if (!isRoot){
 			_isArchive = ArchiveHandlerManager.getInstance().isArchive(_file);
 			_isFile = new Boolean(isFile);
