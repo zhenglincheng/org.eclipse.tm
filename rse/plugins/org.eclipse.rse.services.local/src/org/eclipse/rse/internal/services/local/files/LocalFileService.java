@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2013 IBM Corporation and others.
+ * Copyright (c) 2006, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -51,6 +51,7 @@
  * David McKnight   (IBM)        - [337612] Failed to copy the content of a tar file
  * Samuel Wu		(IBM)		 - [395981] Local file encoding is not handled properly
  * David McKnight   (IBM)        - [422508] Unable to map A:\ and B:\ as selectable drives in RSE View
+ * David McKnight   (IBM)        - [427306] A couple cases where RSE doesn't indicate lack of space for upload
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -666,12 +667,18 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 		}
 		catch (FileNotFoundException e)
 		{
+			destinationFile.delete();
+			throw new RemoteFileIOException(e);
 		}
 		catch (UnsupportedEncodingException e)
 		{
+			destinationFile.delete();
+			throw new RemoteFileIOException(e);
 		}
 		catch (IOException e)
 		{
+			destinationFile.delete();
+			throw new RemoteFileIOException(e);
 		}
 		finally
 		{
