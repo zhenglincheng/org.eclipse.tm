@@ -290,7 +290,7 @@ public class SystemDNDTransferRunnable extends WorkspaceJob
 			else
 			{
 			    // special case for filters
-			    if (target instanceof ISystemFilterReference && targetSubSystem != null && !(targetAdapter instanceof SystemViewFilterReferenceAdapter))
+			    if (target instanceof ISystemFilterReference && targetSubSystem != null && !(srcAdapter instanceof SystemViewFilterReferenceAdapter))
 			    {
 			        ISubSystemConfiguration factory = targetSubSystem.getSubSystemConfiguration();
 			        if (factory.supportsDropInFilters())
