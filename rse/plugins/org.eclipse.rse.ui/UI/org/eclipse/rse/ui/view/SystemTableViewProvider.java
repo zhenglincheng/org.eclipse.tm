@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2009 IBM Corporation and others.
+ * Copyright (c) 2002, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@
  * David McKnight   (IBM)        - [225506] [api][breaking] RSE UI leaks non-API types
  * David McKnight   (IBM)        - [278848] NPE in Remote System Details view
  * David McKnight   (IBM)        - [284917] Deleting a folder in a fresh workspace throws NPE
+ * David McKnight   (IBM)        - [430900] RSE table enhancement to populate full column when clicking column for sorting purposes
  *******************************************************************************/
 
 package org.eclipse.rse.ui.view;
@@ -66,6 +67,7 @@ public class SystemTableViewProvider implements ILabelProvider, ITableLabelProvi
 	protected SimpleDateFormat _dateFormat = new SimpleDateFormat();
 	protected Viewer _viewer = null;
 	protected int _maxCharsInColumnZero = 0;
+	private boolean _sortOnly = false;
 
 	/**
 	 * The cache of images that have been dispensed by this provider.
@@ -77,7 +79,7 @@ public class SystemTableViewProvider implements ILabelProvider, ITableLabelProvi
 	/**
 	 * Constructor for table view provider where a column manager is present.
 	 * In this case, the columns are customizable by the user.
-	 * @param columnManager
+	 * @param columnManager the column manager
 	 */
 	public SystemTableViewProvider(ISystemTableViewColumnManager columnManager)
 	{
@@ -163,14 +165,13 @@ public class SystemTableViewProvider implements ILabelProvider, ITableLabelProvi
 	public Object[] getElements(Object object)
 	{
 		Object[] results = null;
-		/*
-		if (object == _lastObject && (_lastResults != null && _lastResults.length > 0)
+		if (_sortOnly && (object == _lastObject && (_lastResults != null && _lastResults.length > 0)))
 		{
+			// _sortOnly is used to by-pass a remote query when we're just sorting by columns
+			_sortOnly = false; // after using the cache once, revert back to normal query
 			return _lastResults;
 		}
-		else
-			if (object instanceof IAdaptable)
-			*/
+		else 
 			{
 				ISystemViewElementAdapter adapter = getAdapterFor(object);
 				if (adapter != null)
@@ -383,7 +384,12 @@ public class SystemTableViewProvider implements ILabelProvider, ITableLabelProvi
 
 	public void dispose()
 	{
-		// TODO Auto-generated method stub
-
+	}
+	
+	
+	// private to avoid adding API in 3.4.x release 
+	// using reflection to access this
+	private void setSortOnly(){
+		_sortOnly = true;
 	}
 }

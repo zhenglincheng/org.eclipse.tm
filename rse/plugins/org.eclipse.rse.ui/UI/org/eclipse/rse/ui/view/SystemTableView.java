@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2002, 2013 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2002, 2014 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -33,9 +33,11 @@
  * David McKnight   (IBM)        - [363392] system table views shows open view actions when they shouldn't
  * David McKnight   (IBM)        - [388947] column sort icon issue with Remote Systems Details view
  * David McKnight   (IBM)        - [398306] table sorting of RSE table views inconsistent with Eclipse
+ * David McKnight   (IBM)        - [430900] RSE table enhancement to populate full column when clicking column for sorting purposes
  ********************************************************************************/
 
 package org.eclipse.rse.ui.view;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -202,7 +204,6 @@ public class SystemTableView
 
 	private class HeaderSelectionListener extends SelectionAdapter
 	{
-
 	    public HeaderSelectionListener()
 	    {
 	        _upI = RSEUIPlugin.getDefault().getImage(ISystemIconConstants.ICON_SYSTEM_MOVEUP_ID);
@@ -225,7 +226,8 @@ public class SystemTableView
 			Table table = getTable();
 			if (!table.isDisposed())
 			{
-				// column selected - need to sort
+				// setting the sorter can trigger a query
+				setSortOnlyOnRefresh(true); 				// column selected - need to sort
 			    TableColumn tcolumn = (TableColumn)e.widget;
 				int column = table.indexOf(tcolumn);
 				SystemTableViewSorter oldSorter = (SystemTableViewSorter) getSorter();
@@ -265,6 +267,20 @@ public class SystemTableView
 				        }
 				    }
 				}
+				// update all items in column to ensure they're visible
+				TableItem[] items = table.getItems();
+				if (items != null && items.length > 0){
+					for (int i = 0; i < items.length; i++){
+						TableItem item = items[i];
+						Object data = item.getData();
+						if (data == null){
+							table.showItem(item);
+						}
+					}
+					table.showItem(items[0]);
+				}
+				
+				setSortOnlyOnRefresh(true); 
 				refresh();
 			}
 		}
@@ -472,6 +488,18 @@ public class SystemTableView
 			}
 
 			_objectInput = newObject;
+			
+			// clear sorter
+			SystemTableViewSorter oldSorter = (SystemTableViewSorter) getSorter();
+			if (oldSorter != null){
+				int colNo = oldSorter.getColumnNumber();
+				TableColumn col = getTable().getColumn(colNo);
+				if (col != null){ // remove sort icon
+					col.setImage(null);
+				}
+				setSorter(null);
+			}
+			
 			computeLayout();
 
 			// reset the filter
@@ -1006,6 +1034,8 @@ public class SystemTableView
 						if (w != null)
 						{
 							updateItem(w, child);
+							setSortOnlyOnRefresh(true); 
+							refresh();
 						}
 						
 						ISelection selection = getSelection();
@@ -1018,7 +1048,6 @@ public class SystemTableView
 					}
 					catch (Exception e)
 					{
-
 					}
 				}
 				return;
@@ -1702,7 +1731,6 @@ public class SystemTableView
 		String[] newNames = null;
 		Object[] elements = null;
 		Object[] elementAdapters = null;
-		Object parentElement = null;
 		String renameMessage = null;
 		/**
 		 * RenameJob job.
@@ -2224,4 +2252,26 @@ public class SystemTableView
 		_cachedColumnWidths = cachedColumnWidths;
 	}
 
+
+	private void setSortOnlyOnRefresh(boolean flag){
+		// setting the sorter can trigger a query
+		// since adding a setSortOnly() method to the provider would be an API change,
+		// we have to use reflection in RSE 3.4.x		
+		Class clazz = _provider.getClass();
+		
+		// set sort only to avoid requery - after provider.getChildren(), this get automatically reset
+		try {
+			Method[] methods = clazz.getDeclaredMethods();
+			for (int i = 0; i < methods.length; i++){
+				Method method = methods[i];
+				if (method.getName().equals("setSortOnly")){ //$NON-NLS-1$
+					method.setAccessible(true);								
+					method.invoke(_provider, new Object[0]);
+					return;
+				}
+			}
+			
+		} catch (Exception e) {
+		}
+	}
 }
