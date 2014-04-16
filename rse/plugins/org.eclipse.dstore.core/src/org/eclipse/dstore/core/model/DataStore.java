@@ -45,6 +45,7 @@
  * David McKnight   (IBM) - [390037] [dstore] Duplicated items in the System view
  * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
  * David McKnight   (IBM) - [432875] [dstore] do not use rmt_classloader_cache*.jar
+ * David McKnight   (IBM) - [432872] [dstore] enforce secure permission bits for .dstore* logs
  *******************************************************************************/
 
 package org.eclipse.dstore.core.model;
@@ -3750,7 +3751,7 @@ public final class DataStore
 					} catch (IOException e) {
 					}
 				}
-				if (_traceFileHandle.canWrite()){
+				if (_traceFileHandle.canWrite() && setLogPermissions(_traceFileHandle)){
 					try
 					{
 						_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
@@ -3808,7 +3809,7 @@ public final class DataStore
 					} catch (IOException e) {
 					}
 				}
-				if (_memLoggingFileHandle.canWrite()){
+				if (_memLoggingFileHandle.canWrite() && setLogPermissions(_memLoggingFileHandle)){
 					try
 					{
 						_memLogFile = new RandomAccessFile(_memLoggingFileHandle, "rw"); //$NON-NLS-1$
@@ -4623,7 +4624,7 @@ public final class DataStore
 			{
 				if (_tracingOn) {
 					_traceFileHandle = new File(logDir, ".dstoreTrace"); //$NON-NLS-1$
-					if (_traceFileHandle.canWrite()){
+					if (_traceFileHandle.canWrite() && setLogPermissions(_traceFileHandle)){
 						try
 						{
 							_traceFile = new RandomAccessFile(_traceFileHandle, "rw"); //$NON-NLS-1$
@@ -4655,5 +4656,26 @@ public final class DataStore
 		return _client;
 	}
 
-
+	/**
+	 * Sets the log file permissions for a file based on the "log.file.mode" system property.  If no
+	 * such property exists, this just returns true.
+	 * @param file the file to change permissions on
+	 * @return true if successful or log.file.mode is turned off
+	 */
+	private static boolean setLogPermissions(File file){
+		String fileMode = System.getProperty("log.file.mode"); //$NON-NLS-1$
+		if (fileMode != null && fileMode.length() > 0){
+			// just default to 600 for older levels of RSE
+			String mode = "600"; //$NON-NLS-1$
+			String chmodCmd = "chmod " + mode + ' ' + file.getAbsolutePath(); //$NON-NLS-1$
+			try {
+				Process p = Runtime.getRuntime().exec(chmodCmd);
+				return p.exitValue() == 0;
+			}
+			catch (Exception e){				
+				return false;
+			}
+		}
+		return true;
+	}
 }
