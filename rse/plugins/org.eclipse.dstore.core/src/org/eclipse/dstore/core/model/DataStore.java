@@ -4641,7 +4641,6 @@ public final class DataStore
 					}
 				}
 			}
-			assignCacheJar();
 		}
 	}
 
