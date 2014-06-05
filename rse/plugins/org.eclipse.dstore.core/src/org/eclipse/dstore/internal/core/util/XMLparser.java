@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2013 IBM Corporation and others.
+ * Copyright (c) 2002, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@
  * David McKnight     (IBM) - [378136][dstore] miner.finish is stuck
  * David McKnight   (IBM)   - [391966][dstore][performance] unnecessary call slows down large queries
  * David McKnight   (IBM) - [405309] [dstore] Directory sometimes was not expanded when spiriting was on
+ * David McKnight   (IBM) - [436716][dstore] RSE 3.2.x premature disconnect when keepalive preference turned off
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.util;
@@ -94,7 +95,7 @@ public class XMLparser
 	private Throwable _panicException = null;
 	
 	private boolean _isKeepAliveCompatible = false;
-	private boolean _isKeepAliveEnabled = true;
+	private boolean _isKeepAliveEnabled = false; // initial state should be false
 	private boolean _firstTime = true;
 	
 	private KeepAliveRequestThread _kart = null;
