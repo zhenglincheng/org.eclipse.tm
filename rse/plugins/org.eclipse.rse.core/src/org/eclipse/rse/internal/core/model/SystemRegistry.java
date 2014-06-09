@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2006, 2009 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2014 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the terms
  * of the Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
@@ -60,6 +60,7 @@
  * David McKnight   (IBM)        - [254590] When disconnecting a subsystem with COLLAPSE option, subsystems of other connector services also get collapsed
  * Martin Oberhuber (Wind River) - [245154][api] add getSubSystemConfigurationProxiesBySystemType()
  * Zhou Renjian     (Kortide)    - [282238] NPE when copying host and overwrite itself
+ * David McKnight   (IBM)        - [436970] connection alias with ':' causes problems
  ********************************************************************************/
 
 package org.eclipse.rse.internal.core.model;
@@ -811,7 +812,7 @@ public class SystemRegistry implements ISystemRegistry
 		ISubSystem result = null;
 		// first extract subsystem id
 		int profileDelim = absoluteSubSystemName.indexOf("."); //$NON-NLS-1$
-		int connectionDelim = absoluteSubSystemName.indexOf(":", profileDelim + 1); //$NON-NLS-1$
+		int connectionDelim = absoluteSubSystemName.lastIndexOf(":"); //$NON-NLS-1$
 
 		if (profileDelim > 0 && connectionDelim > profileDelim)
 		{
