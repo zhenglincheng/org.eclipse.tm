@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2012 IBM Corporation and others.
+ * Copyright (c) 2002, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@
  * David McKnight  (IBM)   [246826][dstore] KeepAlive does not work correctly
  * David McKnight    (IBM)  - [358301] [DSTORE] Hang during debug source look up
  * David McKnight    (IBM)  - [388873][dstore] ServerUpdateHandler _senders list should be synchronized
+ * David McKnight  (IBM)   [439545][dstore] potential deadlock on senders during shutdown
  *******************************************************************************/
 
 package org.eclipse.dstore.internal.core.server;
@@ -39,7 +40,7 @@ import org.eclipse.dstore.internal.core.util.Sender;
  */
 public class ServerUpdateHandler extends UpdateHandler
 {
-
+	private Sender _primarySender; // there should really only be one
 
 	private ArrayList _senders;
 	private CommandGenerator _commandGenerator;
@@ -163,6 +164,7 @@ public class ServerUpdateHandler extends UpdateHandler
 		synchronized (_senders){
 			_senders.add(sender);
 		}
+		_primarySender = sender;
 	}
 
 	/**
@@ -173,6 +175,9 @@ public class ServerUpdateHandler extends UpdateHandler
 	{
 		synchronized (_senders){
 			_senders.remove(sender);
+		}
+		if (sender == _primarySender){
+			_primarySender = null;
 		}
 		if (_senders.size() == 0)
 		{
@@ -213,13 +218,7 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setPendingTransfer(true);
 		document.setParent(null);
 
-		synchronized (_senders){
-		for (int j = 0; j < _senders.size(); j++)
-		{
-			Sender sender = (Sender) _senders.get(j);
-			sender.sendFile(document, bytes, size, binary);
-		}
-		}
+		_primarySender.sendFile(document, bytes, size, binary);
 	}
 
 	/**
@@ -254,13 +253,7 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setPendingTransfer(true);
 		document.setParent(null);
 		
-		synchronized (_senders){
-		for (int j = 0; j < _senders.size(); j++)
-		{
-			Sender sender = (Sender) _senders.get(j);
-			sender.sendAppendFile(document, bytes, size, binary);
-		}
-		}
+		_primarySender.sendAppendFile(document, bytes, size, binary);
 	}
 	
 
@@ -296,22 +289,16 @@ public class ServerUpdateHandler extends UpdateHandler
 			
 			_commandGenerator.generateResponse(document, _dataObjects);
 
-			synchronized (_senders){
-			for (int j = 0; j < _senders.size(); j++)
+			_primarySender.sendDocument(document, 20);
+			if (_pendingKeepAliveConfirmation != null)
 			{
-				Sender sender = (Sender) _senders.get(j);
-				sender.sendDocument(document, 5);
-				if (_pendingKeepAliveConfirmation != null)
-				{
-					sender.sendKeepAliveConfirmation(_pendingKeepAliveConfirmation);
-					_pendingKeepAliveConfirmation = null;
-				}
-				if (_pendingKeepAliveRequest != null)
-				{
-					sender.sendKeepAliveRequest(_pendingKeepAliveRequest);
-					_pendingKeepAliveRequest = null;
-				}
+				_primarySender.sendKeepAliveConfirmation(_pendingKeepAliveConfirmation);
+				_pendingKeepAliveConfirmation = null;
 			}
+			if (_pendingKeepAliveRequest != null)
+			{
+				_primarySender.sendKeepAliveRequest(_pendingKeepAliveRequest);
+				_pendingKeepAliveRequest = null;
 			}
 
 			for (int i = 0; i < _dataObjects.size(); i++)
@@ -353,7 +340,6 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void removeSenderWith(Socket socket)
 	{
-		synchronized (_senders){
 		for (int i = 0; i < _senders.size(); i++)
 		{
 			Sender sender = (Sender) _senders.get(i);
@@ -365,6 +351,8 @@ public class ServerUpdateHandler extends UpdateHandler
 				removeSender(sender);
 			}
 		}
+		if (_primarySender != null && _primarySender.socket() == socket){
+			_primarySender = null;
 		}
 	}
 	
@@ -382,13 +370,7 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setParent(null);
 		//DataElement document = _dataStore.createObject(null, DataStoreResources.REQUEST_CLASS_TYPE, className);
 
-		synchronized (_senders){
-		for (int j = 0; j < _senders.size(); j++)
-		{
-			Sender sender = (Sender) _senders.get(j);
-			sender.requestClass(document);
-		}
-		}	
+		_primarySender.requestClass(document);	
 	}
 	
 
@@ -400,13 +382,8 @@ public class ServerUpdateHandler extends UpdateHandler
 		document.setPendingTransfer(true);
 		document.setParent(null);		
 
-		synchronized (_senders){
-		for (int j = 0; j < _senders.size(); j++)
-		{
-			Sender sender = (Sender) _senders.get(j);
-			sender.sendRemoteClassRunnable(document, runnable);
-		}
-		}
+		_primarySender.sendRemoteClassRunnable(document, runnable);	
+
 		notifyInput();
 	}
 
@@ -495,12 +472,6 @@ public class ServerUpdateHandler extends UpdateHandler
 	 */
 	public void setGenerateBuffer(boolean flag)
 	{
-		synchronized (_senders){
-		for (int i = 0; i < _senders.size(); i++)
-		{
-			Sender sender = (Sender)_senders.get(i);
-			sender.setGenerateBuffer(flag);
-		}
-		}
+		_primarySender.setGenerateBuffer(flag);
 	}
 }
