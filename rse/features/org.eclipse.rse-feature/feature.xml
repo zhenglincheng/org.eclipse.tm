@@ -66,14 +66,10 @@
          version="0.0.0"
          search-location="both"/>
 
-<!-- Do not include the Terminals feature here. The Terminals feature
-     is superseeded by the TCF Terminals feature. All Terminals related
-     functionality is provided by the TCF project.
-   <includes
-         id="org.eclipse.rse.terminals"
-         version="0.0.0"
-         search-location="both"/>
--->
+<!-- Do not include the Terminals feature here, require it instead. -->
+   <requires>
+      <import feature="org.eclipse.rse.terminals" version="3.7.0" match="greaterOrEqual"/>
+   </requires>
 
    <plugin
          id="org.eclipse.rse"
