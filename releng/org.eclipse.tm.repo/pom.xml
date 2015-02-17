@@ -14,7 +14,7 @@
   <properties>
     <tm-stream>luna</tm-stream>
     <tm-zipfile>${project.artifactId}.zip</tm-zipfile>
-    <tm-install>/home/data/httpd/download.eclipse.org/tm/builds/${tm-stream}/nightly</tm-install>
+    <tm-install>/home/data/httpd/download.eclipse.org/tm/builds/${tm-stream}/maintenance</tm-install>
   </properties>
   <pluginRepositories>
     <pluginRepository>
