@@ -278,10 +278,10 @@ public class CommandInputFieldWithHistory implements ICommandInputField {
 				// ignore it (https://bugs.eclipse.org/bugs/show_bug.cgi?id=211659)
 				if(!e.doit)
 					return;
-				if(e.keyCode=='\n' || e.keyCode=='\r') {
+				if(e.character==SWT.CR || e.character==SWT.LF) {
 					e.doit=false;
 					String line=fInputField.getText();
-					if(!terminal.pasteString(line+"\n")) //$NON-NLS-1$
+					if(!terminal.pasteString(line+'\r')) //$NON-NLS-1$
 						return;
 					pushLine(line);
 					setCommand("");//$NON-NLS-1$
