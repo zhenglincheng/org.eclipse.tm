@@ -28,6 +28,7 @@
 package org.eclipse.tm.internal.terminal.emulator;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 
 import org.eclipse.swt.events.ControlEvent;
@@ -82,7 +83,7 @@ public class VT100Emulator implements ControlListener {
 	 * character. Expecting a character set designation character.
 	 */
 	private static final int ANSISTATE_EXPECTING_CHARSET_DESIGNATION = 5;
-	
+
 
 	/**
 	 * This field holds the current state of the Finite TerminalState Automaton (FSA)
@@ -152,7 +153,7 @@ public class VT100Emulator implements ControlListener {
 			ansiParameters[i] = new StringBuffer();
 		}
 		setInputStreamReader(reader);
-		if(TerminalPlugin.isOptionEnabled(Logger.TRACE_DEBUG_LOG_VT100BACKEND)) //$NON-NLS-1$
+		if(TerminalPlugin.isOptionEnabled(Logger.TRACE_DEBUG_LOG_VT100BACKEND))
 			text=new VT100BackendTraceDecorator(new VT100EmulatorBackend(data),System.out);
 		else
 			text=new VT100EmulatorBackend(data);
@@ -509,7 +510,7 @@ public class VT100Emulator implements ControlListener {
 			// Line Position Absolute [row] (default = [1,column]) (VPA).
 			processAnsiCommand_d();
 			break;
-			
+
 		case 'E':
 			// Move cursor to first column of Nth next line (default 1).
 			processAnsiCommand_E();
@@ -554,7 +555,7 @@ public class VT100Emulator implements ControlListener {
 			// Set Mode.
 			processAnsiCommand_l();
 			break;
-			
+
 		case 'M':
 			// Delete line(s).
 			processAnsiCommand_M();
@@ -683,7 +684,7 @@ public class VT100Emulator implements ControlListener {
 		// Line Position Absolute [row] (default = [1,column]) (VPA).
 		text.setCursorLine(getAnsiParameter(0) - 1);
 	}
-	
+
 	/**
 	 * This method moves the cursor to the first column of the Nth next line,
 	 * where N is specified by the ANSI parameter (default 1).
@@ -1017,21 +1018,21 @@ public class VT100Emulator implements ControlListener {
 		}
 		text.setScrollRegion(top-1, bottom-1);
 	}
-	
+
 	/**
 	 * Scroll up n lines (default = 1 line).
 	 */
 	private void processAnsiCommand_S() {
 		text.scrollUp(getAnsiParameter(0));
 	}
-	
+
 	/**
 	 * Scroll down n lines (default = 1 line).
 	 */
 	private void processAnsiCommand_T() {
 		text.scrollDown(getAnsiParameter(0));
 	}
-	
+
 	private void processDecPrivateCommand_h() {
 		int param = getAnsiParameter(0);
 		switch (param) {
@@ -1064,7 +1065,7 @@ public class VT100Emulator implements ControlListener {
 			break;
 		}
 	}
-	
+
 	/**
 	 * This method returns one of the numeric ANSI parameters received in the
 	 * most recent escape sequence.
