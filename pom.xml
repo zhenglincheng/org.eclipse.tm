@@ -33,8 +33,8 @@
     </license>
   </licenses>
   <properties>
-    <tycho-version>0.16.0</tycho-version>
-    <tycho-extras-version>0.16.0</tycho-extras-version>
+    <tycho-version>0.20.0</tycho-version>
+    <tycho-extras-version>0.20.0</tycho-extras-version>
     <maven-resources-version>2.6</maven-resources-version>
     <maven-antrun-version>1.7</maven-antrun-version>
     <gmaven-version>1.4</gmaven-version>
@@ -49,12 +49,8 @@
   </properties>
   <pluginRepositories>
     <pluginRepository>
-      <id>CBI</id>
-      <url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
-    </pluginRepository> 
-    <pluginRepository>
       <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/groups/public/</url>
+      <url>https://oss.sonatype.org/content/repositories/public/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -63,9 +59,9 @@
       </releases>
     </pluginRepository>
     <pluginRepository>
-      <id>m2e-cbi</id>
-      <url>http://download.eclipse.org/technology/m2e/maven/</url>
-    </pluginRepository>
+      <id>CBI</id>
+      <url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
+    </pluginRepository> 
   </pluginRepositories>
   <repositories>
     <repository>
@@ -77,10 +73,6 @@
       <id>rxtx-${rxtx-version}</id>
       <url>${rxtx-site}</url>
       <layout>p2</layout>
-    </repository>
-    <repository>
-      <id>maven.eclipse.org</id>
-      <url>https://repo.eclipse.org/content/repositories/releases/</url>
     </repository>
   </repositories>
   <profiles>
