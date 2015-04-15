@@ -46,22 +46,6 @@
     <rxtx-version>1.0.0.7837QcJa5vE7MnhE77YA7AU3SWUlbntVZAnlDoIGojcQd</rxtx-version>
     <rxtx-site>http://rxtx.qbang.org/eclipse</rxtx-site>
   </properties>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/public</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-    <pluginRepository>
-      <id>m2e-cbi</id>
-      <url>http://download.eclipse.org/technology/m2e/maven/</url>
-    </pluginRepository>
-  </pluginRepositories>
   <repositories>
     <repository>
       <id>orbit</id>
