@@ -16,12 +16,6 @@
     <tm-zipfile>${project.artifactId}-${project.version}.zip</tm-zipfile>
     <tm-install>/home/data/httpd/download.eclipse.org/tm/builds/${tm-stream}/nightly</tm-install>
   </properties>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>maven.eclipse.org</id>
-      <url>http://maven.eclipse.org/nexus/content/repositories/public</url>
-    </pluginRepository>
-  </pluginRepositories>
   <profiles>
     <profile>
       <id>build-server</id>
