@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2014 IBM Corporation and others.
+ * Copyright (c) 2002, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,6 +30,7 @@
  * David McKnight    (IBM) - [388472] [dstore] need alternative option for getting at server hostname
  * David McKnight   (IBM)  - [390681] [dstore] need to merge differences between HEAD stream and 3.2 in ConnectionEstablisher.finished()
  * David McKnight  (IBM)   [439545][dstore] potential deadlock on senders during shutdown
+ * David McKnight  (IBM)   [464736][dstore] need methods to disable ciphers and protocols
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -44,8 +45,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
@@ -91,6 +94,13 @@ public class ConnectionEstablisher
 	private int _maxConnections;
 	private int _timeout;
 	private String _msg;
+	
+
+	private String[] _disabledCipherPatterns = null;
+	private String[] _disabledProtocolPatterns = null;
+	private String[] _enabledCiphers = null;
+	private String[] _enabledProtocols = null;
+	
 
 
 	/**
@@ -261,6 +271,18 @@ public class ConnectionEstablisher
 		{
 			try
 			{
+				if (_dataStore.usingSSL())
+				{
+					SSLServerSocket sslServerSocket = (SSLServerSocket)_serverSocket;
+					// for security, disable ciphers and protocols we don't want
+					disableCiphers(sslServerSocket);
+					disableProtocols(sslServerSocket);
+					
+					// for security, enable only ciphers and protocols that are common
+					enableCiphers(sslServerSocket);
+					enableProtocols(sslServerSocket);
+				}
+				
 				Socket newSocket = _serverSocket.accept();
 				if (_dataStore.usingSSL())
 				{
@@ -599,5 +621,110 @@ public class ConnectionEstablisher
 	   		System.out.println(e);
 	   	}
 
+	}
+	
+	/**
+	 * Specify cipher patterns to be disabled when using SSL sockets
+	 * @param cipherPatterns regex patterns of ciphers to disable
+	 */
+	public void setDisabledCipherPatterns(String[] cipherPatterns){
+		_disabledCipherPatterns = cipherPatterns;
+	}
+	
+	/**
+	 * Specify protocol patterns to be disabled when using SSL sockets
+	 * @param protocolPatterns regex patterns of protocols to disable
+	 */
+	public void setDisabledProtocolPatterns(String[] protocolPatterns){
+		_disabledProtocolPatterns = protocolPatterns;
+	}
+	
+	/**
+	 * Specify ciphers to be enabled when using SSL sockets
+	 * @param ciphers to enable
+	 */
+	public void setEnabledCiphers(String[] ciphers){
+		_enabledCiphers = ciphers;
+	}
+	
+	/**
+	 * Specify protocols to be enabled when using SSL sockets
+	 * @param protocols to enable
+	 */
+	public void setEnabledProtocols(String[] protocols){
+		_enabledProtocols = protocols;
+	}
+	
+	private String[] filterNames(String[] inNames, String[] filters){
+		List outNames = new ArrayList();
+		for (int n = 0; n < inNames.length; n++){
+			String inName = inNames[n];
+			boolean match = false;
+			for (int i = 0; i < filters.length && !match; i++){
+				String filter = filters[i];
+				match = inName.matches(filter);
+			}
+			if (!match){
+				outNames.add(inName);
+			}
+			else {
+				String cn = getClass().toString();
+				IServerLogger logger = _dataStore.getClient().getLogger();
+				logger.logDebugMessage(cn, "Filtering out: " + inName); //$NON-NLS-1$	
+			}
+		}
+		return (String[])outNames.toArray(new String[outNames.size()]);
+	}
+	
+	private void disableCiphers(SSLServerSocket socket){
+		if (_disabledCipherPatterns != null){
+			String[] enabledSuites = socket.getEnabledCipherSuites();
+			String[] newEnabledSuites = filterNames(enabledSuites, _disabledCipherPatterns);			
+			
+			socket.setEnabledCipherSuites(newEnabledSuites);
+		}
+	}
+	
+	private void disableProtocols(SSLServerSocket socket){
+		if (_disabledProtocolPatterns != null){
+			String[] enabledProtocols = socket.getEnabledProtocols();
+			String[] newEnabledProtocols = filterNames(enabledProtocols, _disabledProtocolPatterns);
+			socket.setEnabledProtocols(newEnabledProtocols);
+		}
+	}
+
+	private String[] mergeCommon(String[] inNames1, String[] inNames2){
+		List merged = new ArrayList();
+		for (int n = 0; n < inNames1.length; n++){
+			String inName1 = inNames1[n];
+			boolean match = false;
+			for (int i = 0; i < inNames2.length && !match; i++){
+				match = inName1.equals(inNames2[i]);
+			}
+			if (match){
+				merged.add(inName1);
+			}
+		}
+		return (String[])merged.toArray(new String[merged.size()]);
+	}
+	
+	private void enableCiphers(SSLServerSocket socket){
+		if (_enabledCiphers != null){
+			String[] enabledSuites = socket.getEnabledCipherSuites();
+			String[] newEnabledSuites = mergeCommon(enabledSuites, _enabledCiphers);
+			if (newEnabledSuites.length > 0){				
+				socket.setEnabledCipherSuites(newEnabledSuites);
+			}
+		}
+	}
+
+	private void enableProtocols(SSLServerSocket socket){
+		if (_enabledProtocols != null){
+			String[] enabledProtocols = socket.getEnabledProtocols();
+			String[] newEnabledProtocols = mergeCommon(enabledProtocols, _enabledProtocols);
+			if (newEnabledProtocols.length > 0){
+				socket.setEnabledCipherSuites(newEnabledProtocols);
+			}
+		}
 	}
 }
