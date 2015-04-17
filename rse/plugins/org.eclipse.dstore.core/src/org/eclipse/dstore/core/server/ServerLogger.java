@@ -310,7 +310,7 @@ public class ServerLogger implements IServerLogger
 				System.err.println("ServerLogger: "+e.toString()); //$NON-NLS-1$
 			}
 		}
-		if (DEBUG && log_level == LOG_DEBUG) {
+		if (log_level == LOG_DEBUG) {
 			if (_logFileStream != null) {
 				synchronized(writeLock) {
 					try {

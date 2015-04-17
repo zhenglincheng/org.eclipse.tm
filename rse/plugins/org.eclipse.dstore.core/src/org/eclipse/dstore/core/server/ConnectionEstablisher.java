@@ -281,6 +281,8 @@ public class ConnectionEstablisher
 					// for security, enable only ciphers and protocols that are common
 					enableCiphers(sslServerSocket);
 					enableProtocols(sslServerSocket);
+					
+					logAvailableCiphersAndProtocols(sslServerSocket);
 				}
 				
 				Socket newSocket = _serverSocket.accept();
@@ -612,6 +614,19 @@ public class ConnectionEstablisher
 	   		}
 			writer.println(version);
 			writer.flush();
+			
+		   if (socket instanceof SSLSocket){ // log the protocol and cipher suite used
+			   SSLSocket sslSocket = (SSLSocket)socket;
+			   SSLSession session = sslSocket.getSession();
+			   String protocol = session.getProtocol();		   
+			   String cipherSuite = session.getCipherSuite();
+			   IServerLogger logger = _dataStore.getClient().getLogger();
+
+			   String cn = getClass().toString();
+			   
+			   logger.logInfo(cn, "SSL/TLS Protocol: "+protocol); //$NON-NLS-1$
+			   logger.logInfo(cn, "SSL/TLS Cipher Suite: " + cipherSuite); //$NON-NLS-1$
+		   }			
 	   	}
 	   	catch (IOException e)
 	   	{
@@ -621,6 +636,42 @@ public class ConnectionEstablisher
 	   		System.out.println(e);
 	   	}
 
+	}
+	
+	
+	
+	private void logAvailableCiphersAndProtocols(SSLServerSocket sslSocket){
+	   IServerLogger logger = _dataStore.getClient().getLogger();
+
+	   String cn = getClass().toString();
+	   // list the supported and available ciphers and protocols
+	   logger.logDebugMessage(cn, "SSL/TLS Enabled Cipher Suites:"); //$NON-NLS-1$
+	   String[] enabledSuites = sslSocket.getEnabledCipherSuites();			   
+	   for (int i = 0; i < enabledSuites.length; i++){
+		   String suite = enabledSuites[i];
+		   logger.logDebugMessage(cn, '\t' + suite);
+	   }			   			   
+	   
+	   String[] supportedSuites = sslSocket.getSupportedCipherSuites();
+	   logger.logDebugMessage(cn, "SSL/TLS Supported Cipher Suites:"); //$NON-NLS-1$	   
+	   for (int i = 0; i < supportedSuites.length; i++){
+		   String suite = supportedSuites[i];
+		   logger.logDebugMessage(cn, '\t' + suite);
+	   }		
+	   
+	   String[] enabledProtocols = sslSocket.getEnabledProtocols();
+	   logger.logDebugMessage(cn, "SSL/TLS Enabled Protocols:"); //$NON-NLS-1$		   
+	   for (int i = 0; i < enabledProtocols.length; i++){
+		   String eprotocol = enabledProtocols[i];
+		   logger.logDebugMessage(cn, '\t' + eprotocol);
+	   }		
+	   
+	   String[] supportedProtocols = sslSocket.getSupportedProtocols();
+	   logger.logDebugMessage(cn, "SSL/TLS Supported Protocols:"); //$NON-NLS-1$		   
+	   for (int i = 0; i < supportedProtocols.length; i++){
+		   String sprotocol = supportedProtocols[i];
+		   logger.logDebugMessage(cn, '\t' + sprotocol);
+	   }		
 	}
 	
 	/**
