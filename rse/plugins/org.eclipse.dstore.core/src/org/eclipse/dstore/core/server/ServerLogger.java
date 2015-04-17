@@ -65,7 +65,7 @@ public class ServerLogger implements IServerLogger
 	 * was final but, as of 3.0.1, it's not.
 	 */
 	public static boolean DEBUG = false;
-
+ 
 	private int log_level = 0;
 
 	private boolean initialized = false;
