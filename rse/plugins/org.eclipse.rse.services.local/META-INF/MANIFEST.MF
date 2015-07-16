@@ -4,7 +4,7 @@ Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.rse.services.local;singleton:=true
 Bundle-Version: 2.1.407.qualifier
 Bundle-Activator: org.eclipse.rse.internal.services.local.Activator
-Bundle-Vendor: %providerName
+Bundle-Vendor: %providerName 
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.rse.services;bundle-version="[3.0.0,4.0.0)",
