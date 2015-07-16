@@ -57,6 +57,7 @@
  * David McKnight   (IBM)        - [420798] Slow performances in RDz 9.0 with opening 7000 files located on a network driver.
  * David McKnight   (IBM)        - [431060][local] RSE performance over local network drives are suboptimal
  * David McKnight   (IBM)        - [444621][local]need ability to disable local natives
+ * David McKnight   (IBM)        - [472868][local]provide ability to disable particular local drives
  *******************************************************************************/
 
 package org.eclipse.rse.internal.services.local.files;
@@ -132,7 +133,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 {
 	private static final String[] ALLDRIVES =
 	{
-		"A:\\", //$NON-NLS-1$
+		"A:\\", //$NON-NLS-1$ 
 		"B:\\", //$NON-NLS-1$
 		"C:\\", //$NON-NLS-1$
 		"D:\\", //$NON-NLS-1$
@@ -167,6 +168,7 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 	private static boolean _disableLocalNatives = false;
 	
 	private boolean _getParentCanonicalPath = false;
+	private String _disabledDrives;
 
 	protected ISystemFileTypes _fileTypeRegistry;
 
@@ -189,8 +191,11 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 			}
 			catch (Exception e){				
 			}
-		}
-	}
+		} 
+		
+		// disable all comma separated drives in this var
+		_disabledDrives = System.getProperty("local.disabled.drives"); //$NON-NLS-1$
+	} 
 
 
 
@@ -930,16 +935,19 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 		{
 			for (int idx = 0; idx < ALLDRIVES.length; idx++)
 			{
-				File drive = new File(ALLDRIVES[idx]);
-				if (drive.exists())
-
-					try
-					{
-						v.add(drive.getAbsoluteFile());
+				String driveStr = ALLDRIVES[idx];
+				if (!isDisabled(driveStr.toLowerCase())){
+					File drive = new File(driveStr);
+					if (drive.exists()){
+						try
+						{
+							v.add(drive.getAbsoluteFile());
+						}
+						catch (Exception e)
+						{
+						}
 					}
-					catch (Exception e)
-					{
-					}
+				}
 			}
 		}
 		else
@@ -957,7 +965,19 @@ public class LocalFileService extends AbstractFileService implements ILocalServi
 
 		return fileObjs;
 	}
-
+	
+	private boolean isDisabled(String driveStr){
+		if (_disabledDrives != null){
+			String[] driveLetters = _disabledDrives.toLowerCase().split(",");
+			for (int i = 0; i < driveLetters.length; i++){
+				String dLetter = driveLetters[i];
+				if (driveStr.startsWith(dLetter)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 
 	public IHostFile getFile(String remoteParent, String name, IProgressMonitor monitor) throws SystemMessageException
