@@ -59,7 +59,7 @@
  * David McKnight   (IBM)        - [444621][local]need ability to disable local natives
  * David McKnight   (IBM)        - [472868][local]provide ability to disable particular local drives
  *******************************************************************************/
-
+ 
 package org.eclipse.rse.internal.services.local.files;
 
 import java.io.BufferedInputStream;
