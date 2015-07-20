@@ -31,6 +31,7 @@
  * David McKnight   (IBM)  - [390681] [dstore] need to merge differences between HEAD stream and 3.2 in ConnectionEstablisher.finished()
  * David McKnight  (IBM)   [439545][dstore] potential deadlock on senders during shutdown
  * David McKnight  (IBM)   [464736][dstore] need methods to disable ciphers and protocols
+ * David McKnight  (IBM)   [473086][dstore] enableProtocols() calls setEnabledCipherSuites(), not setEnabledProtocols()
  *******************************************************************************/
 
 package org.eclipse.dstore.core.server;
@@ -774,7 +775,7 @@ public class ConnectionEstablisher
 			String[] enabledProtocols = socket.getEnabledProtocols();
 			String[] newEnabledProtocols = mergeCommon(enabledProtocols, _enabledProtocols);
 			if (newEnabledProtocols.length > 0){
-				socket.setEnabledCipherSuites(newEnabledProtocols);
+				socket.setEnabledProtocols(newEnabledProtocols);
 			}
 		}
 	}
