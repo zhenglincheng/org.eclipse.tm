@@ -30,7 +30,9 @@ import org.eclipse.rse.core.model.ISystemRegistry;
 import org.eclipse.rse.internal.files.ui.FileResources;
 import org.eclipse.rse.services.clientserver.messages.SystemMessageException;
 import org.eclipse.rse.services.files.IFilePermissionsService;
+import org.eclipse.rse.services.files.IHostFile;
 import org.eclipse.rse.services.files.IHostFilePermissions;
+import org.eclipse.rse.services.files.IHostFilePermissionsContainer;
 import org.eclipse.rse.services.files.PendingHostFilePermissions;
 import org.eclipse.rse.subsystems.files.core.subsystems.IRemoteFile;
 import org.eclipse.rse.ui.SystemBasePlugin;
@@ -282,27 +284,58 @@ public class SystemFilePermissionsPropertyPage extends SystemBasePropertyPage {
 						{
 							_permissions = pService.getFilePermissions(rFile.getHostFile(), monitor);
 
+						
 							// notify change
 							Display.getDefault().asyncExec(new Runnable()
 							{
 								public void run()
 								{
-									_userRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_USER_READ));
-									_userWrite.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_USER_WRITE));
-									_userExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_USER_EXECUTE));
-									_groupRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_GROUP_READ));
-									_groupWrite.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_GROUP_WRITE));
-									_groupExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_GROUP_EXECUTE));
-									_otherRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_OTHER_READ));
-									_otherWrite.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_OTHER_WRITE));
-									_otherExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_OTHER_EXECUTE));
-
-									_owner = _permissions.getUserOwner();
-									_group = _permissions.getGroupOwner();
-
-									_userEntry.setText(_owner);
-									_groupEntry.setText(_group);
-
+									if (_permissions != null){
+										_userRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_USER_READ));
+										boolean canUWrite = _permissions.getPermission(IHostFilePermissions.PERM_USER_WRITE);
+										_userWrite.setSelection(canUWrite);
+										_userExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_USER_EXECUTE));
+										_groupRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_GROUP_READ));
+										
+										boolean canGWrite = _permissions.getPermission(IHostFilePermissions.PERM_GROUP_WRITE); 
+										_groupWrite.setSelection(canGWrite);
+										
+										_groupExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_GROUP_EXECUTE));
+										_otherRead.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_OTHER_READ));
+										
+										boolean canOWrite = _permissions.getPermission(IHostFilePermissions.PERM_OTHER_WRITE);
+										_otherWrite.setSelection(canOWrite);
+										_otherExecute.setSelection(_permissions.getPermission(IHostFilePermissions.PERM_OTHER_EXECUTE));
+	
+										String userId = rFile.getParentRemoteFileSubSystem().getConnectorService().getUserId();
+										boolean isRoot = userId.equals("root");
+										
+										_owner = _permissions.getUserOwner();
+										_group = _permissions.getGroupOwner();
+	
+										_userEntry.setText(_owner);
+										_groupEntry.setText(_group);
+										
+										if (!isRoot && !canUWrite && !canGWrite && !canOWrite){
+											_userEntry.setEditable(false);
+											_groupEntry.setEditable(false);
+											
+											_userRead.setEnabled(false);
+											_userWrite.setEnabled(false);
+											_userExecute.setEnabled(false);
+											_groupRead.setEnabled(false);
+											_groupWrite.setEnabled(false);
+											_groupExecute.setEnabled(false);
+											_otherRead.setEnabled(false);
+											_otherWrite.setEnabled(false);
+											_otherExecute.setEnabled(false);
+										}
+										
+										if (!_owner.equals(userId) && !isRoot){
+											_userEntry.setEditable(false);
+											_groupEntry.setEditable(false);
+										}
+									}
 								}
 							});
 						}
@@ -407,9 +440,29 @@ public class SystemFilePermissionsPropertyPage extends SystemBasePropertyPage {
 						//mark file stale even if an exception is thrown later, to ensure proper re-get
 						remoteFile.markStale(true, true);
 						// assuming permissions are good
-						service.setFilePermissions(remoteFile.getHostFile(), newPermissions, new NullProgressMonitor());
+						IHostFile hf = remoteFile.getHostFile();
+						
+						service.setFilePermissions(hf, newPermissions, new NullProgressMonitor());
 
-						_permissions = newPermissions;
+						// now check that this actually worked
+						((IHostFilePermissionsContainer)hf).setPermissions(null); // first clear cached
+						IHostFilePermissions newPerms = service.getFilePermissions(remoteFile.getHostFile(), new NullProgressMonitor());
+						
+						// compare newPermissions to newPerms
+						if (newPerms.getPermissionBits() != newPermissions.getPermissionBits() ||
+								!newPermissions.getUserOwner().equals(newPerms.getUserOwner()) ||
+								!newPermissions.getGroupOwner().equals(newPerms.getGroupOwner())){
+							// didn't work!
+							// give a message
+							String err = FileResources.FILEMSG_SECURITY_ERROR;
+							setErrorMessage(err);
+							
+							// reset
+						}
+						else {
+							clearErrorMessage();
+							_permissions = newPermissions;
+						}
 					}
 				}
 				catch (SystemMessageException e){
@@ -449,6 +502,7 @@ public class SystemFilePermissionsPropertyPage extends SystemBasePropertyPage {
 		IRemoteFile file = getRemoteFile();
 		IFilePermissionsService service = (IFilePermissionsService)((IAdaptable)file).getAdapter(IFilePermissionsService.class);
 		initPermissionFields(file, service);
+		clearErrorMessage();
 	}
 
 	public void setVisible(boolean visible) {
