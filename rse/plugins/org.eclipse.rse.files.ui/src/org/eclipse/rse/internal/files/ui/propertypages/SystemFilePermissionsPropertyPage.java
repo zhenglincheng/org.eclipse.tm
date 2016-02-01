@@ -502,7 +502,7 @@ public class SystemFilePermissionsPropertyPage extends SystemBasePropertyPage {
 		IRemoteFile file = getRemoteFile();
 		IFilePermissionsService service = (IFilePermissionsService)((IAdaptable)file).getAdapter(IFilePermissionsService.class);
 		initPermissionFields(file, service);
-		clearErrorMessage();
+		clearErrorMessage(); 
 	}
 
 	public void setVisible(boolean visible) {
